@@ -85,6 +85,10 @@ public partial class App : System.Windows.Application
                 return;
             }
 
+            // DEBUG: Show what we got
+            MessageBox.Show($"Downloaded to:\n{downloadedAsset.FilePath}\n\nExists: {System.IO.File.Exists(downloadedAsset.FilePath)}\n\nClick OK to continue...",
+                "Debug Info", MessageBoxButton.OK, MessageBoxImage.Information);
+
             // Verify the file still exists
             if (!System.IO.File.Exists(downloadedAsset.FilePath))
             {
