@@ -13,9 +13,8 @@ public partial class App : System.Windows.Application
 {
     internal static readonly UpdatumManager AppUpdater = new("shanselman", "WindowsEdgeLight")
     {
-        // Default pattern (win-x64) will match our assets
-        // Prefer EXE to avoid Windows Defender/antivirus blocking ZIP extraction
-        AssetExtensionFilter = ".exe",
+        // Default pattern (win-x64) will match our ZIP assets
+        // ZIP files contain clean WindowsEdgeLight.exe inside
         FetchOnlyLatestRelease = true, // Saves GitHub API rate limits
         // For MSI installer, show basic UI during installation
         InstallUpdateWindowsInstallerArguments = "/qb",

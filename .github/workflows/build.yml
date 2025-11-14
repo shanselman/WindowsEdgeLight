@@ -56,13 +56,7 @@ jobs:
           $version = "${{ github.event.inputs.version }}"
         }
         
-        # Copy EXE files
-        Copy-Item "WindowsEdgeLight/bin/Release/net10.0-windows/win-x64/publish/WindowsEdgeLight.exe" `
-                  "artifacts/WindowsEdgeLight-v$version-win-x64.exe"
-        Copy-Item "WindowsEdgeLight/bin/Release/net10.0-windows/win-arm64/publish/WindowsEdgeLight.exe" `
-                  "artifacts/WindowsEdgeLight-v$version-win-arm64.exe"
-        
-        # Create ZIP files for portable versions
+        # Create ZIP files only (contain clean WindowsEdgeLight.exe inside)
         Compress-Archive -Path "WindowsEdgeLight/bin/Release/net10.0-windows/win-x64/publish/*" `
                         -DestinationPath "artifacts/WindowsEdgeLight-v$version-win-x64.zip"
         Compress-Archive -Path "WindowsEdgeLight/bin/Release/net10.0-windows/win-arm64/publish/*" `
@@ -72,17 +66,13 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: WindowsEdgeLight-Release
-        path: |
-          artifacts/*.exe
-          artifacts/*.zip
+        path: artifacts/*.zip
         
     - name: Create Release
       if: startsWith(github.ref, 'refs/tags/')
       uses: softprops/action-gh-release@v1
       with:
-        files: |
-          artifacts/*.exe
-          artifacts/*.zip
+        files: artifacts/*.zip
         body: |
           ## Windows Edge Light ${{ github.ref_name }}
           
@@ -92,15 +82,10 @@ jobs:
           
           Choose the version for your Windows architecture:
           
-          **Single-File Executables** (recommended for most users):
-          - **WindowsEdgeLight-${{ github.ref_name }}-win-x64.exe** - For Intel/AMD 64-bit Windows (~75MB)
-          - **WindowsEdgeLight-${{ github.ref_name }}-win-arm64.exe** - For ARM64 Windows (Surface Pro X, etc.) (~71MB)
+          - **WindowsEdgeLight-${{ github.ref_name }}-win-x64.zip** - For Intel/AMD 64-bit Windows
+          - **WindowsEdgeLight-${{ github.ref_name }}-win-arm64.zip** - For ARM64 Windows (Surface Pro X, etc.)
           
-          **Portable ZIP Packages** (for advanced users with auto-update support):
-          - **WindowsEdgeLight-${{ github.ref_name }}-win-x64.zip** - Portable x64 version
-          - **WindowsEdgeLight-${{ github.ref_name }}-win-arm64.zip** - Portable ARM64 version
-          
-          All versions are self-contained - no .NET installation required!
+          **What's inside:** Each ZIP contains `WindowsEdgeLight.exe` (self-contained, no .NET required)
           
           ### ✨ What's New
           
