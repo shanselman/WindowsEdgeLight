@@ -1,0 +1,98 @@
+name: Build Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version number (e.g., 0.4)'
+        required: true
+        default: '0.4'
+
+jobs:
+  build:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '10.0.x'
+        
+    - name: Restore dependencies
+      run: dotnet restore WindowsEdgeLight/WindowsEdgeLight.csproj
+      
+    - name: Build x64
+      run: |
+        dotnet publish WindowsEdgeLight/WindowsEdgeLight.csproj `
+          -c Release `
+          -r win-x64 `
+          /p:DebugType=None `
+          /p:DebugSymbols=false `
+          --self-contained
+          
+    - name: Build ARM64
+      run: |
+        dotnet publish WindowsEdgeLight/WindowsEdgeLight.csproj `
+          -c Release `
+          -r win-arm64 `
+          /p:DebugType=None `
+          /p:DebugSymbols=false `
+          --self-contained
+          
+    - name: Prepare artifacts
+      run: |
+        New-Item -ItemType Directory -Path artifacts -Force
+        $version = "${{ github.ref_name }}" -replace '^v', ''
+        if ("${{ github.event_name }}" -eq "workflow_dispatch") {
+          $version = "${{ github.event.inputs.version }}"
+        }
+        Copy-Item "WindowsEdgeLight/bin/Release/net10.0-windows/win-x64/publish/WindowsEdgeLight.exe" `
+                  "artifacts/WindowsEdgeLight-v$version-win-x64.exe"
+        Copy-Item "WindowsEdgeLight/bin/Release/net10.0-windows/win-arm64/publish/WindowsEdgeLight.exe" `
+                  "artifacts/WindowsEdgeLight-v$version-win-arm64.exe"
+                  
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: WindowsEdgeLight-Release
+        path: artifacts/*.exe
+        
+    - name: Create Release
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: softprops/action-gh-release@v1
+      with:
+        files: artifacts/*.exe
+        body: |
+          ## Windows Edge Light ${{ github.ref_name }}
+          
+          A lightweight WPF application that adds a customizable glowing edge light effect around your primary monitor.
+          
+          ### 📦 Downloads
+          
+          Choose the version for your Windows architecture:
+          
+          - **WindowsEdgeLight-${{ github.ref_name }}-win-x64.exe** - For Intel/AMD 64-bit Windows (most common)
+          - **WindowsEdgeLight-${{ github.ref_name }}-win-arm64.exe** - For ARM64 Windows (Surface Pro X, etc.)
+          
+          Both are single-file, self-contained executables (~70MB) - no .NET installation required!
+          
+          ### 🚀 Features
+          
+          - **Global Hotkeys**: Control from any application
+            - `Ctrl+Shift+L` - Toggle light on/off
+            - `Ctrl+Shift+↑` - Increase brightness
+            - `Ctrl+Shift+↓` - Decrease brightness
+          - **System Tray Icon**: Right-click for menu with all options
+          - **Primary Monitor Display**: Automatically detects and fits your main screen
+          - **DPI Aware**: Works perfectly on 4K displays
+          - **Click-Through**: Won't interfere with your work
+          
+          Created by Scott Hanselman
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
