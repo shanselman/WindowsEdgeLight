@@ -2,6 +2,61 @@
 
 This document explains how the automatic update system has been integrated into Windows Edge Light using [Updatum](https://github.com/sn4k3/Updatum).
 
+## Critical Update Fix (v1.6-v1.7)
+
+**IMPORTANT:** There was a bug in Updatum when handling ZIP files with only a single file. The fix was implemented in v1.6-v1.7:
+
+### The Problem
+- When a ZIP file contained only `WindowsEdgeLight.exe` (single file), Updatum would extract it but then try to run the original ZIP file path as an installer
+- This caused Windows Explorer to fail with "can't find the zip" error
+- The extracted .exe was never properly used for the update
+
+### The Solution
+Two changes were made to fix this:
+
+1. **Modified ZIP structure** (in `.github/workflows/build.yml`):
+   - ZIPs now contain **both** `WindowsEdgeLight.exe` AND `README.md`
+   - This forces Updatum to treat it as a "portable app" (multiple files)
+   - Updatum then properly copies files and restarts the application
+
+2. **Removed installer configuration** (in `App.xaml.cs`):
+   - Removed `InstallUpdateWindowsInstallerArguments = "/qb"`
+   - This property should only be set for actual MSI/EXE installers, not for single-file apps
+   - Leaving it set was confusing Updatum's detection logic
+
+### Current Configuration (v1.7+)
+
+```csharp
+// In App.xaml.cs
+internal static readonly UpdatumManager AppUpdater = new("shanselman", "WindowsEdgeLight")
+{
+    // Default pattern (win-x64) will match our ZIP assets
+    // ZIP files are portable apps with exe and README for proper update handling
+    FetchOnlyLatestRelease = true, // Saves GitHub API rate limits
+    // Specify the executable name for single-file app (without .exe extension)
+    InstallUpdateSingleFileExecutableName = "WindowsEdgeLight",
+};
+```
+
+```powershell
+# In .github/workflows/build.yml - ZIP creation
+New-Item -ItemType Directory -Path "temp-x64" -Force
+Copy-Item "WindowsEdgeLight/bin/Release/net10.0-windows/win-x64/publish/WindowsEdgeLight.exe" -Destination "temp-x64/"
+Copy-Item "README.md" -Destination "temp-x64/"  # ← This is the fix!
+Compress-Archive -Path "temp-x64/*" -DestinationPath "artifacts/WindowsEdgeLight-v$version-win-x64.zip"
+```
+
+### Why This Works
+- Updatum has different code paths for single-file ZIPs vs multi-file ZIPs
+- Single-file extraction has a bug where it updates a local variable but not the asset path
+- Multi-file ZIPs are treated as portable apps with proper batch script generation
+- The batch script correctly copies files and relaunches the application
+
+### Testing Notes
+- Users on v1.5 upgrading to v1.6 may still hit the bug (v1.5 ZIPs were single-file)
+- Users on v1.6+ upgrading to v1.7+ will have the fixed experience
+- Always include at least 2 files in ZIP releases going forward
+
 ## What is Updatum?
 
 Updatum is a lightweight C# library that automates application updates using GitHub Releases. It handles:
@@ -42,18 +97,20 @@ When downloading an update, a progress dialog shows:
 - Download size (MB downloaded / Total MB)
 - Percentage complete
 
-### 4. Installation
+### Installation
 
 After downloading, the user is asked to confirm installation. If confirmed:
-- For single-file executables: Replaces the current executable
-- For MSI installers: Launches the installer
-- For ZIP files: Extracts and updates files
+- **For portable apps (ZIP with multiple files)**: Extracts files, creates a batch script to copy over old files, kills current process, copies files, and relaunches
+- **For single-file executables**: Replaces the current executable and relaunches
+- **For MSI installers**: Launches the installer with specified arguments
+
+**Current configuration uses portable app approach** - ZIPs contain .exe + README.md
 
 ## Configuration
 
 ### Setting Your GitHub Repository
 
-**IMPORTANT:** Update the repository information in `App.xaml.cs`:
+**IMPORTANT:** The repository is currently set to `shanselman/WindowsEdgeLight`. If you fork this, update `App.xaml.cs`:
 
 ```csharp
 internal static readonly UpdatumManager AppUpdater = new("YOUR_GITHUB_USERNAME", "WindowsEdgeLight")
@@ -67,23 +124,17 @@ For Updatum to find your releases, name your GitHub Release assets following thi
 
 **Current naming (used by the GitHub Actions workflow):**
 
-**For Single-File Executables:**
+**For ZIP Files (Portable - RECOMMENDED):**
 ```
-WindowsEdgeLight-v0.7.0-win-x64.exe
-```
-
-**For ZIP Files (Portable):**
-```
-WindowsEdgeLight-v0.7.0-win-x64.zip
+WindowsEdgeLight-v1.7-win-x64.zip
+WindowsEdgeLight-v1.7-win-arm64.zip
 ```
 
-The asset pattern is configured in `App.xaml.cs`:
-```csharp
-AssetRegexPattern = $"WindowsEdgeLight.*win-x64"
-AssetExtensionFilter = "zip"  // Prefers ZIP files for easier updates
-```
+**Important:** ZIP files MUST contain at least 2 files (see Critical Update Fix above). Current ZIPs include:
+- `WindowsEdgeLight.exe`
+- `README.md`
 
-**Note:** The app is configured to prefer ZIP files because they allow Updatum to extract and update the executable more reliably. If only EXE files are present, those will be used instead.
+The asset pattern automatically matches the current platform (win-x64 or win-arm64).
 
 ### Publishing Configuration
 
@@ -91,30 +142,36 @@ When you publish your application, make sure the version number matches:
 
 ```xml
 <!-- In WindowsEdgeLight.csproj -->
-<AssemblyVersion>0.7.0.0</AssemblyVersion>
-<FileVersion>0.7.0.0</FileVersion>
-<Version>0.7</Version>
+<AssemblyVersion>1.7.0.0</AssemblyVersion>
+<FileVersion>1.7.0.0</FileVersion>
+<Version>1.7</Version>
 ```
 
 ## Creating a GitHub Release
 
-1. **Build and publish your app:**
+The GitHub Actions workflow automatically creates releases when you push a tag:
+
+1. **Update version in WindowsEdgeLight.csproj** (e.g., to 1.8)
+2. **Commit and push:**
    ```powershell
-   dotnet publish -c Release
+   git add -A
+   git commit -m "Bump to v1.8 - Description of changes"
+   git tag v1.8
+   git push && git push --tags
    ```
+3. **GitHub Actions will automatically:**
+   - Build win-x64 and win-arm64 versions
+   - Create ZIPs with both .exe and README.md
+   - Create a GitHub Release with the ZIPs attached
+   - Generate release notes
 
-2. **Create a GitHub Release:**
-   - Go to your repository on GitHub
-   - Click "Releases" → "Draft a new release"
-   - Tag: `v0.7.0` (must start with 'v')
-   - Title: `Version 0.7.0`
-   - Description: Add your release notes in Markdown format
-
-3. **Upload the asset:**
-   - Drag and drop your published executable/installer
-   - Name it: `WindowsEdgeLight_win-x64_v0.7.0.exe` (or .msi or .zip)
-
-4. **Publish the release**
+**Manual Release (if needed):**
+1. Go to your repository on GitHub
+2. Click "Releases" → "Draft a new release"
+3. Tag: `v1.8` (must start with 'v')
+4. Title: `Version 1.8`
+5. Upload your ZIP files
+6. Publish the release
 
 ## Release Notes Format
 
@@ -154,10 +211,12 @@ AppUpdater.AutoUpdateCheckTimer.Start();
 
 ### MSI Installer Arguments
 
-For silent/quiet MSI installations:
+**NOTE:** As of v1.6+, we do NOT use `InstallUpdateWindowsInstallerArguments` because we ship portable ZIPs, not installers.
+
+If you switch to MSI installers in the future:
 
 ```csharp
-// Current: Shows basic UI (/qb)
+// Shows basic UI (/qb)
 InstallUpdateWindowsInstallerArguments = "/qb",
 
 // Silent with no UI:
