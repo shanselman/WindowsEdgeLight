@@ -26,9 +26,8 @@
         <!--  Edge Light Frame with Rounded Inner and Outer Edges using Path  -->
         <Path
             x:Name="EdgeLightBorder"
-            Margin="20"
-            HorizontalAlignment="Stretch"
-            VerticalAlignment="Stretch"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
             Stretch="None">
             <Path.Fill>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
@@ -41,7 +40,7 @@
             </Path.Fill>
             <Path.Effect>
                 <DropShadowEffect
-                    BlurRadius="96"
+                    BlurRadius="76"
                     Opacity="1"
                     ShadowDepth="0"
                     Color="#FFFFFF" />
