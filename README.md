@@ -25,7 +25,7 @@ The application creates a smooth, glowing border around the edges of your primar
 - Soft blur effect for a natural glow
 - Minimal UI controls that fade in on hover
 
-![macos-edge-light](https://github.com/user-attachments/assets/f2f932d3-776d-4373-824f-da2551794e71)
+![Windows Edge Light](HeroImage.png)
 
 ## Installation
 
