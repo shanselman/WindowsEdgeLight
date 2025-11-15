@@ -1,44 +1,50 @@
-﻿<Window x:Class="WindowsEdgeLight.MainWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:WindowsEdgeLight"
-        mc:Ignorable="d"
-        Title="Windows Edge Light" 
-        Height="450" Width="800"
-        WindowStyle="None"
-        AllowsTransparency="True"
-        Background="Transparent"
-        Topmost="True"
-        ShowInTaskbar="True"
-        ResizeMode="NoResize"
-        Loaded="Window_Loaded"
-        KeyDown="Window_KeyDown">
-    
+﻿<Window
+    x:Class="WindowsEdgeLight.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:WindowsEdgeLight"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Title="Windows Edge Light"
+    Width="800"
+    Height="450"
+    AllowsTransparency="True"
+    Background="Transparent"
+    KeyDown="Window_KeyDown"
+    Loaded="Window_Loaded"
+    ResizeMode="NoResize"
+    ShowInTaskbar="True"
+    Topmost="True"
+    WindowStyle="None"
+    mc:Ignorable="d">
+
     <Window.TaskbarItemInfo>
-        <TaskbarItemInfo Description="Windows Edge Light - Right-click for options"/>
+        <TaskbarItemInfo Description="Windows Edge Light - Right-click for options" />
     </Window.TaskbarItemInfo>
-    
+
     <Grid x:Name="MainGrid" IsHitTestVisible="False">
-        <!-- Edge Light Frame with Rounded Inner and Outer Edges using Path -->
-        <Path x:Name="EdgeLightBorder" 
-              Margin="20" 
-              Opacity="1.0"
-              Stretch="None"
-              HorizontalAlignment="Stretch"
-              VerticalAlignment="Stretch">
+        <!--  Edge Light Frame with Rounded Inner and Outer Edges using Path  -->
+        <Path
+            x:Name="EdgeLightBorder"
+            Margin="20"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"
+            Stretch="None">
             <Path.Fill>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                    <GradientStop Color="#FFFFFF" Offset="0.0"/>
-                    <GradientStop Color="#F0F0F0" Offset="0.3"/>
-                    <GradientStop Color="#FFFFFF" Offset="0.5"/>
-                    <GradientStop Color="#F0F0F0" Offset="0.7"/>
-                    <GradientStop Color="#FFFFFF" Offset="1.0"/>
+                    <GradientStop Offset="0.0" Color="#FFFFFF" />
+                    <GradientStop Offset="0.3" Color="#F0F0F0" />
+                    <GradientStop Offset="0.5" Color="#FFFFFF" />
+                    <GradientStop Offset="0.7" Color="#F0F0F0" />
+                    <GradientStop Offset="1.0" Color="#FFFFFF" />
                 </LinearGradientBrush>
             </Path.Fill>
             <Path.Effect>
-                <BlurEffect Radius="8"/>
+                <DropShadowEffect
+                    BlurRadius="96"
+                    Opacity="1"
+                    ShadowDepth="0"
+                    Color="#FFFFFF" />
             </Path.Effect>
         </Path>
     </Grid>
