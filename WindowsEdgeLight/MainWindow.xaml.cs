@@ -161,7 +161,7 @@ Version 0.6";
         
         // Position at bottom center of main window
         controlWindow.Left = this.Left + (this.Width - controlWindow.Width) / 2;
-        controlWindow.Top = this.Top + this.Height - controlWindow.Height - 100;
+        controlWindow.Top = this.Top + this.Height - controlWindow.Height - 124;
         
         controlWindow.Show();
     }
