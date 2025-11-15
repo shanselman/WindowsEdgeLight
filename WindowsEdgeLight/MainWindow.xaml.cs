@@ -90,7 +90,10 @@ public partial class MainWindow : Window
 
     private void ShowHelp()
     {
-        var helpMessage = @"Windows Edge Light - Keyboard Shortcuts
+        var version = System.Reflection.Assembly.GetExecutingAssembly()
+            .GetName().Version?.ToString() ?? "Unknown";
+        
+        var helpMessage = $@"Windows Edge Light - Keyboard Shortcuts
 
 💡 Toggle Light:  Ctrl + Shift + L
 🔆 Brightness Up:  Ctrl + Shift + ↑
@@ -102,7 +105,7 @@ public partial class MainWindow : Window
 • Right-click taskbar icon for menu
 
 Created by Scott Hanselman
-Version 0.6";
+Version {version}";
 
         System.Windows.MessageBox.Show(helpMessage, "Windows Edge Light - Help", 
             MessageBoxButton.OK, MessageBoxImage.Information);
