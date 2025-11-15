@@ -7,6 +7,7 @@ A lightweight WPF application that adds a customizable glowing edge light effect
 - **Automatic Updates**: Built-in update system checks GitHub Releases for new versions
 - **Primary Monitor Display**: Automatically detects and displays on your primary monitor, even in multi-monitor setups
 - **DPI Aware**: Properly handles high-DPI displays (4K monitors with scaling)
+- **Fluent Design**: Modern UX that fits in with the Windows look and feel
 - **Click-Through Transparency**: Overlay doesn't interfere with your work - all clicks pass through to applications beneath
 - **Customizable Brightness**: Adjust opacity with easy-to-use controls
 - **Toggle On/Off**: Quickly enable or disable the edge light effect
