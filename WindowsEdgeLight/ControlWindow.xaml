@@ -3,7 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     Title="Controls"
-    Width="186"
+    Width="230"
     Height="48"
     AllowsTransparency="True"
     Background="Transparent"
@@ -36,8 +36,8 @@
                 Margin="4,4,0,4"
                 AutomationProperties.Name="Decrease brightness"
                 Click="BrightnessDown_Click"
-                Content="&#xEC8A;"
-                FontFamily="Segoe Fluent Icons"
+                Content="&#xE708;"
+                FontFamily="Segoe MDL2 Assets"
                 ToolTip="Decrease brightness (Ctrl+Shift+Down)" />
 
             <Button
@@ -47,7 +47,7 @@
                 AutomationProperties.Name="Increase brightness"
                 Click="BrightnessUp_Click"
                 Content="&#xE706;"
-                FontFamily="Segoe Fluent Icons"
+                FontFamily="Segoe MDL2 Assets"
                 ToolTip="Increase brightness (Ctrl+Shift+Up)" />
 
             <Button
@@ -57,8 +57,19 @@
                 AutomationProperties.Name="Toggle light"
                 Click="Toggle_Click"
                 Content="&#xEA80;"
-                FontFamily="Segoe Fluent Icons"
+                FontFamily="Segoe MDL2 Assets"
                 ToolTip="Toggle light (Ctrl+Shift+L)" />
+
+            <Button
+                x:Name="SwitchMonitorButton"
+                Width="40"
+                Height="40"
+                Margin="4,4,0,4"
+                AutomationProperties.Name="Switch monitor"
+                Click="SwitchMonitor_Click"
+                Content="&#xE7F4;"
+                FontFamily="Segoe MDL2 Assets"
+                ToolTip="Switch monitor" />
 
             <Button
                 Width="40"
@@ -67,7 +78,7 @@
                 AutomationProperties.Name="Exit"
                 Click="Close_Click"
                 Content="&#xE711;"
-                FontFamily="Segoe Fluent Icons"
+                FontFamily="Segoe MDL2 Assets"
                 ToolTip="Exit" />
         </StackPanel>
     </Border>

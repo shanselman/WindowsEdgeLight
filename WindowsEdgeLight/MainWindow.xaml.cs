@@ -19,6 +19,10 @@ public partial class MainWindow : Window
     private NotifyIcon? notifyIcon;
     private ControlWindow? controlWindow;
 
+    // Monitor management
+    private int currentMonitorIndex = 0;
+    private Screen[] availableMonitors = Array.Empty<Screen>();
+
     // Global hotkey IDs
     private const int HOTKEY_TOGGLE = 1;
     private const int HOTKEY_BRIGHTNESS_UP = 2;
@@ -113,11 +117,32 @@ Version {version}";
 
     private void SetupWindow()
     {
-        var primaryScreen = System.Windows.Forms.Screen.PrimaryScreen;
-        if (primaryScreen == null) return;
-        
+        // Initialize available monitors on first setup
+        if (availableMonitors.Length == 0)
+        {
+            availableMonitors = Screen.AllScreens;
+            
+            // Find the primary monitor index
+            for (int i = 0; i < availableMonitors.Length; i++)
+            {
+                if (availableMonitors[i].Primary)
+                {
+                    currentMonitorIndex = i;
+                    break;
+                }
+            }
+        }
+
+        var targetScreen = availableMonitors.Length > 0 ? availableMonitors[currentMonitorIndex] : Screen.PrimaryScreen;
+        if (targetScreen == null) return;
+
+        SetupWindowForScreen(targetScreen);
+    }
+
+    private void SetupWindowForScreen(Screen screen)
+    {
         // Use WorkingArea instead of Bounds to exclude taskbar
-        var workingArea = primaryScreen.WorkingArea;
+        var workingArea = screen.WorkingArea;
         
         // Get DPI scale factor
         var source = PresentationSource.FromVisual(this);
@@ -156,16 +181,16 @@ Version {version}";
         // Hook into Windows message processing
         HwndSource source = HwndSource.FromHwnd(hwnd);
         source.AddHook(HwndHook);
+        
+        // Listen for window size/location changes (docking/undocking)
+        this.SizeChanged += Window_SizeChanged;
+        this.LocationChanged += Window_LocationChanged;
     }
 
     private void CreateControlWindow()
     {
         controlWindow = new ControlWindow(this);
-        
-        // Position at bottom center of main window
-        controlWindow.Left = this.Left + (this.Width - controlWindow.Width) / 2;
-        controlWindow.Top = this.Top + this.Height - controlWindow.Height - 124;
-        
+        RepositionControlWindow();
         controlWindow.Show();
     }
 
@@ -281,6 +306,107 @@ Version {version}";
     {
         currentOpacity = Math.Max(MinOpacity, currentOpacity - OpacityStep);
         EdgeLightBorder.Opacity = currentOpacity;
+    }
+
+    public void MoveToNextMonitor()
+    {
+        // Refresh monitor list in case of hot-plug/unplug
+        availableMonitors = Screen.AllScreens;
+
+        if (availableMonitors.Length <= 1)
+        {
+            // Only one monitor, nothing to do
+            return;
+        }
+
+        // Bounds check: if current monitor no longer exists, reset to primary
+        if (currentMonitorIndex >= availableMonitors.Length)
+        {
+            // Find primary monitor again
+            currentMonitorIndex = 0;
+            for (int i = 0; i < availableMonitors.Length; i++)
+            {
+                if (availableMonitors[i].Primary)
+                {
+                    currentMonitorIndex = i;
+                    break;
+                }
+            }
+        }
+
+        // Cycle to next monitor
+        currentMonitorIndex = (currentMonitorIndex + 1) % availableMonitors.Length;
+        var targetScreen = availableMonitors[currentMonitorIndex];
+
+        // Reposition main window to new monitor
+        SetupWindowForScreen(targetScreen);
+        
+        // Recreate the frame geometry for new dimensions
+        CreateFrameGeometry();
+        
+        // Reposition control window to follow
+        RepositionControlWindow();
+    }
+
+    private void RepositionControlWindow()
+    {
+        if (controlWindow == null) return;
+
+        // Position at bottom center of main window
+        controlWindow.Left = this.Left + (this.Width - controlWindow.Width) / 2;
+        controlWindow.Top = this.Top + this.Height - controlWindow.Height - 124;
+    }
+
+    public bool HasMultipleMonitors()
+    {
+        // Refresh monitor count to handle hot-plug scenarios
+        availableMonitors = Screen.AllScreens;
+        return availableMonitors.Length > 1;
+    }
+
+    private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        // Recreate geometry when window size changes (e.g., different monitor resolution)
+        if (EdgeLightBorder != null)
+        {
+            CreateFrameGeometry();
+        }
+        
+        // Reposition control window
+        RepositionControlWindow();
+        
+        // Update which monitor we're actually on
+        UpdateCurrentMonitorIndex();
+    }
+
+    private void Window_LocationChanged(object? sender, EventArgs e)
+    {
+        // Reposition control window when main window moves
+        RepositionControlWindow();
+        
+        // Update which monitor we're actually on
+        UpdateCurrentMonitorIndex();
+    }
+
+    private void UpdateCurrentMonitorIndex()
+    {
+        // Refresh monitor list
+        availableMonitors = Screen.AllScreens;
+        
+        // Figure out which monitor we're actually on now
+        var windowCenter = new System.Drawing.Point(
+            (int)(this.Left + this.Width / 2),
+            (int)(this.Top + this.Height / 2)
+        );
+        
+        for (int i = 0; i < availableMonitors.Length; i++)
+        {
+            if (availableMonitors[i].Bounds.Contains(windowCenter))
+            {
+                currentMonitorIndex = i;
+                break;
+            }
+        }
     }
 
     private void BrightnessUp_Click(object sender, RoutedEventArgs e)

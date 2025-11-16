@@ -10,6 +10,14 @@ public partial class ControlWindow : Window
     {
         InitializeComponent();
         mainWindow = main;
+        
+        // Disable switch monitor button if only one monitor
+        UpdateMonitorButtonState();
+    }
+
+    private void UpdateMonitorButtonState()
+    {
+        SwitchMonitorButton.IsEnabled = mainWindow.HasMultipleMonitors();
     }
 
     private void BrightnessDown_Click(object sender, RoutedEventArgs e)
@@ -25,6 +33,11 @@ public partial class ControlWindow : Window
     private void Toggle_Click(object sender, RoutedEventArgs e)
     {
         mainWindow.HandleToggle();
+    }
+
+    private void SwitchMonitor_Click(object sender, RoutedEventArgs e)
+    {
+        mainWindow.MoveToNextMonitor();
     }
 
     private void Close_Click(object sender, RoutedEventArgs e)
