@@ -11,24 +11,24 @@ assembly-versioning-scheme: MajorMinorPatch
 branches:
   main:
     regex: ^(master|main)$
-    tag: ''
+    label: ''
     increment: Patch
     prevent-increment-of-merged-branch-version: true
   feature:
     regex: ^(feature|feat|features?)[/-]
-    tag: 'alpha'
+    label: 'alpha'
     increment: Minor
   develop:
     regex: ^develop$
-    tag: 'alpha'
+    label: 'alpha'
     increment: Minor
   release:
     regex: ^(release|releases?)[/-]
-    tag: 'rc'
+    label: 'rc'
     increment: Patch
   hotfix:
     regex: ^hotfix(es)?[/-]
-    tag: 'hotfix'
+    label: 'hotfix'
     increment: Patch
 
 ignore:
