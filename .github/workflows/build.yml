@@ -32,12 +32,14 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore WindowsEdgeLight/WindowsEdgeLight.csproj
 
-    - name: GitVersion
-      uses: gittools/actions/gitversion@v0.9.12
-      id: gitversion
+    - name: Install GitVersion
+      uses: gittools/actions/gitversion/setup@v4
       with:
-        useConfigFile: false
-        preferBundledVersion: true
+        versionSpec: '6.4.x'
+
+    - name: GitVersion
+      uses: gittools/actions/gitversion/execute@v4
+      id: gitversion
 
     - name: Set version environment variables
       shell: pwsh
@@ -48,14 +50,14 @@ jobs:
         if ($isManual -and -not [string]::IsNullOrEmpty($inputVersion)) {
           $version = $inputVersion
         } else {
-          $version = '${{ steps.gitversion.outputs.SemVer }}'
+          $version = '${{ steps.gitversion.outputs.semVer }}'
         }
 
         # Full semver including build metadata
-        $fullVersion = '${{ steps.gitversion.outputs.FullSemVer }}'
+        $fullVersion = '${{ steps.gitversion.outputs.fullSemVer }}'
 
         # Assembly version must be 4-part (x.y.z.w)
-        $assemblyVersion = "${{ steps.gitversion.outputs.Major }}.${{ steps.gitversion.outputs.Minor }}.${{ steps.gitversion.outputs.Patch }}.0"
+        $assemblyVersion = "${{ steps.gitversion.outputs.major }}.${{ steps.gitversion.outputs.minor }}.${{ steps.gitversion.outputs.patch }}.0"
 
         Write-Host "Using semantic version: $version"
         Write-Host "Using full version: $fullVersion"
