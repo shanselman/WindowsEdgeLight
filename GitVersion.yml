@@ -1,0 +1,39 @@
+mode: ContinuousDelivery
+tag-prefix: 'v'
+# When tag-prefix is 'v' and your tags are like 'v1.2.3', GitVersion will
+# parse them as semantic versions and set semVer/fullSemVer accordingly.
+
+# Optional: set a sensible starting point for next versions
+next-version: 2.0.0
+
+assembly-versioning-scheme: MajorMinorPatch
+
+branches:
+  main:
+    regex: ^(master|main)$
+    tag: ''
+    increment: Patch
+    prevent-increment-of-merged-branch-version: true
+  feature:
+    regex: ^(feature|feat|features?)[/-]
+    tag: 'alpha'
+    increment: Minor
+  develop:
+    regex: ^develop$
+    tag: 'alpha'
+    increment: Minor
+  release:
+    regex: ^(release|releases?)[/-]
+    tag: 'rc'
+    increment: Patch
+  hotfix:
+    regex: ^hotfix(es)?[/-]
+    tag: 'hotfix'
+    increment: Patch
+
+ignore:
+  sha: []
+
+# You can tune this file to match your versioning and branching strategy.
+# This configuration prefers full semantic versions from tags that start with 'v',
+# matching the GitHub Actions `on.push.tags: 'v*'` trigger used in `.github/workflows/build.yml`.
