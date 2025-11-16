@@ -36,8 +36,8 @@
                 Margin="4,4,0,4"
                 AutomationProperties.Name="Decrease brightness"
                 Click="BrightnessDown_Click"
-                Content="&#xEC8A;"
-                FontFamily="Segoe Fluent Icons"
+                Content="&#xE708;"
+                FontFamily="Segoe MDL2 Assets"
                 ToolTip="Decrease brightness (Ctrl+Shift+Down)" />
 
             <Button
@@ -47,7 +47,7 @@
                 AutomationProperties.Name="Increase brightness"
                 Click="BrightnessUp_Click"
                 Content="&#xE706;"
-                FontFamily="Segoe Fluent Icons"
+                FontFamily="Segoe MDL2 Assets"
                 ToolTip="Increase brightness (Ctrl+Shift+Up)" />
 
             <Button
@@ -57,7 +57,7 @@
                 AutomationProperties.Name="Toggle light"
                 Click="Toggle_Click"
                 Content="&#xEA80;"
-                FontFamily="Segoe Fluent Icons"
+                FontFamily="Segoe MDL2 Assets"
                 ToolTip="Toggle light (Ctrl+Shift+L)" />
 
             <Button
@@ -67,7 +67,7 @@
                 AutomationProperties.Name="Exit"
                 Click="Close_Click"
                 Content="&#xE711;"
-                FontFamily="Segoe Fluent Icons"
+                FontFamily="Segoe MDL2 Assets"
                 ToolTip="Exit" />
         </StackPanel>
     </Border>
