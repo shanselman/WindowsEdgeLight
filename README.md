@@ -10,6 +10,7 @@ A lightweight WPF application that adds a customizable glowing edge light effect
 - **Fluent Design**: Modern UX that fits in with the Windows look and feel
 - **Click-Through Transparency**: Overlay doesn't interfere with your work - all clicks pass through to applications beneath
 - **Customizable Brightness**: Adjust opacity with easy-to-use controls
+ - **Adjustable Color Temperature**: Shift the edge light from cooler (blue-ish) to warmer (amber) tones
 - **Toggle On/Off**: Quickly enable or disable the edge light effect
 - **Always On Top**: Stays visible above all other windows
 - **Keyboard Shortcuts**: 
@@ -79,7 +80,9 @@ The executable will be in `bin\Release\net10.0-windows\win-x64\publish\WindowsEd
 3. Hover over the top-right corner to reveal controls:
    - 🔅 **Decrease Brightness** - Reduces opacity
    - 🔆 **Increase Brightness** - Increases opacity
-   - 💡 **Toggle Light** - Turn the effect on/off
+   - 🌡️ **Cooler Color** - Shifts the glow towards a cooler, blue-ish white
+   - � **Warmer Color** - Shifts the glow towards a warmer, amber tone
+   - �💡 **Toggle Light** - Turn the effect on/off
    - ✖ **Exit** - Close the application
 
 ### Keyboard Shortcuts
@@ -87,7 +90,7 @@ The executable will be in `bin\Release\net10.0-windows\win-x64\publish\WindowsEd
 - **Ctrl+Shift+L**: Toggle the edge light on/off
 - **Ctrl+Shift+Up**: Increase brightness
 - **Ctrl+Shift+Down**: Decrease brightness
-- **Taskbar**: Right-click the taskbar icon to close the application
+- **Taskbar**: Right-click the taskbar icon for a menu with toggle, brightness, and color temperature controls
 
 ## Technical Details
 

@@ -30,6 +30,16 @@ public partial class ControlWindow : Window
         mainWindow.IncreaseBrightness();
     }
 
+    private void ColorCooler_Click(object sender, RoutedEventArgs e)
+    {
+        mainWindow.DecreaseColorTemperature();
+    }
+
+    private void ColorWarmer_Click(object sender, RoutedEventArgs e)
+    {
+        mainWindow.IncreaseColorTemperature();
+    }
+
     private void Toggle_Click(object sender, RoutedEventArgs e)
     {
         mainWindow.HandleToggle();

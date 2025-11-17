@@ -15,6 +15,13 @@ public partial class MainWindow : Window
     private const double OpacityStep = 0.15;
     private const double MinOpacity = 0.2;
     private const double MaxOpacity = 1.0;
+
+    // Color temperature ("cool" blue-ish to "warm" amber-ish)
+    // We'll model this as a simple 0-1 slider where 0 = coolest, 1 = warmest.
+    private double _colorTemperature = 0.5;
+    private const double ColorTempStep = 0.1;
+    private const double MinColorTemp = 0.0;
+    private const double MaxColorTemp = 1.0;
     
     private NotifyIcon? notifyIcon;
     private ControlWindow? controlWindow;
@@ -79,14 +86,16 @@ public partial class MainWindow : Window
         notifyIcon.Text = "Windows Edge Light - Right-click for options";
         notifyIcon.Visible = true;
         
-        var contextMenu = new ContextMenuStrip();
-        contextMenu.Items.Add("📋 Keyboard Shortcuts", null, (s, e) => ShowHelp());
-        contextMenu.Items.Add(new ToolStripSeparator());
-        contextMenu.Items.Add("💡 Toggle Light (Ctrl+Shift+L)", null, (s, e) => ToggleLight());
-        contextMenu.Items.Add("🔆 Brightness Up (Ctrl+Shift+↑)", null, (s, e) => IncreaseBrightness());
-        contextMenu.Items.Add("🔅 Brightness Down (Ctrl+Shift+↓)", null, (s, e) => DecreaseBrightness());
-        contextMenu.Items.Add(new ToolStripSeparator());
-        contextMenu.Items.Add("✖ Exit", null, (s, e) => System.Windows.Application.Current.Shutdown());
+    var contextMenu = new ContextMenuStrip();
+    contextMenu.Items.Add("📋 Keyboard Shortcuts", null, (s, e) => ShowHelp());
+    contextMenu.Items.Add(new ToolStripSeparator());
+    contextMenu.Items.Add("💡 Toggle Light (Ctrl+Shift+L)", null, (s, e) => ToggleLight());
+    contextMenu.Items.Add("🔆 Brightness Up (Ctrl+Shift+↑)", null, (s, e) => IncreaseBrightness());
+    contextMenu.Items.Add("🔅 Brightness Down (Ctrl+Shift+↓)", null, (s, e) => DecreaseBrightness());
+    contextMenu.Items.Add("K+ Cooler Light", null, (s, e) => DecreaseColorTemperature());
+    contextMenu.Items.Add("K- Warmer Light", null, (s, e) => IncreaseColorTemperature());
+    contextMenu.Items.Add(new ToolStripSeparator());
+    contextMenu.Items.Add("✖ Exit", null, (s, e) => System.Windows.Application.Current.Shutdown());
         
         notifyIcon.ContextMenuStrip = contextMenu;
         notifyIcon.DoubleClick += (s, e) => ShowHelp();
@@ -102,6 +111,8 @@ public partial class MainWindow : Window
 💡 Toggle Light:  Ctrl + Shift + L
 🔆 Brightness Up:  Ctrl + Shift + ↑
 🔅 Brightness Down:  Ctrl + Shift + ↓
+🌡️ Cooler Color:  Use tray menu or control window
+🔥 Warmer Color:  Use tray menu or control window
 
 💡 Features:
 • Click-through overlay - won't interfere with your work
@@ -306,6 +317,54 @@ Version {version}";
     {
         currentOpacity = Math.Max(MinOpacity, currentOpacity - OpacityStep);
         EdgeLightBorder.Opacity = currentOpacity;
+    }
+
+    public void IncreaseColorTemperature()
+    {
+        SetColorTemperature(_colorTemperature + ColorTempStep);
+    }
+
+    public void DecreaseColorTemperature()
+    {
+        SetColorTemperature(_colorTemperature - ColorTempStep);
+    }
+
+    public void SetColorTemperature(double value)
+    {
+        _colorTemperature = Math.Max(MinColorTemp, Math.Min(MaxColorTemp, value));
+
+        // Map 0-1 slider to a simple cool-to-warm gradient.
+        // We'll bias the inner gradient stops from blueish-white (cool) to amber (warm).
+        // NOTE: This assumes the brush defined in XAML is still a LinearGradientBrush.
+        if (EdgeLightBorder.Fill is LinearGradientBrush brush && brush.GradientStops.Count >= 3)
+        {
+            // Cool: RGB ~ (220, 235, 255), Warm: RGB ~ (255, 220, 180)
+            System.Windows.Media.Color Lerp(System.Windows.Media.Color a, System.Windows.Media.Color b, double t)
+            {
+                byte LerpByte(byte x, byte y, double tt) => (byte)(x + (y - x) * tt);
+
+                return System.Windows.Media.Color.FromArgb(
+                    255,
+                    LerpByte(a.R, b.R, t),
+                    LerpByte(a.G, b.G, t),
+                    LerpByte(a.B, b.B, t));
+            }
+
+            var cool = System.Windows.Media.Color.FromRgb(220, 235, 255);
+            var warm = System.Windows.Media.Color.FromRgb(255, 220, 180);
+
+            var midColor = Lerp(cool, warm, _colorTemperature);
+
+            // Update a couple of inner stops to shift perceived temperature
+            // Keep outer rim relatively neutral for consistent edge.
+            foreach (var stop in brush.GradientStops)
+            {
+                if (stop.Offset is > 0.2 and < 0.8)
+                {
+                    stop.Color = midColor;
+                }
+            }
+        }
     }
 
     public void MoveToNextMonitor()
