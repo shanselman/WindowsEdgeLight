@@ -46,5 +46,14 @@
                     Color="#FFFFFF" />
             </Path.Effect>
         </Path>
+
+        <!-- Overlay canvas for cursor ring -->
+        <Canvas x:Name="CursorOverlay" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsHitTestVisible="False">
+            <Ellipse x:Name="HoverCursorRing"
+                     Width="140" Height="140"
+                     Fill="Transparent"
+                     Visibility="Collapsed">
+            </Ellipse>
+        </Canvas>
     </Grid>
 </Window>
