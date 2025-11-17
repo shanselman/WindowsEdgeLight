@@ -218,49 +218,29 @@ When a tag is pushed, the workflow:
 
 ## Version Management
 
-### Updating Version
+### Automatic Versioning with GitVersion
 
-Edit `WindowsEdgeLight.csproj`:
-
-```xml
-<AssemblyVersion>0.5.0.0</AssemblyVersion>
-<FileVersion>0.5.0.0</FileVersion>
-<Version>0.5</Version>
-```
+This project uses **GitVersion** for automatic semantic versioning. Versions are determined by Git tags - no manual version editing needed.
 
 ### Creating a Release
 
-1. **Update version** in `.csproj` file
-2. **Commit changes**:
+1. **Commit your changes**:
    ```bash
    git add -A
-   git commit -m "Bump version to 0.5"
+   git commit -m "Add new feature"
    git push
    ```
 
-3. **Create and push tag**:
+2. **Create and push a version tag**:
    ```bash
-   git tag v0.5
-   git push origin v0.5
+   git tag v0.7.0
+   git push origin v0.7.0
    ```
 
-4. **GitHub Actions** will automatically build and create the release
-
-### Manual Release (Alternative)
-
-If you prefer to build locally and create releases manually:
-
-```bash
-# Build both versions
-.\build.ps1 -Version "0.5"
-
-# Create release with GitHub CLI
-gh release create v0.5 `
-  --title "Windows Edge Light v0.5" `
-  --notes "Release notes here..." `
-  publish\WindowsEdgeLight-v0.5-win-x64.exe `
-  publish\WindowsEdgeLight-v0.5-win-arm64.exe
-```
+3. **Done!** GitHub Actions automatically:
+   - Calculates version from tag
+   - Builds both x64 and ARM64
+   - Creates GitHub release with binaries
 
 ---
 
