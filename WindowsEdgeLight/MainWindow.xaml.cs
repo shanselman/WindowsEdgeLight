@@ -92,8 +92,8 @@ public partial class MainWindow : Window
     contextMenu.Items.Add("💡 Toggle Light (Ctrl+Shift+L)", null, (s, e) => ToggleLight());
     contextMenu.Items.Add("🔆 Brightness Up (Ctrl+Shift+↑)", null, (s, e) => IncreaseBrightness());
     contextMenu.Items.Add("🔅 Brightness Down (Ctrl+Shift+↓)", null, (s, e) => DecreaseBrightness());
-    contextMenu.Items.Add("🌡️ Cooler Color", null, (s, e) => DecreaseColorTemperature());
-    contextMenu.Items.Add("🔥 Warmer Color", null, (s, e) => IncreaseColorTemperature());
+    contextMenu.Items.Add("K+ Cooler Light", null, (s, e) => DecreaseColorTemperature());
+    contextMenu.Items.Add("K- Warmer Light", null, (s, e) => IncreaseColorTemperature());
     contextMenu.Items.Add(new ToolStripSeparator());
     contextMenu.Items.Add("✖ Exit", null, (s, e) => System.Windows.Application.Current.Shutdown());
         
