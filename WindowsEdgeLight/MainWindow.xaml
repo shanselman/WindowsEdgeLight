@@ -12,7 +12,6 @@
     Background="Transparent"
     KeyDown="Window_KeyDown"
     Loaded="Window_Loaded"
-    Unloaded="Window_Unloaded"
     ResizeMode="NoResize"
     ShowInTaskbar="True"
     Topmost="True"

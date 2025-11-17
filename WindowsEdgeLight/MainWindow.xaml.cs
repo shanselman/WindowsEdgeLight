@@ -41,7 +41,46 @@ public partial class MainWindow : Window
     [DllImport("user32.dll")]
     private static extern bool UnregisterHotKey(IntPtr hWnd, int id);
 
-    private DispatcherTimer? cursorMonitorTimer;
+    // Mouse hook P/Invoke declarations
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern IntPtr SetWindowsHookEx(int idHook, LowLevelMouseProc lpfn, IntPtr hMod, uint dwThreadId);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool UnhookWindowsHookEx(IntPtr hhk);
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, IntPtr lParam);
+
+    [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+    private static extern IntPtr GetModuleHandle(string lpModuleName);
+
+    private const int WH_MOUSE_LL = 14;
+    private const int WM_MOUSEMOVE = 0x0200;
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct MSLLHOOKSTRUCT
+    {
+        public POINT pt;
+        public uint mouseData;
+        public uint flags;
+        public uint time;
+        public IntPtr dwExtraInfo;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct POINT
+    {
+        public int x;
+        public int y;
+    }
+
+    private delegate IntPtr LowLevelMouseProc(int nCode, IntPtr wParam, IntPtr lParam);
+
+    // Mouse hook management
+    private IntPtr mouseHookHandle = IntPtr.Zero;
+    private LowLevelMouseProc? mouseHookCallback;
+
     private Rect? frameOuterRect;
     private Rect? frameInnerRect;
     private readonly Ellipse? hoverCursorRing;
@@ -198,22 +237,49 @@ Version {version}";
         this.SizeChanged += Window_SizeChanged;
         this.LocationChanged += Window_LocationChanged;
 
-        StartCursorMonitoring();
+        InstallMouseHook();
     }
 
-    private void Window_Unloaded(object sender, RoutedEventArgs e)
+    private void InstallMouseHook()
     {
-        cursorMonitorTimer?.Stop();
+        // Store callback to prevent garbage collection
+        mouseHookCallback = MouseHookProc;
+        
+        using var curProcess = System.Diagnostics.Process.GetCurrentProcess();
+        using var curModule = curProcess.MainModule;
+        if (curModule != null)
+        {
+            mouseHookHandle = SetWindowsHookEx(WH_MOUSE_LL, mouseHookCallback, 
+                GetModuleHandle(curModule.ModuleName), 0);
+        }
     }
 
-    private void StartCursorMonitoring()
+    private void UninstallMouseHook()
     {
-        cursorMonitorTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(75) };
-        cursorMonitorTimer.Tick += CursorMonitorTimer_Tick;
-        cursorMonitorTimer.Start();
+        if (mouseHookHandle != IntPtr.Zero)
+        {
+            UnhookWindowsHookEx(mouseHookHandle);
+            mouseHookHandle = IntPtr.Zero;
+        }
     }
 
-    private void CursorMonitorTimer_Tick(object? sender, EventArgs e)
+    private IntPtr MouseHookProc(int nCode, IntPtr wParam, IntPtr lParam)
+    {
+        if (nCode >= 0 && wParam == (IntPtr)WM_MOUSEMOVE)
+        {
+            var hookStruct = Marshal.PtrToStructure<MSLLHOOKSTRUCT>(lParam);
+            
+            // Dispatch to UI thread for WPF operations
+            Dispatcher.BeginInvoke(new Action(() => 
+            {
+                HandleMouseMove(hookStruct.pt.x, hookStruct.pt.y);
+            }), System.Windows.Threading.DispatcherPriority.Input);
+        }
+
+        return CallNextHookEx(mouseHookHandle, nCode, wParam, lParam);
+    }
+
+    private void HandleMouseMove(int screenX, int screenY)
     {
         if (!isLightOn)
         {
@@ -239,8 +305,7 @@ Version {version}";
             return;
         }
 
-        var cursorPtScreen = System.Windows.Forms.Cursor.Position;
-        var windowPt = PointFromScreen(new System.Windows.Point(cursorPtScreen.X, cursorPtScreen.Y));
+        var windowPt = PointFromScreen(new System.Windows.Point(screenX, screenY));
         bool overFrame = frameOuterRect.Value.Contains(windowPt) && !frameInnerRect.Value.Contains(windowPt);
 
         if (overFrame)
@@ -346,6 +411,8 @@ Version {version}";
 
     protected override void OnClosed(EventArgs e)
     {
+        UninstallMouseHook();
+        
         var hwnd = new WindowInteropHelper(this).Handle;
         UnregisterHotKey(hwnd, HOTKEY_TOGGLE);
         UnregisterHotKey(hwnd, HOTKEY_BRIGHTNESS_UP);
