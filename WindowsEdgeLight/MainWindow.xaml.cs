@@ -1,10 +1,12 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.IO;
+using System.Runtime.InteropServices;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
-using System.Windows.Forms;
-using System.IO;
+using System.Windows.Shapes;
+using System.Windows.Threading;
 
 namespace WindowsEdgeLight;
 
@@ -39,6 +41,54 @@ public partial class MainWindow : Window
     [DllImport("user32.dll")]
     private static extern bool UnregisterHotKey(IntPtr hWnd, int id);
 
+    // Mouse hook P/Invoke declarations
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern IntPtr SetWindowsHookEx(int idHook, LowLevelMouseProc lpfn, IntPtr hMod, uint dwThreadId);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool UnhookWindowsHookEx(IntPtr hhk);
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, IntPtr lParam);
+
+    [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+    private static extern IntPtr GetModuleHandle(string lpModuleName);
+
+    private const int WH_MOUSE_LL = 14;
+    private const int WM_MOUSEMOVE = 0x0200;
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct MSLLHOOKSTRUCT
+    {
+        public POINT pt;
+        public uint mouseData;
+        public uint flags;
+        public uint time;
+        public IntPtr dwExtraInfo;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct POINT
+    {
+        public int x;
+        public int y;
+    }
+
+    private delegate IntPtr LowLevelMouseProc(int nCode, IntPtr wParam, IntPtr lParam);
+
+    // Mouse hook management
+    private IntPtr mouseHookHandle = IntPtr.Zero;
+    private LowLevelMouseProc? mouseHookCallback;
+
+    private Rect? frameOuterRect;
+    private Rect? frameInnerRect;
+    private readonly Ellipse? hoverCursorRing;
+    // Added fields for hole effect
+    private Geometry? baseFrameGeometry; // original frame geometry (outer minus inner)
+    private double pathOffsetX; // offset of geometry within window
+    private double pathOffsetY;
+
     private const uint MOD_CONTROL = 0x0002;
     private const uint MOD_SHIFT = 0x0004;
     private const uint VK_L = 0x4C;
@@ -48,6 +98,7 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        hoverCursorRing = FindName("HoverCursorRing") as Ellipse;
         SetupNotifyIcon();
     }
 
@@ -58,7 +109,7 @@ public partial class MainWindow : Window
         // Load icon from embedded resource or file
         try
         {
-            var iconPath = Path.Combine(AppContext.BaseDirectory, "ringlight_cropped.ico");
+            var iconPath = System.IO.Path.Combine(AppContext.BaseDirectory, "ringlight_cropped.ico");
             if (File.Exists(iconPath))
             {
                 notifyIcon.Icon = new System.Drawing.Icon(iconPath);
@@ -185,6 +236,126 @@ Version {version}";
         // Listen for window size/location changes (docking/undocking)
         this.SizeChanged += Window_SizeChanged;
         this.LocationChanged += Window_LocationChanged;
+
+        InstallMouseHook();
+    }
+
+    private void InstallMouseHook()
+    {
+        // Store callback to prevent garbage collection
+        mouseHookCallback = MouseHookProc;
+        
+        using var curProcess = System.Diagnostics.Process.GetCurrentProcess();
+        using var curModule = curProcess.MainModule;
+        if (curModule != null)
+        {
+            mouseHookHandle = SetWindowsHookEx(WH_MOUSE_LL, mouseHookCallback, 
+                GetModuleHandle(curModule.ModuleName), 0);
+        }
+    }
+
+    private void UninstallMouseHook()
+    {
+        if (mouseHookHandle != IntPtr.Zero)
+        {
+            UnhookWindowsHookEx(mouseHookHandle);
+            mouseHookHandle = IntPtr.Zero;
+        }
+    }
+
+    private IntPtr MouseHookProc(int nCode, IntPtr wParam, IntPtr lParam)
+    {
+        if (nCode >= 0 && wParam == (IntPtr)WM_MOUSEMOVE)
+        {
+            var hookStruct = Marshal.PtrToStructure<MSLLHOOKSTRUCT>(lParam);
+            
+            // Dispatch to UI thread for WPF operations
+            Dispatcher.BeginInvoke(new Action(() => 
+            {
+                HandleMouseMove(hookStruct.pt.x, hookStruct.pt.y);
+            }), System.Windows.Threading.DispatcherPriority.Input);
+        }
+
+        return CallNextHookEx(mouseHookHandle, nCode, wParam, lParam);
+    }
+
+    private void HandleMouseMove(int screenX, int screenY)
+    {
+        if (!isLightOn)
+        {
+            if (EdgeLightBorder.Visibility != Visibility.Collapsed)
+            {
+                EdgeLightBorder.Visibility = Visibility.Collapsed;
+            }
+
+            if (hoverCursorRing != null && hoverCursorRing.Visibility != Visibility.Collapsed)
+            {
+                hoverCursorRing.Visibility = Visibility.Collapsed;
+            }
+            // Restore original geometry if previously punched
+            if (baseFrameGeometry != null && EdgeLightBorder.Data != baseFrameGeometry)
+            {
+                EdgeLightBorder.Data = baseFrameGeometry;
+            }
+
+            return;
+        }
+        if (frameOuterRect == null || frameInnerRect == null || hoverCursorRing == null || baseFrameGeometry == null)
+        {
+            return;
+        }
+
+        var windowPt = PointFromScreen(new System.Windows.Point(screenX, screenY));
+
+        // Existing frame band detection (outer minus inner)
+        bool inFrameBand = frameOuterRect.Value.Contains(windowPt) && !frameInnerRect.Value.Contains(windowPt);
+
+        // Early detection zone just inside the inner edge: a band with thickness = hole radius (cursor ring radius)
+        double ringDiameter = hoverCursorRing.Width;
+        double holeRadius = ringDiameter / 2; // match ring size
+        var innerProximityRect = new Rect(
+            frameInnerRect.Value.X + holeRadius,
+            frameInnerRect.Value.Y + holeRadius,
+            frameInnerRect.Value.Width - (holeRadius * 2),
+            frameInnerRect.Value.Height - (holeRadius * 2));
+
+        // Near from inside means inside innerRect but within holeRadius of its edge (i.e., not deep inside innerProximityRect)
+        bool nearFromInside = frameInnerRect.Value.Contains(windowPt) && !innerProximityRect.Contains(windowPt);
+
+        bool overFrame = inFrameBand || nearFromInside;
+
+        if (overFrame)
+        {
+            Canvas.SetLeft(hoverCursorRing, windowPt.X - ringDiameter / 2);
+            Canvas.SetTop(hoverCursorRing, windowPt.Y - ringDiameter / 2);
+            if (hoverCursorRing.Visibility != Visibility.Visible)
+            {
+                hoverCursorRing.Visibility = Visibility.Visible;
+            }
+
+            // Punch a transparent hole under the ring by excluding a circle geometry from the frame
+            // Convert window coordinates to geometry local coordinates by subtracting stored offsets
+            var localCenter = new System.Windows.Point(windowPt.X - pathOffsetX, windowPt.Y - pathOffsetY);
+            var hole = new EllipseGeometry(localCenter, holeRadius, holeRadius);
+            EdgeLightBorder.Data = new CombinedGeometry(GeometryCombineMode.Exclude, baseFrameGeometry, hole);
+        }
+        else
+        {
+            if (hoverCursorRing.Visibility != Visibility.Collapsed)
+            {
+                hoverCursorRing.Visibility = Visibility.Collapsed;
+            }
+
+            if (EdgeLightBorder.Visibility != Visibility.Visible)
+            {
+                EdgeLightBorder.Visibility = Visibility.Visible;
+            }
+            // Restore original geometry (remove hole)
+            if (baseFrameGeometry != null && EdgeLightBorder.Data != baseFrameGeometry)
+            {
+                EdgeLightBorder.Data = baseFrameGeometry;
+            }
+        }
     }
 
     private void CreateControlWindow()
@@ -216,8 +387,15 @@ Version {version}";
         
         // Combine: outer minus inner = frame
         var frameGeometry = new CombinedGeometry(GeometryCombineMode.Exclude, outerRect, innerRect);
-        
+        baseFrameGeometry = frameGeometry; // store original
         EdgeLightBorder.Data = frameGeometry;
+        pathOffsetX = (ActualWidth - width) / 2.0; // store offsets for local coordinate conversion
+        pathOffsetY = (ActualHeight - height) / 2.0;
+        // Expand outer and contract inner rects for earlier hover detection based on ring hole radius.
+        double ringDiameter = hoverCursorRing?.Width ?? 0;
+        double holeRadius = ringDiameter / 2.0;
+        frameOuterRect = new Rect(pathOffsetX - holeRadius, pathOffsetY - holeRadius, width + holeRadius * 2, height + holeRadius * 2);
+        frameInnerRect = new Rect(pathOffsetX + frameThickness + holeRadius, pathOffsetY + frameThickness + holeRadius, width - (frameThickness * 2) - holeRadius * 2, height - (frameThickness * 2) - holeRadius * 2);
     }
 
     private IntPtr HwndHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
@@ -250,6 +428,8 @@ Version {version}";
 
     protected override void OnClosed(EventArgs e)
     {
+        UninstallMouseHook();
+        
         var hwnd = new WindowInteropHelper(this).Handle;
         UnregisterHotKey(hwnd, HOTKEY_TOGGLE);
         UnregisterHotKey(hwnd, HOTKEY_BRIGHTNESS_UP);
@@ -288,7 +468,20 @@ Version {version}";
     private void ToggleLight()
     {
         isLightOn = !isLightOn;
-        EdgeLightBorder.Visibility = isLightOn ? Visibility.Visible : Visibility.Collapsed;
+        if (isLightOn)
+        {
+            EdgeLightBorder.Visibility = Visibility.Visible;
+            // Restore base geometry on toggle if needed
+            if (baseFrameGeometry != null)
+            {
+                EdgeLightBorder.Data = baseFrameGeometry;
+            }
+        }
+        else
+        {
+            EdgeLightBorder.Visibility = Visibility.Collapsed;
+            hoverCursorRing?.Visibility = Visibility.Collapsed;
+        }
     }
 
     public void HandleToggle()
