@@ -13,6 +13,8 @@ public partial class App : System.Windows.Application
 {
     private static System.Threading.Mutex? _mutex;
     
+    public static UserSettings CurrentSettings { get; private set; } = UserSettings.Default;
+    
     internal static readonly UpdatumManager AppUpdater = new("shanselman", "WindowsEdgeLight")
     {
         // Default pattern (win-x64) will match our ZIP assets
@@ -38,6 +40,9 @@ public partial class App : System.Windows.Application
             Shutdown();
             return;
         }
+        
+        // Load user settings
+        CurrentSettings = SettingsManager.LoadSettings();
         
         base.OnStartup(e);
 

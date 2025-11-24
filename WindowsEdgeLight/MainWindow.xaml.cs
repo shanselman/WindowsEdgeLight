@@ -132,7 +132,21 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         hoverCursorRing = FindName("HoverCursorRing") as Ellipse;
+        
+        // Apply settings from loaded configuration
+        ApplySettings(App.CurrentSettings);
+        
         SetupNotifyIcon();
+    }
+
+    private void ApplySettings(UserSettings settings)
+    {
+        isLightOn = settings.IsLightOn;
+        currentOpacity = settings.Brightness;
+        _colorTemperature = settings.ColorTemperature;
+        currentMonitorIndex = settings.CurrentMonitorIndex;
+        showOnAllMonitors = settings.ShowOnAllMonitors;
+        isControlWindowVisible = settings.IsControlWindowVisible;
     }
 
     private void SetupNotifyIcon()
@@ -182,6 +196,7 @@ public partial class MainWindow : Window
     contextMenu.Items.Add(toggleControlsMenuItem);
     
     contextMenu.Items.Add(new ToolStripSeparator());
+    contextMenu.Items.Add("⚙️ Reset All Settings", null, (s, e) => ResetSettings());
     contextMenu.Items.Add("✖ Exit", null, (s, e) => System.Windows.Application.Current.Shutdown());
         
         notifyIcon.ContextMenuStrip = contextMenu;
@@ -189,6 +204,39 @@ public partial class MainWindow : Window
         
         // Set initial menu text based on current state
         UpdateTrayMenuToggleControlsText();
+    }
+
+    private void SaveCurrentSettings(bool debounce = false)
+    {
+        var settings = new UserSettings
+        {
+            IsLightOn = isLightOn,
+            Brightness = currentOpacity,
+            ColorTemperature = _colorTemperature,
+            CurrentMonitorIndex = currentMonitorIndex,
+            ShowOnAllMonitors = showOnAllMonitors,
+            IsControlWindowVisible = isControlWindowVisible
+        };
+        
+        _ = SettingsManager.SaveSettingsAsync(settings, debounce);
+    }
+
+    private void ResetSettings()
+    {
+        var result = System.Windows.MessageBox.Show(
+            "Reset all settings to defaults? This will restart the application.",
+            "Reset Settings",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Question);
+
+        if (result == MessageBoxResult.Yes)
+        {
+            SettingsManager.ResetSettings();
+            
+            System.Diagnostics.Process.Start(Environment.ProcessPath ?? 
+                System.Reflection.Assembly.GetExecutingAssembly().Location);
+            System.Windows.Application.Current.Shutdown();
+        }
     }
 
     private void ShowHelp()
@@ -674,6 +722,7 @@ Version {version}";
         // is preserved and will be applied when CreateControlWindow() is called
         
         UpdateTrayMenuToggleControlsText();
+        SaveCurrentSettings();
     }
 
     private void UpdateTrayMenuToggleControlsText()
@@ -691,6 +740,8 @@ Version {version}";
         
         // Update all additional monitor windows
         UpdateAdditionalMonitorWindows();
+        
+        SaveCurrentSettings(debounce: true);
     }
 
     public void DecreaseBrightness()
@@ -700,6 +751,8 @@ Version {version}";
         
         // Update all additional monitor windows
         UpdateAdditionalMonitorWindows();
+        
+        SaveCurrentSettings(debounce: true);
     }
 
     private void UpdateAdditionalMonitorWindows()
@@ -844,6 +897,8 @@ Version {version}";
         
         // Reposition control window to follow
         RepositionControlWindow();
+        
+        SaveCurrentSettings();
     }
 
     [DllImport("user32.dll", SetLastError = true)]
@@ -866,6 +921,8 @@ Version {version}";
         }
 
         controlWindow?.UpdateAllMonitorsButtonState();
+        
+        SaveCurrentSettings();
     }
 
     private void ShowOnAllMonitors()
