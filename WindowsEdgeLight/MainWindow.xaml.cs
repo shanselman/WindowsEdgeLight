@@ -44,6 +44,8 @@ public partial class MainWindow : Window
         public Rect FrameInnerRect { get; set; }
         public double PathOffsetX { get; set; }
         public double PathOffsetY { get; set; }
+        public double DpiScaleX { get; set; } = 1.0;
+        public double DpiScaleY { get; set; } = 1.0;
     }
 
     // Monitor management
@@ -414,10 +416,10 @@ Version {version}";
             try
             {
                 // Manual coordinate calculation to avoid PointFromScreen issues across monitors/DPIs
-                // We positioned the window using _dpiScaleX/Y relative to the screen WorkingArea.
+                // We positioned the window using ctx.DpiScaleX/Y relative to the screen WorkingArea.
                 // So we reverse that logic here.
-                double relX = (screenX - ctx.Screen.WorkingArea.X) / _dpiScaleX;
-                double relY = (screenY - ctx.Screen.WorkingArea.Y) / _dpiScaleY;
+                double relX = (screenX - ctx.Screen.WorkingArea.X) / ctx.DpiScaleX;
+                double relY = (screenY - ctx.Screen.WorkingArea.Y) / ctx.DpiScaleY;
                 var windowPt = new System.Windows.Point(relX, relY);
                 
                 bool inFrameBand = ctx.FrameOuterRect.Contains(windowPt) && !ctx.FrameInnerRect.Contains(windowPt);
@@ -896,14 +898,6 @@ Version {version}";
         grid.Children.Add(hoverRing);
         window.Content = grid;
 
-        // Make window click-through
-        window.Loaded += (s, e) =>
-        {
-            var hwnd = new WindowInteropHelper(window).Handle;
-            int extendedStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
-            SetWindowLong(hwnd, GWL_EXSTYLE, extendedStyle | WS_EX_TRANSPARENT | WS_EX_LAYERED);
-        };
-
         // Calculate geometry data for hole punch
         double pathOffsetX = (window.Width - width) / 2.0;
         double pathOffsetY = (window.Height - height) / 2.0;
@@ -913,7 +907,7 @@ Version {version}";
         var frameOuterRect = new Rect(pathOffsetX - holeRadius, pathOffsetY - holeRadius, width + holeRadius * 2, height + holeRadius * 2);
         var frameInnerRect = new Rect(pathOffsetX + frameThickness + holeRadius, pathOffsetY + frameThickness + holeRadius, width - (frameThickness * 2) - holeRadius * 2, height - (frameThickness * 2) - holeRadius * 2);
 
-        return new MonitorWindowContext
+        var ctx = new MonitorWindowContext
         {
             Window = window,
             Screen = screen,
@@ -923,8 +917,39 @@ Version {version}";
             FrameOuterRect = frameOuterRect,
             FrameInnerRect = frameInnerRect,
             PathOffsetX = pathOffsetX,
-            PathOffsetY = pathOffsetY
+            PathOffsetY = pathOffsetY,
+            DpiScaleX = _dpiScaleX, // Default to primary, update in Loaded
+            DpiScaleY = _dpiScaleY
         };
+
+        // Make window click-through and handle DPI
+        window.Loaded += (s, e) =>
+        {
+            var hwnd = new WindowInteropHelper(window).Handle;
+            int extendedStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
+            SetWindowLong(hwnd, GWL_EXSTYLE, extendedStyle | WS_EX_TRANSPARENT | WS_EX_LAYERED);
+
+            // Update DPI and resize if necessary
+            var source = PresentationSource.FromVisual(window);
+            if (source != null)
+            {
+                double dpiX = source.CompositionTarget.TransformToDevice.M11;
+                double dpiY = source.CompositionTarget.TransformToDevice.M22;
+                
+                ctx.DpiScaleX = dpiX;
+                ctx.DpiScaleY = dpiY;
+
+                // Reposition/Resize with correct DPI
+                window.Left = screen.WorkingArea.X / dpiX;
+                window.Top = screen.WorkingArea.Y / dpiY;
+                window.Width = screen.WorkingArea.Width / dpiX;
+                window.Height = screen.WorkingArea.Height / dpiY;
+                
+                Debug.WriteLine($"[DPI Update] Monitor Bounds:{screen.Bounds} DPI:{dpiX:F2},{dpiY:F2} New Window Rect:{window.Left:F2},{window.Top:F2} {window.Width:F2}x{window.Height:F2}");
+            }
+        };
+
+        return ctx;
     }
 
     public bool IsShowingOnAllMonitors()
