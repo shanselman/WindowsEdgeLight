@@ -17,7 +17,13 @@ public partial class ControlWindow : Window
 
     private void UpdateMonitorButtonState()
     {
-        SwitchMonitorButton.IsEnabled = mainWindow.HasMultipleMonitors();
+        SwitchMonitorButton.IsEnabled = mainWindow.HasMultipleMonitors() && !mainWindow.IsShowingOnAllMonitors();
+        AllMonitorsButton.IsEnabled = mainWindow.HasMultipleMonitors();
+    }
+
+    public void UpdateAllMonitorsButtonState()
+    {
+        UpdateMonitorButtonState();
     }
 
     private void BrightnessDown_Click(object sender, RoutedEventArgs e)
@@ -30,6 +36,16 @@ public partial class ControlWindow : Window
         mainWindow.IncreaseBrightness();
     }
 
+    private void ColorCooler_Click(object sender, RoutedEventArgs e)
+    {
+        mainWindow.DecreaseColorTemperature();
+    }
+
+    private void ColorWarmer_Click(object sender, RoutedEventArgs e)
+    {
+        mainWindow.IncreaseColorTemperature();
+    }
+
     private void Toggle_Click(object sender, RoutedEventArgs e)
     {
         mainWindow.HandleToggle();
@@ -38,6 +54,12 @@ public partial class ControlWindow : Window
     private void SwitchMonitor_Click(object sender, RoutedEventArgs e)
     {
         mainWindow.MoveToNextMonitor();
+        UpdateMonitorButtonState();
+    }
+
+    private void AllMonitors_Click(object sender, RoutedEventArgs e)
+    {
+        mainWindow.ToggleAllMonitors();
     }
 
     private void Close_Click(object sender, RoutedEventArgs e)
