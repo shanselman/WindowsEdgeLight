@@ -54,19 +54,19 @@
                 Width="40"
                 Height="40"
                 Margin="4,4,0,4"
-                AutomationProperties.Name="Cooler light"
-                Click="ColorCooler_Click"
-                Content="K+"
-                ToolTip="Make light cooler" />
+                AutomationProperties.Name="Warmer light"
+                Click="ColorWarmer_Click"
+                Content="K-"
+                ToolTip="Make light warmer" />
 
             <Button
                 Width="40"
                 Height="40"
                 Margin="4,4,0,4"
-                AutomationProperties.Name="Warmer light"
-                Click="ColorWarmer_Click"
-                Content="K-"
-                ToolTip="Make light warmer" />
+                AutomationProperties.Name="Cooler light"
+                Click="ColorCooler_Click"
+                Content="K+"
+                ToolTip="Make light cooler" />
 
             <Button
                 Width="40"
