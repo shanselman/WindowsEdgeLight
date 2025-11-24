@@ -854,10 +854,10 @@ Version {version}";
         var (dpiScaleX, dpiScaleY) = GetDpiScaleFactors();
         
         // Figure out which monitor we're actually on now
-        // Convert WPF DIPs to physical screen pixels
+        // Convert WPF DIPs to physical screen pixels with rounding for precision
         var windowCenter = new System.Drawing.Point(
-            (int)((this.Left + this.Width / 2) * dpiScaleX),
-            (int)((this.Top + this.Height / 2) * dpiScaleY)
+            (int)Math.Round((this.Left + this.Width / 2) * dpiScaleX),
+            (int)Math.Round((this.Top + this.Height / 2) * dpiScaleY)
         );
         
         for (int i = 0; i < availableMonitors.Length; i++)
