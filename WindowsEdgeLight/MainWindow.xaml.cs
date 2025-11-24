@@ -218,6 +218,9 @@ public partial class MainWindow : Window
             IsControlWindowVisible = isControlWindowVisible
         };
         
+        // Update the app-level settings reference
+        App.CurrentSettings = settings;
+        
         _ = SettingsManager.SaveSettingsAsync(settings, debounce);
     }
 
@@ -649,6 +652,9 @@ Version {version}";
         
         HideAdditionalMonitorWindows();
         controlWindow?.Close();
+        
+        // Save settings on exit
+        SaveCurrentSettings();
         
         base.OnClosed(e);
     }

@@ -1,5 +1,6 @@
 ﻿using System.Configuration;
 using System.Data;
+using System.IO;
 using System.Windows;
 using Updatum;
 using MessageBox = System.Windows.MessageBox;
@@ -13,7 +14,7 @@ public partial class App : System.Windows.Application
 {
     private static System.Threading.Mutex? _mutex;
     
-    public static UserSettings CurrentSettings { get; private set; } = UserSettings.Default;
+    public static UserSettings CurrentSettings { get; set; } = UserSettings.Default;
     
     internal static readonly UpdatumManager AppUpdater = new("shanselman", "WindowsEdgeLight")
     {
@@ -52,6 +53,27 @@ public partial class App : System.Windows.Application
 
     protected override void OnExit(ExitEventArgs e)
     {
+        // Save settings synchronously on exit to ensure it completes
+        var settings = new UserSettings
+        {
+            IsLightOn = CurrentSettings.IsLightOn,
+            Brightness = CurrentSettings.Brightness,
+            ColorTemperature = CurrentSettings.ColorTemperature,
+            CurrentMonitorIndex = CurrentSettings.CurrentMonitorIndex,
+            ShowOnAllMonitors = CurrentSettings.ShowOnAllMonitors,
+            IsControlWindowVisible = CurrentSettings.IsControlWindowVisible
+        };
+        
+        // Synchronous save on exit
+        try
+        {
+            var dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "WindowsEdgeLight");
+            Directory.CreateDirectory(dir);
+            var json = System.Text.Json.JsonSerializer.Serialize(settings, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+            File.WriteAllText(Path.Combine(dir, "settings.json"), json);
+        }
+        catch { }
+        
         _mutex?.ReleaseMutex();
         _mutex?.Dispose();
         base.OnExit(e);
