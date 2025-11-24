@@ -851,10 +851,22 @@ Version {version}";
         // Refresh monitor list
         availableMonitors = Screen.AllScreens;
         
+        // Get DPI scale factor to convert WPF DIPs to physical pixels
+        var source = PresentationSource.FromVisual(this);
+        double dpiScaleX = 1.0;
+        double dpiScaleY = 1.0;
+        
+        if (source != null)
+        {
+            dpiScaleX = source.CompositionTarget.TransformToDevice.M11;
+            dpiScaleY = source.CompositionTarget.TransformToDevice.M22;
+        }
+        
         // Figure out which monitor we're actually on now
+        // Convert WPF DIPs to physical screen pixels
         var windowCenter = new System.Drawing.Point(
-            (int)(this.Left + this.Width / 2),
-            (int)(this.Top + this.Height / 2)
+            (int)((this.Left + this.Width / 2) * dpiScaleX),
+            (int)((this.Top + this.Height / 2) * dpiScaleY)
         );
         
         for (int i = 0; i < availableMonitors.Length; i++)
