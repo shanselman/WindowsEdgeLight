@@ -104,6 +104,21 @@ public partial class MainWindow : Window
     private const uint VK_UP = 0x26;
     private const uint VK_DOWN = 0x28;
 
+    /// <summary>
+    /// Gets the DPI scale factors for converting between WPF DIPs and physical screen pixels.
+    /// </summary>
+    /// <returns>A tuple containing (dpiScaleX, dpiScaleY). Returns (1.0, 1.0) if DPI cannot be determined.</returns>
+    private (double dpiScaleX, double dpiScaleY) GetDpiScaleFactors()
+    {
+        var source = PresentationSource.FromVisual(this);
+        if (source?.CompositionTarget != null)
+        {
+            return (source.CompositionTarget.TransformToDevice.M11, 
+                    source.CompositionTarget.TransformToDevice.M22);
+        }
+        return (1.0, 1.0);
+    }
+
     public MainWindow()
     {
         InitializeComponent();
@@ -214,15 +229,7 @@ Version {version}";
         var workingArea = screen.WorkingArea;
         
         // Get DPI scale factor
-        var source = PresentationSource.FromVisual(this);
-        double dpiScaleX = 1.0;
-        double dpiScaleY = 1.0;
-        
-        if (source != null)
-        {
-            dpiScaleX = source.CompositionTarget.TransformToDevice.M11;
-            dpiScaleY = source.CompositionTarget.TransformToDevice.M22;
-        }
+        var (dpiScaleX, dpiScaleY) = GetDpiScaleFactors();
         
         // Convert physical pixels to WPF DIPs
         this.Left = workingArea.X / dpiScaleX;
@@ -722,15 +729,7 @@ Version {version}";
 
         // Position on the target screen
         var workingArea = screen.WorkingArea;
-        var source = PresentationSource.FromVisual(this);
-        double dpiScaleX = 1.0;
-        double dpiScaleY = 1.0;
-        
-        if (source != null)
-        {
-            dpiScaleX = source.CompositionTarget.TransformToDevice.M11;
-            dpiScaleY = source.CompositionTarget.TransformToDevice.M22;
-        }
+        var (dpiScaleX, dpiScaleY) = GetDpiScaleFactors();
         
         window.Left = workingArea.X / dpiScaleX;
         window.Top = workingArea.Y / dpiScaleY;
@@ -852,15 +851,7 @@ Version {version}";
         availableMonitors = Screen.AllScreens;
         
         // Get DPI scale factor to convert WPF DIPs to physical pixels
-        var source = PresentationSource.FromVisual(this);
-        double dpiScaleX = 1.0;
-        double dpiScaleY = 1.0;
-        
-        if (source != null)
-        {
-            dpiScaleX = source.CompositionTarget.TransformToDevice.M11;
-            dpiScaleY = source.CompositionTarget.TransformToDevice.M22;
-        }
+        var (dpiScaleX, dpiScaleY) = GetDpiScaleFactors();
         
         // Figure out which monitor we're actually on now
         // Convert WPF DIPs to physical screen pixels
