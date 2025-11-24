@@ -552,15 +552,31 @@ Version {version}";
         _dpiScaleY = newDpi.DpiScaleY;
         
         // Ensure window covers the current monitor correctly with new DPI
-        if (availableMonitors.Length > 0 && currentMonitorIndex < availableMonitors.Length)
+        if (availableMonitors.Length > 0)
         {
-            var screen = availableMonitors[currentMonitorIndex];
-            var workingArea = screen.WorkingArea;
+            // Re-verify which monitor we are on, as we might have just moved
+            UpdateCurrentMonitorIndex();
             
-            this.Left = workingArea.X / _dpiScaleX;
-            this.Top = workingArea.Y / _dpiScaleY;
-            this.Width = workingArea.Width / _dpiScaleX;
-            this.Height = workingArea.Height / _dpiScaleY;
+            if (currentMonitorIndex < availableMonitors.Length)
+            {
+                var screen = availableMonitors[currentMonitorIndex];
+                var workingArea = screen.WorkingArea;
+                
+                // Only update if significantly different to avoid loops
+                double newLeft = workingArea.X / _dpiScaleX;
+                double newTop = workingArea.Y / _dpiScaleY;
+                double newWidth = workingArea.Width / _dpiScaleX;
+                double newHeight = workingArea.Height / _dpiScaleY;
+
+                if (Math.Abs(this.Left - newLeft) > 1 || Math.Abs(this.Top - newTop) > 1 ||
+                    Math.Abs(this.Width - newWidth) > 1 || Math.Abs(this.Height - newHeight) > 1)
+                {
+                    this.Left = newLeft;
+                    this.Top = newTop;
+                    this.Width = newWidth;
+                    this.Height = newHeight;
+                }
+            }
         }
     }
 
@@ -740,6 +756,7 @@ Version {version}";
     {
         // If in all monitors mode, do nothing
         if (showOnAllMonitors) return;
+        
         // Refresh monitor list in case of hot-plug/unplug
         availableMonitors = Screen.AllScreens;
 
@@ -749,20 +766,8 @@ Version {version}";
             return;
         }
 
-        // Bounds check: if current monitor no longer exists, reset to primary
-        if (currentMonitorIndex >= availableMonitors.Length)
-        {
-            // Find primary monitor again
-            currentMonitorIndex = 0;
-            for (int i = 0; i < availableMonitors.Length; i++)
-            {
-                if (availableMonitors[i].Primary)
-                {
-                    currentMonitorIndex = i;
-                    break;
-                }
-            }
-        }
+        // Ensure currentMonitorIndex is accurate before moving
+        UpdateCurrentMonitorIndex();
 
         // Cycle to next monitor
         currentMonitorIndex = (currentMonitorIndex + 1) % availableMonitors.Length;
@@ -1058,19 +1063,27 @@ Version {version}";
         // Refresh monitor list
         availableMonitors = Screen.AllScreens;
         
-        // Figure out which monitor we're actually on now
-        var windowCenter = new System.Drawing.Point(
-            (int)(this.Left + this.Width / 2),
-            (int)(this.Top + this.Height / 2)
-        );
-        
-        for (int i = 0; i < availableMonitors.Length; i++)
+        if (availableMonitors.Length == 0) return;
+
+        try 
         {
-            if (availableMonitors[i].Bounds.Contains(windowCenter))
+            // Use PointToScreen to get accurate physical coordinates of the window center
+            // This handles DPI scaling correctly unlike manual calculation
+            var centerPoint = this.PointToScreen(new System.Windows.Point(this.ActualWidth / 2, this.ActualHeight / 2));
+            var drawingPoint = new System.Drawing.Point((int)centerPoint.X, (int)centerPoint.Y);
+            
+            for (int i = 0; i < availableMonitors.Length; i++)
             {
-                currentMonitorIndex = i;
-                break;
+                if (availableMonitors[i].Bounds.Contains(drawingPoint))
+                {
+                    currentMonitorIndex = i;
+                    break;
+                }
             }
+        }
+        catch (InvalidOperationException)
+        {
+            // Window might not be loaded or visible yet
         }
     }
 
