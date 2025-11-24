@@ -26,6 +26,7 @@ public partial class MainWindow : Window
     private NotifyIcon? notifyIcon;
     private ControlWindow? controlWindow;
     private bool isControlWindowVisible = true;
+    private ToolStripMenuItem? toggleControlsMenuItem;
 
     // Monitor management
     private int currentMonitorIndex = 0;
@@ -100,9 +101,8 @@ public partial class MainWindow : Window
     contextMenu.Items.Add(new ToolStripSeparator());
     
     // Add toggle controls menu item - will be updated dynamically
-    var toggleControlsItem = new ToolStripMenuItem("🎛️ Hide Controls (Ctrl+Shift+C)", null, (s, e) => ToggleControlsVisibility());
-    toggleControlsItem.Name = "ToggleControlsMenuItem";
-    contextMenu.Items.Add(toggleControlsItem);
+    toggleControlsMenuItem = new ToolStripMenuItem("🎛️ Hide Controls (Ctrl+Shift+C)", null, (s, e) => ToggleControlsVisibility());
+    contextMenu.Items.Add(toggleControlsMenuItem);
     
     contextMenu.Items.Add(new ToolStripSeparator());
     contextMenu.Items.Add("✖ Exit", null, (s, e) => System.Windows.Application.Current.Shutdown());
@@ -353,15 +353,11 @@ Version {version}";
 
     private void UpdateTrayMenuToggleControlsText()
     {
-        if (notifyIcon?.ContextMenuStrip != null)
+        if (toggleControlsMenuItem != null)
         {
-            var menuItem = notifyIcon.ContextMenuStrip.Items.Find("ToggleControlsMenuItem", false).FirstOrDefault() as ToolStripMenuItem;
-            if (menuItem != null)
-            {
-                menuItem.Text = isControlWindowVisible 
-                    ? "🎛️ Hide Controls (Ctrl+Shift+C)" 
-                    : "🎛️ Show Controls (Ctrl+Shift+C)";
-            }
+            toggleControlsMenuItem.Text = isControlWindowVisible 
+                ? "🎛️ Hide Controls (Ctrl+Shift+C)" 
+                : "🎛️ Show Controls (Ctrl+Shift+C)";
         }
     }
 

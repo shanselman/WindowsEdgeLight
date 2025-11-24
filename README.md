@@ -83,8 +83,8 @@ The executable will be in `bin\Release\net10.0-windows\win-x64\publish\WindowsEd
    - 🔅 **Decrease Brightness** - Reduces opacity
    - 🔆 **Increase Brightness** - Increases opacity
    - 🌡️ **Cooler Color** - Shifts the glow towards a cooler, blue-ish white
-   - � **Warmer Color** - Shifts the glow towards a warmer, amber tone
-   - �💡 **Toggle Light** - Turn the effect on/off
+   - 🔥 **Warmer Color** - Shifts the glow towards a warmer, amber tone
+   - 💡 **Toggle Light** - Turn the effect on/off
    - 🖥️ **Switch Monitor** - Move to next monitor (if multiple monitors)
    - ✖ **Exit** - Close the application
 4. Hide the control toolbar for a cleaner look using `Ctrl+Shift+C` or the tray menu
