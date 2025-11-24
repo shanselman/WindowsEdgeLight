@@ -24,15 +24,36 @@ public partial class MainWindow : Window
     private const double ColorTempStep = 0.1;
     private const double MinColorTemp = 0.0;
     private const double MaxColorTemp = 1.0;
+
+    // DPI Scale
+    private double _dpiScaleX = 1.0;
+    private double _dpiScaleY = 1.0;
+    
+    private bool _isManualMonitorSwitch = false;
     
     private NotifyIcon? notifyIcon;
     private ControlWindow? controlWindow;
+
+    private class MonitorWindowContext
+    {
+        public Window Window { get; set; } = null!;
+        public Screen Screen { get; set; } = null!;
+        public System.Windows.Shapes.Path BorderPath { get; set; } = null!;
+        public Ellipse HoverRing { get; set; } = null!;
+        public Geometry BaseGeometry { get; set; } = null!;
+        public Rect FrameOuterRect { get; set; }
+        public Rect FrameInnerRect { get; set; }
+        public double PathOffsetX { get; set; }
+        public double PathOffsetY { get; set; }
+        public double DpiScaleX { get; set; } = 1.0;
+        public double DpiScaleY { get; set; } = 1.0;
+    }
 
     // Monitor management
     private int currentMonitorIndex = 0;
     private Screen[] availableMonitors = Array.Empty<Screen>();
     private bool showOnAllMonitors = false;
-    private List<Window> additionalMonitorWindows = new List<Window>();
+    private List<MonitorWindowContext> additionalMonitorWindows = new List<MonitorWindowContext>();
 
     // Global hotkey IDs
     private const int HOTKEY_TOGGLE = 1;
@@ -215,20 +236,20 @@ Version {version}";
         
         // Get DPI scale factor
         var source = PresentationSource.FromVisual(this);
-        double dpiScaleX = 1.0;
-        double dpiScaleY = 1.0;
+        _dpiScaleX = 1.0;
+        _dpiScaleY = 1.0;
         
         if (source != null)
         {
-            dpiScaleX = source.CompositionTarget.TransformToDevice.M11;
-            dpiScaleY = source.CompositionTarget.TransformToDevice.M22;
+            _dpiScaleX = source.CompositionTarget.TransformToDevice.M11;
+            _dpiScaleY = source.CompositionTarget.TransformToDevice.M22;
         }
         
         // Convert physical pixels to WPF DIPs
-        this.Left = workingArea.X / dpiScaleX;
-        this.Top = workingArea.Y / dpiScaleY;
-        this.Width = workingArea.Width / dpiScaleX;
-        this.Height = workingArea.Height / dpiScaleY;
+        this.Left = workingArea.X / _dpiScaleX;
+        this.Top = workingArea.Y / _dpiScaleY;
+        this.Width = workingArea.Width / _dpiScaleX;
+        this.Height = workingArea.Height / _dpiScaleY;
         this.WindowState = System.Windows.WindowState.Normal;
     }
 
@@ -316,62 +337,128 @@ Version {version}";
                 EdgeLightBorder.Data = baseFrameGeometry;
             }
 
-            return;
-        }
-        if (frameOuterRect == null || frameInnerRect == null || hoverCursorRing == null || baseFrameGeometry == null)
-        {
+            // Also handle additional windows
+            foreach (var ctx in additionalMonitorWindows)
+            {
+                if (ctx.BorderPath.Visibility != Visibility.Collapsed)
+                    ctx.BorderPath.Visibility = Visibility.Collapsed;
+                if (ctx.HoverRing.Visibility != Visibility.Collapsed)
+                    ctx.HoverRing.Visibility = Visibility.Collapsed;
+                if (ctx.BorderPath.Data != ctx.BaseGeometry)
+                    ctx.BorderPath.Data = ctx.BaseGeometry;
+            }
+
             return;
         }
 
-        var windowPt = PointFromScreen(new System.Windows.Point(screenX, screenY));
+        // --- Main Window Logic ---
+        if (frameOuterRect != null && frameInnerRect != null && hoverCursorRing != null && baseFrameGeometry != null)
+        {
+            var screen = availableMonitors.Length > 0 ? availableMonitors[currentMonitorIndex] : Screen.PrimaryScreen;
+            if (screen != null)
+            {
+                ApplyHolePunchEffect(
+                    screenX, screenY,
+                    screen,
+                    _dpiScaleX, _dpiScaleY,
+                    frameOuterRect.Value, frameInnerRect.Value,
+                    hoverCursorRing,
+                    EdgeLightBorder,
+                    baseFrameGeometry,
+                    pathOffsetX, pathOffsetY,
+                    (ring, x, y) => { Canvas.SetLeft(ring, x); Canvas.SetTop(ring, y); }
+                );
+            }
+        }
+
+        // --- Additional Windows Logic ---
+        foreach (var ctx in additionalMonitorWindows)
+        {
+            try
+            {
+                ApplyHolePunchEffect(
+                    screenX, screenY,
+                    ctx.Screen,
+                    ctx.DpiScaleX, ctx.DpiScaleY,
+                    ctx.FrameOuterRect, ctx.FrameInnerRect,
+                    ctx.HoverRing,
+                    ctx.BorderPath,
+                    ctx.BaseGeometry,
+                    ctx.PathOffsetX, ctx.PathOffsetY,
+                    (ring, x, y) => { ring.Margin = new Thickness(x, y, 0, 0); }
+                );
+            }
+            catch (InvalidOperationException)
+            {
+                // Can happen if window is closing or not ready
+            }
+        }
+    }
+
+    private void ApplyHolePunchEffect(
+        int screenX, int screenY,
+        Screen screen,
+        double dpiScaleX, double dpiScaleY,
+        Rect frameOuterRect, Rect frameInnerRect,
+        Ellipse hoverRing,
+        System.Windows.Shapes.Path borderPath,
+        Geometry baseGeometry,
+        double pathOffsetX, double pathOffsetY,
+        Action<Ellipse, double, double> positionRing)
+    {
+        // Manual coordinate calculation to avoid PointFromScreen issues across monitors/DPIs
+        // We positioned the window using dpiScaleX/Y relative to the screen WorkingArea.
+        double relX = (screenX - screen.WorkingArea.X) / dpiScaleX;
+        double relY = (screenY - screen.WorkingArea.Y) / dpiScaleY;
+        var windowPt = new System.Windows.Point(relX, relY);
 
         // Existing frame band detection (outer minus inner)
-        bool inFrameBand = frameOuterRect.Value.Contains(windowPt) && !frameInnerRect.Value.Contains(windowPt);
+        bool inFrameBand = frameOuterRect.Contains(windowPt) && !frameInnerRect.Contains(windowPt);
 
         // Early detection zone just inside the inner edge: a band with thickness = hole radius (cursor ring radius)
-        double ringDiameter = hoverCursorRing.Width;
+        double ringDiameter = hoverRing.Width;
         double holeRadius = ringDiameter / 2; // match ring size
         var innerProximityRect = new Rect(
-            frameInnerRect.Value.X + holeRadius,
-            frameInnerRect.Value.Y + holeRadius,
-            frameInnerRect.Value.Width - (holeRadius * 2),
-            frameInnerRect.Value.Height - (holeRadius * 2));
+            frameInnerRect.X + holeRadius,
+            frameInnerRect.Y + holeRadius,
+            frameInnerRect.Width - (holeRadius * 2),
+            frameInnerRect.Height - (holeRadius * 2));
 
         // Near from inside means inside innerRect but within holeRadius of its edge (i.e., not deep inside innerProximityRect)
-        bool nearFromInside = frameInnerRect.Value.Contains(windowPt) && !innerProximityRect.Contains(windowPt);
+        bool nearFromInside = frameInnerRect.Contains(windowPt) && !innerProximityRect.Contains(windowPt);
 
         bool overFrame = inFrameBand || nearFromInside;
 
         if (overFrame)
         {
-            Canvas.SetLeft(hoverCursorRing, windowPt.X - ringDiameter / 2);
-            Canvas.SetTop(hoverCursorRing, windowPt.Y - ringDiameter / 2);
-            if (hoverCursorRing.Visibility != Visibility.Visible)
+            positionRing(hoverRing, windowPt.X - ringDiameter / 2, windowPt.Y - ringDiameter / 2);
+            
+            if (hoverRing.Visibility != Visibility.Visible)
             {
-                hoverCursorRing.Visibility = Visibility.Visible;
+                hoverRing.Visibility = Visibility.Visible;
             }
 
             // Punch a transparent hole under the ring by excluding a circle geometry from the frame
             // Convert window coordinates to geometry local coordinates by subtracting stored offsets
             var localCenter = new System.Windows.Point(windowPt.X - pathOffsetX, windowPt.Y - pathOffsetY);
             var hole = new EllipseGeometry(localCenter, holeRadius, holeRadius);
-            EdgeLightBorder.Data = new CombinedGeometry(GeometryCombineMode.Exclude, baseFrameGeometry, hole);
+            borderPath.Data = new CombinedGeometry(GeometryCombineMode.Exclude, baseGeometry, hole);
         }
         else
         {
-            if (hoverCursorRing.Visibility != Visibility.Collapsed)
+            if (hoverRing.Visibility != Visibility.Collapsed)
             {
-                hoverCursorRing.Visibility = Visibility.Collapsed;
+                hoverRing.Visibility = Visibility.Collapsed;
             }
 
-            if (EdgeLightBorder.Visibility != Visibility.Visible)
+            if (borderPath.Visibility != Visibility.Visible)
             {
-                EdgeLightBorder.Visibility = Visibility.Visible;
+                borderPath.Visibility = Visibility.Visible;
             }
             // Restore original geometry (remove hole)
-            if (baseFrameGeometry != null && EdgeLightBorder.Data != baseFrameGeometry)
+            if (baseGeometry != null && borderPath.Data != baseGeometry)
             {
-                EdgeLightBorder.Data = baseFrameGeometry;
+                borderPath.Data = baseGeometry;
             }
         }
     }
@@ -442,6 +529,42 @@ Version {version}";
         }
         
         return IntPtr.Zero;
+    }
+
+    protected override void OnDpiChanged(DpiScale oldDpi, DpiScale newDpi)
+    {
+        base.OnDpiChanged(oldDpi, newDpi);
+        
+        _dpiScaleX = newDpi.DpiScaleX;
+        _dpiScaleY = newDpi.DpiScaleY;
+        
+        // Ensure window covers the current monitor correctly with new DPI
+        if (availableMonitors.Length > 0)
+        {
+            // Re-verify which monitor we are on, as we might have just moved
+            UpdateCurrentMonitorIndex();
+            
+            if (currentMonitorIndex < availableMonitors.Length)
+            {
+                var screen = availableMonitors[currentMonitorIndex];
+                var workingArea = screen.WorkingArea;
+                
+                // Only update if significantly different to avoid loops
+                double newLeft = workingArea.X / _dpiScaleX;
+                double newTop = workingArea.Y / _dpiScaleY;
+                double newWidth = workingArea.Width / _dpiScaleX;
+                double newHeight = workingArea.Height / _dpiScaleY;
+
+                if (Math.Abs(this.Left - newLeft) > 1 || Math.Abs(this.Top - newTop) > 1 ||
+                    Math.Abs(this.Width - newWidth) > 1 || Math.Abs(this.Height - newHeight) > 1)
+                {
+                    this.Left = newLeft;
+                    this.Top = newTop;
+                    this.Width = newWidth;
+                    this.Height = newHeight;
+                }
+            }
+        }
     }
 
     protected override void OnClosed(EventArgs e)
@@ -534,35 +657,31 @@ Version {version}";
 
     private void UpdateAdditionalMonitorWindows()
     {
-        foreach (var window in additionalMonitorWindows)
+        foreach (var ctx in additionalMonitorWindows)
         {
-            if (window.Content is System.Windows.Controls.Grid grid && 
-                grid.Children.Count > 0 && 
-                grid.Children[0] is System.Windows.Shapes.Path path)
+            var path = ctx.BorderPath;
+            path.Opacity = currentOpacity;
+            path.Visibility = isLightOn ? Visibility.Visible : Visibility.Collapsed;
+            
+            // Update color temperature
+            if (path.Fill is LinearGradientBrush brush && brush.GradientStops.Count >= 3)
             {
-                path.Opacity = currentOpacity;
-                path.Visibility = isLightOn ? Visibility.Visible : Visibility.Collapsed;
+                var cool = System.Windows.Media.Color.FromRgb(220, 235, 255);
+                var warm = System.Windows.Media.Color.FromRgb(255, 220, 180);
                 
-                // Update color temperature
-                if (path.Fill is LinearGradientBrush brush && brush.GradientStops.Count >= 3)
+                System.Windows.Media.Color Lerp(System.Windows.Media.Color a, System.Windows.Media.Color b, double t)
                 {
-                    var cool = System.Windows.Media.Color.FromRgb(220, 235, 255);
-                    var warm = System.Windows.Media.Color.FromRgb(255, 220, 180);
-                    
-                    System.Windows.Media.Color Lerp(System.Windows.Media.Color a, System.Windows.Media.Color b, double t)
+                    byte LerpByte(byte x, byte y, double tt) => (byte)(x + (y - x) * tt);
+                    return System.Windows.Media.Color.FromArgb(255, LerpByte(a.R, b.R, t), LerpByte(a.G, b.G, t), LerpByte(a.B, b.B, t));
+                }
+                
+                var midColor = Lerp(cool, warm, _colorTemperature);
+                
+                foreach (var stop in brush.GradientStops)
+                {
+                    if (stop.Offset is > 0.2 and < 0.8)
                     {
-                        byte LerpByte(byte x, byte y, double tt) => (byte)(x + (y - x) * tt);
-                        return System.Windows.Media.Color.FromArgb(255, LerpByte(a.R, b.R, t), LerpByte(a.G, b.G, t), LerpByte(a.B, b.B, t));
-                    }
-                    
-                    var midColor = Lerp(cool, warm, _colorTemperature);
-                    
-                    foreach (var stop in brush.GradientStops)
-                    {
-                        if (stop.Offset is > 0.2 and < 0.8)
-                        {
-                            stop.Color = midColor;
-                        }
+                        stop.Color = midColor;
                     }
                 }
             }
@@ -624,6 +743,7 @@ Version {version}";
     {
         // If in all monitors mode, do nothing
         if (showOnAllMonitors) return;
+        
         // Refresh monitor list in case of hot-plug/unplug
         availableMonitors = Screen.AllScreens;
 
@@ -633,34 +753,57 @@ Version {version}";
             return;
         }
 
-        // Bounds check: if current monitor no longer exists, reset to primary
-        if (currentMonitorIndex >= availableMonitors.Length)
+        // Ensure currentMonitorIndex is accurate before moving
+        UpdateCurrentMonitorIndex();
+
+        _isManualMonitorSwitch = true;
+        try
         {
-            // Find primary monitor again
-            currentMonitorIndex = 0;
-            for (int i = 0; i < availableMonitors.Length; i++)
-            {
-                if (availableMonitors[i].Primary)
-                {
-                    currentMonitorIndex = i;
-                    break;
-                }
-            }
+            // Cycle to next monitor
+            currentMonitorIndex = (currentMonitorIndex + 1) % availableMonitors.Length;
+            var targetScreen = availableMonitors[currentMonitorIndex];
+
+            // Reposition main window to new monitor using physical coordinates to trigger DPI change correctly
+            var hwnd = new WindowInteropHelper(this).Handle;
+            SetWindowPos(hwnd, IntPtr.Zero, 
+                targetScreen.WorkingArea.X, targetScreen.WorkingArea.Y, 
+                targetScreen.WorkingArea.Width, targetScreen.WorkingArea.Height, 
+                SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
+            
+            // Force a size update if DPI didn't change (SetWindowPos might not trigger OnDpiChanged)
+            // If DPI changed, OnDpiChanged will handle it.
+            // But we can't easily know if OnDpiChanged fired yet.
+            // However, setting properties to the same value is cheap in WPF.
+            // We need to ensure we use the NEW DPI if it changed.
+            // OnDpiChanged updates _dpiScaleX/Y.
+            
+            // If we are on the same thread, OnDpiChanged (via WM_DPICHANGED) should have fired synchronously during SetWindowPos.
+            // So _dpiScaleX/Y should be up to date.
+            
+            double newLeft = targetScreen.WorkingArea.X / _dpiScaleX;
+            double newTop = targetScreen.WorkingArea.Y / _dpiScaleY;
+            double newWidth = targetScreen.WorkingArea.Width / _dpiScaleX;
+            double newHeight = targetScreen.WorkingArea.Height / _dpiScaleY;
+
+            this.Left = newLeft;
+            this.Top = newTop;
+            this.Width = newWidth;
+            this.Height = newHeight;
         }
-
-        // Cycle to next monitor
-        currentMonitorIndex = (currentMonitorIndex + 1) % availableMonitors.Length;
-        var targetScreen = availableMonitors[currentMonitorIndex];
-
-        // Reposition main window to new monitor
-        SetupWindowForScreen(targetScreen);
-        
-        // Recreate the frame geometry for new dimensions
-        CreateFrameGeometry();
+        finally
+        {
+            _isManualMonitorSwitch = false;
+        }
         
         // Reposition control window to follow
         RepositionControlWindow();
     }
+
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
+    private const uint SWP_NOZORDER = 0x0004;
+    private const uint SWP_NOACTIVATE = 0x0010;
+    private const uint SWP_FRAMECHANGED = 0x0020;
 
     public void ToggleAllMonitors()
     {
@@ -691,23 +834,23 @@ Version {version}";
         {
             if (i != currentMonitorIndex)
             {
-                var monitorWindow = CreateMonitorWindow(availableMonitors[i]);
-                additionalMonitorWindows.Add(monitorWindow);
-                monitorWindow.Show();
+                var monitorCtx = CreateMonitorWindow(availableMonitors[i]);
+                additionalMonitorWindows.Add(monitorCtx);
+                monitorCtx.Window.Show();
             }
         }
     }
 
     private void HideAdditionalMonitorWindows()
     {
-        foreach (var window in additionalMonitorWindows)
+        foreach (var ctx in additionalMonitorWindows)
         {
-            window.Close();
+            ctx.Window.Close();
         }
         additionalMonitorWindows.Clear();
     }
 
-    private Window CreateMonitorWindow(Screen screen)
+    private MonitorWindowContext CreateMonitorWindow(Screen screen)
     {
         var window = new Window
         {
@@ -722,20 +865,12 @@ Version {version}";
 
         // Position on the target screen
         var workingArea = screen.WorkingArea;
-        var source = PresentationSource.FromVisual(this);
-        double dpiScaleX = 1.0;
-        double dpiScaleY = 1.0;
+        // Use stored DPI scale from main window to ensure consistency
         
-        if (source != null)
-        {
-            dpiScaleX = source.CompositionTarget.TransformToDevice.M11;
-            dpiScaleY = source.CompositionTarget.TransformToDevice.M22;
-        }
-        
-        window.Left = workingArea.X / dpiScaleX;
-        window.Top = workingArea.Y / dpiScaleY;
-        window.Width = workingArea.Width / dpiScaleX;
-        window.Height = workingArea.Height / dpiScaleY;
+        window.Left = workingArea.X / _dpiScaleX;
+        window.Top = workingArea.Y / _dpiScaleY;
+        window.Width = workingArea.Width / _dpiScaleX;
+        window.Height = workingArea.Height / _dpiScaleY;
 
         // Create the grid and edge light border
         var grid = new System.Windows.Controls.Grid { IsHitTestVisible = false };
@@ -770,6 +905,20 @@ Version {version}";
             Color = System.Windows.Media.Color.FromRgb(255, 255, 255)
         };
 
+        // Create hover ring (Ellipse)
+        var hoverRing = new Ellipse
+        {
+            Width = 140,
+            Height = 140,
+            Fill = System.Windows.Media.Brushes.Transparent,
+            Visibility = Visibility.Collapsed,
+            HorizontalAlignment = System.Windows.HorizontalAlignment.Left,
+            VerticalAlignment = System.Windows.VerticalAlignment.Top
+        };
+        // Add drop shadow to ring - actually main window doesn't seem to have this on the ring itself?
+        // Main window XAML doesn't show effect on HoverCursorRing.
+        // So removing effect to match.
+        
         // Create frame geometry
         double width = window.Width - 40;
         double height = window.Height - 40;
@@ -788,17 +937,92 @@ Version {version}";
         path.Data = frameGeometry;
 
         grid.Children.Add(path);
+        grid.Children.Add(hoverRing);
         window.Content = grid;
 
-        // Make window click-through
+        // Calculate geometry data for hole punch
+        double pathOffsetX = (window.Width - width) / 2.0;
+        double pathOffsetY = (window.Height - height) / 2.0;
+        
+        double ringDiameter = hoverRing.Width;
+        double holeRadius = ringDiameter / 2.0;
+        var frameOuterRect = new Rect(pathOffsetX - holeRadius, pathOffsetY - holeRadius, width + holeRadius * 2, height + holeRadius * 2);
+        var frameInnerRect = new Rect(pathOffsetX + frameThickness + holeRadius, pathOffsetY + frameThickness + holeRadius, width - (frameThickness * 2) - holeRadius * 2, height - (frameThickness * 2) - holeRadius * 2);
+
+        var ctx = new MonitorWindowContext
+        {
+            Window = window,
+            Screen = screen,
+            BorderPath = path,
+            HoverRing = hoverRing,
+            BaseGeometry = frameGeometry,
+            FrameOuterRect = frameOuterRect,
+            FrameInnerRect = frameInnerRect,
+            PathOffsetX = pathOffsetX,
+            PathOffsetY = pathOffsetY,
+            DpiScaleX = _dpiScaleX, // Default to primary, update in Loaded
+            DpiScaleY = _dpiScaleY
+        };
+
+        // Make window click-through and handle DPI
         window.Loaded += (s, e) =>
         {
             var hwnd = new WindowInteropHelper(window).Handle;
             int extendedStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
             SetWindowLong(hwnd, GWL_EXSTYLE, extendedStyle | WS_EX_TRANSPARENT | WS_EX_LAYERED);
+
+            // Update DPI and resize if necessary
+            var source = PresentationSource.FromVisual(window);
+            if (source != null)
+            {
+                double dpiX = source.CompositionTarget.TransformToDevice.M11;
+                double dpiY = source.CompositionTarget.TransformToDevice.M22;
+                
+                ctx.DpiScaleX = dpiX;
+                ctx.DpiScaleY = dpiY;
+
+                // Reposition/Resize with correct DPI
+                window.Left = screen.WorkingArea.X / dpiX;
+                window.Top = screen.WorkingArea.Y / dpiY;
+                window.Width = screen.WorkingArea.Width / dpiX;
+                window.Height = screen.WorkingArea.Height / dpiY;
+
+                // Recalculate geometry for new window size
+                UpdateMonitorGeometry(ctx);
+            }
         };
 
-        return window;
+        return ctx;
+    }
+
+    private void UpdateMonitorGeometry(MonitorWindowContext ctx)
+    {
+        double width = ctx.Window.Width - 40;
+        double height = ctx.Window.Height - 40;
+        const double frameThickness = 80;
+        const double outerRadius = 100;
+        const double innerRadius = 60;
+        
+        var outerRect = new RectangleGeometry(new Rect(0, 0, width, height), outerRadius, outerRadius);
+        var innerRect = new RectangleGeometry(
+            new Rect(frameThickness, frameThickness, 
+                    width - (frameThickness * 2), 
+                    height - (frameThickness * 2)), 
+            innerRadius, innerRadius);
+        
+        var frameGeometry = new CombinedGeometry(GeometryCombineMode.Exclude, outerRect, innerRect);
+        
+        ctx.BaseGeometry = frameGeometry;
+        ctx.BorderPath.Data = frameGeometry;
+        
+        ctx.PathOffsetX = (ctx.Window.Width - width) / 2.0;
+        ctx.PathOffsetY = (ctx.Window.Height - height) / 2.0;
+        
+        double ringDiameter = ctx.HoverRing.Width;
+        double holeRadius = ringDiameter / 2.0;
+        
+        ctx.FrameOuterRect = new Rect(ctx.PathOffsetX - holeRadius, ctx.PathOffsetY - holeRadius, width + holeRadius * 2, height + holeRadius * 2);
+        ctx.FrameInnerRect = new Rect(ctx.PathOffsetX + frameThickness + holeRadius, ctx.PathOffsetY + frameThickness + holeRadius, width - (frameThickness * 2) - holeRadius * 2, height - (frameThickness * 2) - holeRadius * 2);
     }
 
     public bool IsShowingOnAllMonitors()
@@ -848,22 +1072,33 @@ Version {version}";
 
     private void UpdateCurrentMonitorIndex()
     {
+        // If we are manually switching, trust the index we set explicitly
+        if (_isManualMonitorSwitch) return;
+
         // Refresh monitor list
         availableMonitors = Screen.AllScreens;
         
-        // Figure out which monitor we're actually on now
-        var windowCenter = new System.Drawing.Point(
-            (int)(this.Left + this.Width / 2),
-            (int)(this.Top + this.Height / 2)
-        );
-        
-        for (int i = 0; i < availableMonitors.Length; i++)
+        if (availableMonitors.Length == 0) return;
+
+        try 
         {
-            if (availableMonitors[i].Bounds.Contains(windowCenter))
+            // Use PointToScreen to get accurate physical coordinates of the window center
+            // This handles DPI scaling correctly unlike manual calculation
+            var centerPoint = this.PointToScreen(new System.Windows.Point(this.ActualWidth / 2, this.ActualHeight / 2));
+            var drawingPoint = new System.Drawing.Point((int)centerPoint.X, (int)centerPoint.Y);
+            
+            for (int i = 0; i < availableMonitors.Length; i++)
             {
-                currentMonitorIndex = i;
-                break;
+                if (availableMonitors[i].Bounds.Contains(drawingPoint))
+                {
+                    currentMonitorIndex = i;
+                    break;
+                }
             }
+        }
+        catch (InvalidOperationException)
+        {
+            // Window might not be loaded or visible yet
         }
     }
 
