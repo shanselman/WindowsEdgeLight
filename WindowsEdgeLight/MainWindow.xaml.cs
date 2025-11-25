@@ -164,7 +164,8 @@ public partial class MainWindow : Window
             else
             {
                 // Try application icon from exe
-                var appIcon = System.Drawing.Icon.ExtractAssociatedIcon(Environment.ProcessPath ?? System.Reflection.Assembly.GetExecutingAssembly().Location);
+                var appIcon = System.Drawing.Icon.ExtractAssociatedIcon(Environment.ProcessPath ?? 
+                    System.IO.Path.Combine(AppContext.BaseDirectory, "WindowsEdgeLight.exe"));
                 notifyIcon.Icon = appIcon ?? System.Drawing.SystemIcons.Application;
             }
         }
@@ -236,8 +237,9 @@ public partial class MainWindow : Window
         {
             SettingsManager.ResetSettings();
             
-            System.Diagnostics.Process.Start(Environment.ProcessPath ?? 
-                System.Reflection.Assembly.GetExecutingAssembly().Location);
+            var exePath = Environment.ProcessPath ?? 
+                System.IO.Path.Combine(AppContext.BaseDirectory, "WindowsEdgeLight.exe");
+            System.Diagnostics.Process.Start(exePath);
             System.Windows.Application.Current.Shutdown();
         }
     }
