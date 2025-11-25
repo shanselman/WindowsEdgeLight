@@ -27,6 +27,9 @@
     <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+    
+    <!-- Suppress WFO0003: WPF apps need manifest DPI settings, not just the property -->
+    <NoWarn>WFO0003</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
