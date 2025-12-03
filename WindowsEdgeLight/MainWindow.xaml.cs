@@ -74,6 +74,22 @@ public partial class MainWindow : Window
     [DllImport("user32.dll")]
     private static extern bool UnregisterHotKey(IntPtr hWnd, int id);
 
+    [DllImport("user32.dll")]
+    private static extern IntPtr MonitorFromPoint(POINT pt, uint dwFlags);
+    
+    [DllImport("shcore.dll")]
+    private static extern int GetDpiForMonitor(IntPtr hmonitor, int dpiType, out uint dpiX, out uint dpiY);
+    
+    private const int MDT_EFFECTIVE_DPI = 0;
+    private const uint MONITOR_DEFAULTTONEAREST = 2;
+    
+    [StructLayout(LayoutKind.Sequential)]
+    private struct POINT
+    {
+        public int x;  // lowercase to match existing usage
+        public int y;
+    }
+
     // Mouse hook P/Invoke declarations
     [DllImport("user32.dll", SetLastError = true)]
     private static extern IntPtr SetWindowsHookEx(int idHook, LowLevelMouseProc lpfn, IntPtr hMod, uint dwThreadId);
@@ -99,13 +115,6 @@ public partial class MainWindow : Window
         public uint flags;
         public uint time;
         public IntPtr dwExtraInfo;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    private struct POINT
-    {
-        public int x;
-        public int y;
     }
 
     private delegate IntPtr LowLevelMouseProc(int nCode, IntPtr wParam, IntPtr lParam);
@@ -912,12 +921,15 @@ Version {version}";
 
         // Position on the target screen
         var workingArea = screen.WorkingArea;
-        // Use stored DPI scale from main window to ensure consistency
         
-        window.Left = workingArea.X / _dpiScaleX;
-        window.Top = workingArea.Y / _dpiScaleY;
-        window.Width = workingArea.Width / _dpiScaleX;
-        window.Height = workingArea.Height / _dpiScaleY;
+        // Get the correct DPI scale for THIS specific screen
+        var (screenDpiX, screenDpiY) = GetDpiForScreen(screen);
+        
+        // Convert physical pixels to WPF DIPs using the correct per-monitor DPI
+        window.Left = workingArea.X / screenDpiX;
+        window.Top = workingArea.Y / screenDpiY;
+        window.Width = workingArea.Width / screenDpiX;
+        window.Height = workingArea.Height / screenDpiY;
 
         // Create the grid and edge light border
         var grid = new System.Windows.Controls.Grid { IsHitTestVisible = false };
@@ -1007,8 +1019,8 @@ Version {version}";
             FrameInnerRect = frameInnerRect,
             PathOffsetX = pathOffsetX,
             PathOffsetY = pathOffsetY,
-            DpiScaleX = _dpiScaleX, // Default to primary, update in Loaded
-            DpiScaleY = _dpiScaleY
+            DpiScaleX = screenDpiX, // Use calculated DPI for this screen
+            DpiScaleY = screenDpiY
         };
 
         // Make window click-through and handle DPI
@@ -1018,24 +1030,28 @@ Version {version}";
             int extendedStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
             SetWindowLong(hwnd, GWL_EXSTYLE, extendedStyle | WS_EX_TRANSPARENT | WS_EX_LAYERED);
 
-            // Update DPI and resize if necessary
+            // Verify and update DPI if WPF reports a different value after window is loaded
             var source = PresentationSource.FromVisual(window);
             if (source != null)
             {
                 double dpiX = source.CompositionTarget.TransformToDevice.M11;
                 double dpiY = source.CompositionTarget.TransformToDevice.M22;
                 
-                ctx.DpiScaleX = dpiX;
-                ctx.DpiScaleY = dpiY;
+                // Only reposition if DPI changed significantly from our initial calculation
+                if (Math.Abs(dpiX - ctx.DpiScaleX) > 0.01 || Math.Abs(dpiY - ctx.DpiScaleY) > 0.01)
+                {
+                    ctx.DpiScaleX = dpiX;
+                    ctx.DpiScaleY = dpiY;
 
-                // Reposition/Resize with correct DPI
-                window.Left = screen.WorkingArea.X / dpiX;
-                window.Top = screen.WorkingArea.Y / dpiY;
-                window.Width = screen.WorkingArea.Width / dpiX;
-                window.Height = screen.WorkingArea.Height / dpiY;
+                    // Reposition/Resize with correct DPI
+                    window.Left = screen.WorkingArea.X / dpiX;
+                    window.Top = screen.WorkingArea.Y / dpiY;
+                    window.Width = screen.WorkingArea.Width / dpiX;
+                    window.Height = screen.WorkingArea.Height / dpiY;
 
-                // Recalculate geometry for new window size
-                UpdateMonitorGeometry(ctx);
+                    // Recalculate geometry for new window size
+                    UpdateMonitorGeometry(ctx);
+                }
             }
         };
 
@@ -1147,6 +1163,38 @@ Version {version}";
         {
             // Window might not be loaded or visible yet
         }
+    }
+    
+    private (double dpiScaleX, double dpiScaleY) GetDpiForScreen(Screen screen)
+    {
+        try
+        {
+            // Get monitor handle for the center of the screen
+            var centerPoint = new POINT
+            {
+                x = screen.Bounds.X + screen.Bounds.Width / 2,
+                y = screen.Bounds.Y + screen.Bounds.Height / 2
+            };
+            
+            IntPtr hMonitor = MonitorFromPoint(centerPoint, MONITOR_DEFAULTTONEAREST);
+            
+            if (hMonitor != IntPtr.Zero)
+            {
+                int result = GetDpiForMonitor(hMonitor, MDT_EFFECTIVE_DPI, out uint dpiX, out uint dpiY);
+                if (result == 0) // S_OK
+                {
+                    // Convert from DPI to scale factor (96 DPI = 100% = 1.0)
+                    return (dpiX / 96.0, dpiY / 96.0);
+                }
+            }
+        }
+        catch
+        {
+            // Fall through to default
+        }
+        
+        // Fallback: return 1.0 (100% scaling)
+        return (1.0, 1.0);
     }
 
     private void BrightnessUp_Click(object sender, RoutedEventArgs e)
