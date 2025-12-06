@@ -36,6 +36,12 @@ public partial class MainWindow : Window
     // Tracks whether the control window should be visible (controls initial visibility and toggle state)
     private bool isControlWindowVisible = true;
     private ToolStripMenuItem? toggleControlsMenuItem;
+    
+    // Camera monitoring
+    private CameraMonitor? cameraMonitor;
+    private bool enableCameraDetection = false;
+    private bool lightWasOnBeforeCamera = true;
+    private ToolStripMenuItem? toggleCameraDetectionMenuItem;
 
     private class MonitorWindowContext
     {
@@ -190,6 +196,10 @@ public partial class MainWindow : Window
     toggleControlsMenuItem = new ToolStripMenuItem("🎛️ Hide Controls", null, (s, e) => ToggleControlsVisibility());
     contextMenu.Items.Add(toggleControlsMenuItem);
     
+    // Add camera detection toggle menu item
+    toggleCameraDetectionMenuItem = new ToolStripMenuItem("📷 Enable Camera Detection", null, (s, e) => ToggleCameraDetection());
+    contextMenu.Items.Add(toggleCameraDetectionMenuItem);
+    
     contextMenu.Items.Add(new ToolStripSeparator());
     contextMenu.Items.Add("✖ Exit", null, (s, e) => System.Windows.Application.Current.Shutdown());
         
@@ -198,6 +208,7 @@ public partial class MainWindow : Window
         
         // Set initial menu text based on current state
         UpdateTrayMenuToggleControlsText();
+        UpdateTrayMenuCameraDetectionText();
     }
 
     private void ShowHelp()
@@ -216,6 +227,7 @@ public partial class MainWindow : Window
 • Global hotkeys work from any application
 • Right-click taskbar icon for full menu
 • Control toolbar with brightness, color temp, and monitor options
+• Camera detection - automatically turn on light when camera is in use (enable in tray menu)
 • Color temperature controls (🔥 warmer, ❄️ cooler)
 • Switch between monitors or show on all monitors
 
@@ -602,6 +614,13 @@ Version {version}";
         UnregisterHotKey(hwnd, HOTKEY_BRIGHTNESS_UP);
         UnregisterHotKey(hwnd, HOTKEY_BRIGHTNESS_DOWN);
         
+        // Stop camera monitoring
+        if (cameraMonitor != null)
+        {
+            cameraMonitor.Dispose();
+            cameraMonitor = null;
+        }
+        
         if (notifyIcon != null)
         {
             notifyIcon.Visible = false;
@@ -691,6 +710,65 @@ Version {version}";
         {
             toggleControlsMenuItem.Text = isControlWindowVisible ? "🎛️ Hide Controls" : "🎛️ Show Controls";
         }
+    }
+
+    public void ToggleCameraDetection()
+    {
+        enableCameraDetection = !enableCameraDetection;
+        
+        if (enableCameraDetection)
+        {
+            // Initialize and start camera monitor
+            if (cameraMonitor == null)
+            {
+                cameraMonitor = new CameraMonitor();
+                cameraMonitor.CameraStatusChanged += OnCameraStatusChanged;
+            }
+            cameraMonitor.StartMonitoring();
+        }
+        else
+        {
+            // Stop camera monitoring
+            if (cameraMonitor != null)
+            {
+                cameraMonitor.StopMonitoring();
+            }
+        }
+        
+        UpdateTrayMenuCameraDetectionText();
+    }
+
+    private void UpdateTrayMenuCameraDetectionText()
+    {
+        if (toggleCameraDetectionMenuItem != null)
+        {
+            toggleCameraDetectionMenuItem.Text = enableCameraDetection ? "📷 Disable Camera Detection" : "📷 Enable Camera Detection";
+        }
+    }
+
+    private void OnCameraStatusChanged(object? sender, CameraStatusChangedEventArgs e)
+    {
+        // Camera status changed - dispatch to UI thread
+        Dispatcher.BeginInvoke(new Action(() =>
+        {
+            if (e.IsInUse)
+            {
+                // Camera is now in use - remember current light state and turn on
+                lightWasOnBeforeCamera = isLightOn;
+                if (!isLightOn)
+                {
+                    ToggleLight();
+                }
+            }
+            else
+            {
+                // Camera is no longer in use - restore previous state
+                if (!lightWasOnBeforeCamera && isLightOn)
+                {
+                    ToggleLight();
+                }
+            }
+        }));
     }
 
     public void IncreaseBrightness()
