@@ -1,4 +1,5 @@
 using System.Windows;
+// using WindowsEdgeLight.AI;  // Temporarily disabled for debugging
 
 namespace WindowsEdgeLight;
 
@@ -13,6 +14,9 @@ public partial class ControlWindow : Window
         
         // Disable switch monitor button if only one monitor
         UpdateMonitorButtonState();
+        
+        // Show AI button only if hardware supports it
+        // UpdateAIButtonVisibility();  // Temporarily disabled
     }
 
     private void UpdateMonitorButtonState()
@@ -24,6 +28,31 @@ public partial class ControlWindow : Window
     public void UpdateAllMonitorsButtonState()
     {
         UpdateMonitorButtonState();
+    }
+
+    private void UpdateAIButtonVisibility()
+    {
+        // Always show for now - debugging
+        AITrackingButton.Visibility = Visibility.Visible;
+    }
+
+    public void UpdateAITrackingButtonState(bool isEnabled, bool isLoading = false)
+    {
+        // Update button appearance based on tracking state
+        if (isLoading)
+        {
+            AITrackingButton.Content = "⏳";
+            AITrackingButton.ToolTip = "AI Face Tracking: Starting...";
+            AITrackingButton.IsEnabled = false;
+        }
+        else
+        {
+            AITrackingButton.Content = isEnabled ? "👁" : "👤";
+            AITrackingButton.ToolTip = isEnabled 
+                ? "AI Face Tracking: ON (click to disable)" 
+                : "AI Face Tracking: OFF (click to enable)";
+            AITrackingButton.IsEnabled = true;
+        }
     }
 
     private void BrightnessDown_Click(object sender, RoutedEventArgs e)
@@ -60,6 +89,18 @@ public partial class ControlWindow : Window
     private void AllMonitors_Click(object sender, RoutedEventArgs e)
     {
         mainWindow.ToggleAllMonitors();
+    }
+
+    private async void AITracking_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            mainWindow.ToggleAIFaceTracking();
+        }
+        catch (Exception ex)
+        {
+            System.Windows.MessageBox.Show($"Error: {ex.Message}\n\n{ex.StackTrace}", "AI Tracking Error");
+        }
     }
 
     private void Close_Click(object sender, RoutedEventArgs e)

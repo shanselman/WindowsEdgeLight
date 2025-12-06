@@ -58,6 +58,11 @@ public partial class MainWindow : Window
     private bool showOnAllMonitors = false;
     private List<MonitorWindowContext> additionalMonitorWindows = new List<MonitorWindowContext>();
 
+    // AI Face Tracking
+    private AI.NativeFaceTracker? _faceTracker;
+    private AI.FaceToLightingMapper? _lightingMapper;
+    private bool _isAITrackingEnabled = false;
+
     // Global hotkey IDs
     private const int HOTKEY_TOGGLE = 1;
     private const int HOTKEY_BRIGHTNESS_UP = 2;
@@ -875,6 +880,305 @@ Version {version}";
         }
 
         controlWindow?.UpdateAllMonitorsButtonState();
+    }
+
+    /// <summary>
+    /// Toggles AI face tracking on/off.
+    /// </summary>
+    public async void ToggleAIFaceTracking()
+    {
+        try
+        {
+            _isAITrackingEnabled = !_isAITrackingEnabled;
+            
+            if (_isAITrackingEnabled)
+            {
+                // Show loading state
+                controlWindow?.UpdateAITrackingButtonState(false, isLoading: true);
+                await StartAIFaceTracking();
+            }
+            else
+            {
+                StopAIFaceTracking();
+            }
+            
+            controlWindow?.UpdateAITrackingButtonState(_isAITrackingEnabled);
+        }
+        catch (Exception ex)
+        {
+            System.Windows.MessageBox.Show($"Error starting face tracking:\n{ex.Message}", "AI Tracking Error");
+            _isAITrackingEnabled = false;
+            controlWindow?.UpdateAITrackingButtonState(false);
+        }
+    }
+
+    private async Task StartAIFaceTracking()
+    {
+        try
+        {
+            // Get available cameras
+            var cameras = await AI.NativeFaceTracker.GetAvailableCamerasAsync();
+            
+            if (cameras.Count == 0)
+            {
+                System.Windows.MessageBox.Show(
+                    "No cameras found. Please connect a camera and try again.",
+                    "AI Face Tracking",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+                _isAITrackingEnabled = false;
+                controlWindow?.UpdateAITrackingButtonState(false);
+                return;
+            }
+
+            // If multiple cameras, let user choose
+            AI.NativeFaceTracker.CameraInfo? selectedCamera = null;
+            
+            if (cameras.Count == 1)
+            {
+                selectedCamera = cameras[0];
+            }
+            else
+            {
+                // Show camera selection dialog
+                var cameraNames = cameras.Select(c => c.DisplayName).ToArray();
+                var dialog = new CameraSelectionDialog(cameraNames);
+                dialog.Owner = this;
+                
+                if (dialog.ShowDialog() == true && dialog.SelectedIndex >= 0)
+                {
+                    selectedCamera = cameras[dialog.SelectedIndex];
+                }
+                else
+                {
+                    // User cancelled
+                    _isAITrackingEnabled = false;
+                    controlWindow?.UpdateAITrackingButtonState(false);
+                    return;
+                }
+            }
+
+            // Initialize services
+            _faceTracker ??= new AI.NativeFaceTracker();
+            _lightingMapper ??= new AI.FaceToLightingMapper();
+            
+            // Save current lighting state before we modify it
+            SaveOriginalLighting();
+            
+            // Subscribe to face position updates
+            _faceTracker.FacePositionChanged += OnFacePositionUpdated;
+            
+            // Start tracking with selected camera
+            var success = await _faceTracker.StartAsync(selectedCamera, 5);
+            
+            if (!success)
+            {
+                System.Windows.MessageBox.Show(
+                    "Failed to start face tracking. Check camera permissions.",
+                    "AI Face Tracking",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+                _isAITrackingEnabled = false;
+                controlWindow?.UpdateAITrackingButtonState(false);
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Windows.MessageBox.Show($"Error starting face tracking:\n{ex.Message}", "AI Tracking Error");
+            _isAITrackingEnabled = false;
+            controlWindow?.UpdateAITrackingButtonState(false);
+        }
+    }
+
+    private void StopAIFaceTracking()
+    {
+        if (_faceTracker != null)
+        {
+            _faceTracker.FacePositionChanged -= OnFacePositionUpdated;
+            _faceTracker.Stop();
+        }
+        
+        _lightingMapper?.Reset();
+        
+        // Restore original lighting
+        RestoreOriginalLighting();
+    }
+
+    private System.Windows.Media.Brush? _originalEdgeBrush;
+    
+    private void SaveOriginalLighting()
+    {
+        if (EdgeLightBorder?.Fill != null && _originalEdgeBrush == null)
+        {
+            _originalEdgeBrush = EdgeLightBorder.Fill.Clone();
+        }
+    }
+    
+    private void RestoreOriginalLighting()
+    {
+        if (_originalEdgeBrush != null && EdgeLightBorder != null)
+        {
+            // Stop any running animations
+            EdgeLightBorder.Fill?.BeginAnimation(RadialGradientBrush.CenterProperty, null);
+            EdgeLightBorder.Fill?.BeginAnimation(RadialGradientBrush.GradientOriginProperty, null);
+            
+            EdgeLightBorder.Fill = _originalEdgeBrush.Clone();
+            _originalEdgeBrush = null;
+            
+            // Reset tracking state
+            _lastCenterX = 0.5;
+            _lastCenterY = 0.5;
+            
+            // Restore on additional monitors too
+            foreach (var ctx in additionalMonitorWindows)
+            {
+                if (ctx.Window is MainWindow mw && mw.EdgeLightBorder != null)
+                {
+                    mw.EdgeLightBorder.Fill = EdgeLightBorder.Fill.Clone();
+                }
+            }
+        }
+    }
+
+    private bool _faceDetectedOnce = false;
+    
+    private void OnFacePositionUpdated(object? sender, AI.FaceTrackingEventArgs e)
+    {
+        if (_lightingMapper == null || !_isAITrackingEnabled)
+            return;
+        
+        // Update lighting parameters based on face position
+        _lightingMapper.UpdateFromFacePosition(e);
+        
+        // Apply lighting changes to the edge
+        if (e.FaceDetected)
+        {
+            var parameters = _lightingMapper.CurrentParameters;
+            ApplyFaceBasedLighting(parameters);
+            System.Diagnostics.Debug.WriteLine($"Face at ({e.NormalizedX:F2}, {e.NormalizedY:F2}) -> L:{parameters.LeftBrightness:F2} R:{parameters.RightBrightness:F2}");
+        }
+    }
+
+    private double _lastCenterX = 0.5;
+    private double _lastCenterY = 0.5;
+    private const double MinChangeThreshold = 0.05; // Only animate if change is > 5%
+
+    private void ApplyFaceBasedLighting(AI.LightingParameters parameters)
+    {
+        // Create a radial gradient that shifts based on face position
+        // Face position determines the gradient center
+        
+        if (EdgeLightBorder == null)
+            return;
+
+        // Get the current base color from the existing brush
+        System.Windows.Media.Color baseColor = System.Windows.Media.Color.FromRgb(255, 255, 255);
+        if (EdgeLightBorder.Fill is RadialGradientBrush existingRadial && existingRadial.GradientStops.Count > 0)
+        {
+            baseColor = existingRadial.GradientStops[0].Color;
+        }
+        else if (EdgeLightBorder.Fill is LinearGradientBrush existingBrush && existingBrush.GradientStops.Count > 0)
+        {
+            baseColor = existingBrush.GradientStops[0].Color;
+        }
+
+        // Calculate gradient center based on which side is brighter
+        double targetX = 0.5 + (parameters.RightBrightness - parameters.LeftBrightness) * 0.8;
+        double targetY = 0.5 + (parameters.BottomBrightness - parameters.TopBrightness) * 0.8;
+        
+        targetX = Math.Clamp(targetX, 0.1, 0.9);
+        targetY = Math.Clamp(targetY, 0.1, 0.9);
+
+        // Check if change is significant enough to animate
+        double deltaX = Math.Abs(targetX - _lastCenterX);
+        double deltaY = Math.Abs(targetY - _lastCenterY);
+        bool significantChange = deltaX > MinChangeThreshold || deltaY > MinChangeThreshold;
+
+        // Inner/outer brightness
+        double innerBrightness = 1.0;
+        double outerBrightness = 0.2;
+
+        var innerColor = System.Windows.Media.Color.FromArgb(
+            baseColor.A,
+            (byte)(baseColor.R * innerBrightness),
+            (byte)(baseColor.G * innerBrightness),
+            (byte)(baseColor.B * innerBrightness));
+
+        var outerColor = System.Windows.Media.Color.FromArgb(
+            baseColor.A,
+            (byte)(baseColor.R * outerBrightness),
+            (byte)(baseColor.G * outerBrightness),
+            (byte)(baseColor.B * outerBrightness));
+
+        // Check if we already have a radial brush to animate
+        if (EdgeLightBorder.Fill is RadialGradientBrush currentBrush)
+        {
+            // Only animate if there's significant change
+            if (significantChange)
+            {
+                // Animate FROM current position TO target position
+                var fromPoint = new System.Windows.Point(_lastCenterX, _lastCenterY);
+                var toPoint = new System.Windows.Point(targetX, targetY);
+                
+                _lastCenterX = targetX;
+                _lastCenterY = targetY;
+                
+                var duration = new Duration(TimeSpan.FromMilliseconds(800));
+                var pointAnim = new System.Windows.Media.Animation.PointAnimation(fromPoint, toPoint, duration)
+                {
+                    EasingFunction = new System.Windows.Media.Animation.QuadraticEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseInOut },
+                    FillBehavior = System.Windows.Media.Animation.FillBehavior.HoldEnd
+                };
+                
+                currentBrush.BeginAnimation(RadialGradientBrush.CenterProperty, pointAnim);
+                currentBrush.BeginAnimation(RadialGradientBrush.GradientOriginProperty, pointAnim);
+            }
+            // If no significant change, do nothing - keep current position
+        }
+        else
+        {
+            // First time - create the brush
+            _lastCenterX = targetX;
+            _lastCenterY = targetY;
+            
+            var radialBrush = new RadialGradientBrush
+            {
+                GradientOrigin = new System.Windows.Point(targetX, targetY),
+                Center = new System.Windows.Point(targetX, targetY),
+                RadiusX = 0.7,
+                RadiusY = 0.7
+            };
+
+            radialBrush.GradientStops.Add(new GradientStop(innerColor, 0.0));
+            radialBrush.GradientStops.Add(new GradientStop(baseColor, 0.5));
+            radialBrush.GradientStops.Add(new GradientStop(outerColor, 1.0));
+
+            EdgeLightBorder.Fill = radialBrush;
+        }
+        
+        // Also update additional monitor windows (only on significant change)
+        if (significantChange)
+        {
+            var fromPoint = new System.Windows.Point(_lastCenterX - (targetX - _lastCenterX), _lastCenterY - (targetY - _lastCenterY)); // Previous position
+            var toPoint = new System.Windows.Point(targetX, targetY);
+            
+            foreach (var ctx in additionalMonitorWindows)
+            {
+                if (ctx.Window is MainWindow mw && mw.EdgeLightBorder != null)
+                {
+                    if (mw.EdgeLightBorder.Fill is RadialGradientBrush otherBrush)
+                    {
+                        var pointAnim = new System.Windows.Media.Animation.PointAnimation(toPoint, new Duration(TimeSpan.FromMilliseconds(800)))
+                        {
+                            EasingFunction = new System.Windows.Media.Animation.QuadraticEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseInOut },
+                            FillBehavior = System.Windows.Media.Animation.FillBehavior.HoldEnd
+                        };
+                        otherBrush.BeginAnimation(RadialGradientBrush.CenterProperty, pointAnim);
+                        otherBrush.BeginAnimation(RadialGradientBrush.GradientOriginProperty, pointAnim);
+                    }
+                }
+            }
+        }
     }
 
     private void ShowOnAllMonitors()

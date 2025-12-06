@@ -2,6 +2,7 @@
 using System.Data;
 using System.Windows;
 using Updatum;
+using WindowsEdgeLight.AI;
 using MessageBox = System.Windows.MessageBox;
 
 namespace WindowsEdgeLight;
@@ -24,6 +25,30 @@ public partial class App : System.Windows.Application
 
     protected override async void OnStartup(StartupEventArgs e)
     {
+        // Initialize file logging first so we capture everything
+        FileLogger.Initialize();
+        
+        // Add global exception handler to see crashes
+        AppDomain.CurrentDomain.UnhandledException += (s, args) =>
+        {
+            var ex = args.ExceptionObject as Exception;
+            System.Diagnostics.Debug.WriteLine($"UNHANDLED EXCEPTION: {ex?.Message}\n{ex?.StackTrace}");
+        };
+        
+        DispatcherUnhandledException += (s, args) =>
+        {
+            System.Diagnostics.Debug.WriteLine($"DISPATCHER EXCEPTION: {args.Exception.Message}\n{args.Exception.StackTrace}");
+            args.Handled = true;
+        };
+        
+        // Check for hardware test mode
+        if (e.Args.Length > 0 && e.Args[0] == "--test-hardware")
+        {
+            TestHardwareCapabilities();
+            Shutdown();
+            return;
+        }
+
         // Check for single instance using a named mutex
         const string mutexName = "WindowsEdgeLight_SingleInstance_Mutex";
         bool createdNew;
@@ -47,6 +72,7 @@ public partial class App : System.Windows.Application
 
     protected override void OnExit(ExitEventArgs e)
     {
+        FileLogger.Shutdown();
         _mutex?.ReleaseMutex();
         _mutex?.Dispose();
         base.OnExit(e);
@@ -147,6 +173,37 @@ public partial class App : System.Windows.Application
                 progressDialog.Close();
             }
         }
+    }
+
+    private void TestHardwareCapabilities()
+    {
+        // Test using native Windows FaceTracker API
+        string faceTrackerStatus;
+        try
+        {
+            faceTrackerStatus = global::Windows.Media.FaceAnalysis.FaceTracker.IsSupported 
+                ? "✅ Supported" 
+                : "❌ Not supported on this device";
+        }
+        catch (Exception ex)
+        {
+            faceTrackerStatus = $"❌ Error: {ex.Message}";
+        }
+        
+        var message = $"""
+            === Windows AI Capability Detection ===
+            
+            Windows FaceTracker API: {faceTrackerStatus}
+            
+            Note: This app uses Windows built-in face detection.
+            No additional models or hardware required.
+            Camera sharing is supported (works alongside Teams/Zoom).
+            """;
+        
+        // Also write to console for command-line visibility
+        Console.WriteLine(message);
+        
+        MessageBox.Show(message, "Hardware Detection Test", MessageBoxButton.OK, MessageBoxImage.Information);
     }
 }
 
