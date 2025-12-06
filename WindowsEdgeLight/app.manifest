@@ -8,5 +8,10 @@
       </requestedPrivileges>
     </security>
   </trustInfo>
-  <!-- DPI settings configured via ApplicationHighDpiMode in csproj -->
+  <application xmlns="urn:schemas-microsoft-com:asm.v3">
+    <windowsSettings>
+      <dpiAwareness xmlns="http://schemas.microsoft.com/SMI/2016/WindowsSettings">PerMonitorV2</dpiAwareness>
+      <dpiAware xmlns="http://schemas.microsoft.com/SMI/2005/WindowsSettings">true/PM</dpiAware>
+    </windowsSettings>
+  </application>
 </assembly>
