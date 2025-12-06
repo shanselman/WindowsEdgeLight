@@ -718,6 +718,9 @@ Version {version}";
         
         if (enableCameraDetection)
         {
+            // Initialize current light state before starting monitoring
+            lightWasOnBeforeCamera = isLightOn;
+            
             // Initialize and start camera monitor
             if (cameraMonitor == null)
             {

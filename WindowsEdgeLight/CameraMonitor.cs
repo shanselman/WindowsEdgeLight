@@ -82,8 +82,7 @@ public class CameraMonitor : IDisposable
 
                 foreach (var appName in subKeyNames)
                 {
-                    // Skip NonPackaged apps initially to see what we get
-                    // We'll check each app's LastUsedTimeStop value
+                    // Check each app's LastUsedTimeStop value
                     try
                     {
                         using var appKey = _registryKey.OpenSubKey(appName);
@@ -93,7 +92,22 @@ public class CameraMonitor : IDisposable
                         // If it's non-zero, it's the timestamp when the app stopped using the camera
                         var lastUsedTimeStop = appKey.GetValue("LastUsedTimeStop");
                         
-                        if (lastUsedTimeStop is long stopTime && stopTime == 0)
+                        // Handle different numeric types (registry can return int, long, etc.)
+                        long stopTime = 0;
+                        if (lastUsedTimeStop != null)
+                        {
+                            try
+                            {
+                                stopTime = Convert.ToInt64(lastUsedTimeStop);
+                            }
+                            catch
+                            {
+                                // If conversion fails, skip this app
+                                continue;
+                            }
+                        }
+                        
+                        if (stopTime == 0)
                         {
                             // Camera is currently in use by this app
                             // Filter out Windows Hello by checking app name
