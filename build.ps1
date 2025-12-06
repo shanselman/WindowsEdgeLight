@@ -6,6 +6,9 @@ param(
     [string]$Version = ""
 )
 
+# Target framework - must match csproj
+$TargetFramework = "net10.0-windows10.0.19041.0"
+
 # If version not provided, read from csproj
 if ([string]::IsNullOrEmpty($Version)) {
     Write-Host "Version not specified, reading from project file..." -ForegroundColor Yellow
@@ -41,7 +44,7 @@ dotnet publish WindowsEdgeLight\WindowsEdgeLight.csproj `
     --self-contained
 
 if ($LASTEXITCODE -eq 0) {
-    Copy-Item "WindowsEdgeLight\bin\$Configuration\net10.0-windows\win-x64\publish\WindowsEdgeLight.exe" `
+    Copy-Item "WindowsEdgeLight\bin\$Configuration\$TargetFramework\win-x64\publish\WindowsEdgeLight.exe" `
               ".\publish\WindowsEdgeLight-v$Version-win-x64.exe"
     $x64Size = [math]::Round((Get-Item ".\publish\WindowsEdgeLight-v$Version-win-x64.exe").Length / 1MB, 2)
     Write-Host "✓ x64 build complete: $x64Size MB" -ForegroundColor Green
@@ -61,7 +64,7 @@ dotnet publish WindowsEdgeLight\WindowsEdgeLight.csproj `
     --self-contained
 
 if ($LASTEXITCODE -eq 0) {
-    Copy-Item "WindowsEdgeLight\bin\$Configuration\net10.0-windows\win-arm64\publish\WindowsEdgeLight.exe" `
+    Copy-Item "WindowsEdgeLight\bin\$Configuration\$TargetFramework\win-arm64\publish\WindowsEdgeLight.exe" `
               ".\publish\WindowsEdgeLight-v$Version-win-arm64.exe"
     $arm64Size = [math]::Round((Get-Item ".\publish\WindowsEdgeLight-v$Version-win-arm64.exe").Length / 1MB, 2)
     Write-Host "✓ ARM64 build complete: $arm64Size MB" -ForegroundColor Green
