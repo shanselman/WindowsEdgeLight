@@ -5,6 +5,7 @@ A lightweight WPF application that adds a customizable glowing edge light effect
 ## Features
 
 - **Automatic Updates**: Built-in update system checks GitHub Releases for new versions
+- **Camera Detection**: Automatically turns on the light when your camera is in use (Teams, Zoom, etc.)
 - **Primary Monitor Display**: Automatically detects and displays on your primary monitor, even in multi-monitor setups
 - **DPI Aware**: Properly handles high-DPI displays (4K monitors with scaling)
 - **Fluent Design**: Modern UX that fits in with the Windows look and feel
@@ -87,6 +88,18 @@ The executable will be in `bin\Release\net10.0-windows\win-x64\publish\WindowsEd
    - 🖥️ **Switch Monitor** - Move to next monitor (if multiple monitors)
    - ✖ **Exit** - Close the application
 4. Hide the control toolbar for a cleaner look using the tray menu (right-click tray icon → "Hide Controls")
+5. Enable **Camera Detection** from the tray menu to automatically turn on the light during video calls
+
+### Camera Detection
+
+Enable this feature to automatically turn on the edge light when your camera is in use:
+
+1. Right-click the system tray icon
+2. Select "📷 Enable Camera Detection"
+3. The light will now automatically turn on when applications like Teams, Zoom, or any other app uses your camera
+4. When you end your video call, the light returns to its previous state
+
+**Note**: This feature monitors Windows registry keys to detect camera usage. It filters out Windows Hello authentication to prevent false triggers. See [CAMERA_DETECTION.md](docs/CAMERA_DETECTION.md) for technical details.
 
 ### Keyboard Shortcuts
 
