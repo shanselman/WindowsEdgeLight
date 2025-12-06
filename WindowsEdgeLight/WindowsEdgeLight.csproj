@@ -29,6 +29,13 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    
+    <!-- 
+      WFO0003: DPI settings in app.manifest are intentionally kept alongside ApplicationHighDpiMode.
+      The manifest settings are required for correct hole punch/click-through behavior on high-DPI displays.
+      Removing them breaks the transparent window positioning.
+    -->
+    <NoWarn>$(NoWarn);WFO0003</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
