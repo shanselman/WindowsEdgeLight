@@ -3,7 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     Title="Controls"
-    Width="370"
+    Width="410"
     Height="48"
     AllowsTransparency="True"
     Background="Transparent"
@@ -99,6 +99,16 @@
                 Content="&#xF57D;"
                 FontFamily="Segoe MDL2 Assets"
                 ToolTip="Show on all monitors" />
+
+            <Button
+                x:Name="ExcludeFromCaptureButton"
+                Width="40"
+                Height="40"
+                Margin="4,4,0,4"
+                AutomationProperties.Name="Exclude from screen capture"
+                Click="ExcludeFromCapture_Click"
+                Content="🎥"
+                ToolTip="Exclude from screen capture (Teams, screenshots)" />
 
             <Button
                 Width="40"

@@ -14,6 +14,7 @@ A lightweight WPF application that adds a customizable glowing edge light effect
 - **Toggle On/Off**: Quickly enable or disable the edge light effect
 - **Hideable Controls**: Hide the control toolbar for a cleaner look, restore via tray menu
 - **Always On Top**: Stays visible above all other windows
+- **Exclude from Screen Capture**: Optional setting to hide the edge light from screen sharing (Teams, Zoom) and screenshots
 - **Keyboard Shortcuts**: 
   - `Ctrl+Shift+L` - Toggle light on/off
   - `Ctrl+Shift+Up` - Increase brightness
@@ -85,8 +86,18 @@ The executable will be in `bin\Release\net10.0-windows\win-x64\publish\WindowsEd
    - 🔥 **Warmer Color** - Shifts the glow towards a warmer, amber tone
    - 💡 **Toggle Light** - Turn the effect on/off
    - 🖥️ **Switch Monitor** - Move to next monitor (if multiple monitors)
+   - 🖥️🖥️ **All Monitors** - Show on all monitors (if multiple monitors)
+   - 🎥 **Exclude from Capture** - Hide from screen sharing and screenshots
    - ✖ **Exit** - Close the application
 4. Hide the control toolbar for a cleaner look using the tray menu (right-click tray icon → "Hide Controls")
+
+### Screen Sharing Mode
+
+When sharing your screen on video conferencing apps (Teams, Zoom, etc.), you may want the edge light to be visible to you but invisible to viewers. Enable **"Exclude from Screen Capture"** via:
+- Click the 🎥 button in the control toolbar, or
+- Right-click the tray icon → "Exclude from Screen Capture"
+
+**Note**: When this setting is enabled, the edge light will also be excluded from screenshots taken with Windows Snipping Tool, PrintScreen, or other capture tools.
 
 ### Keyboard Shortcuts
 
