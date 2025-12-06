@@ -25,6 +25,20 @@ public partial class App : System.Windows.Application
 
     protected override async void OnStartup(StartupEventArgs e)
     {
+        // Check Windows version first - we need Windows 10 2004 (build 19041) or later
+        if (!IsWindowsVersionSupported())
+        {
+            MessageBox.Show(
+                "Windows Edge Light requires Windows 10 version 2004 (May 2020 Update) or later.\n\n" +
+                "Your current Windows version is not supported.\n\n" +
+                "Please update Windows or use an older version of this application.",
+                "Windows Version Not Supported",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+            Shutdown();
+            return;
+        }
+        
         // Initialize file logging first so we capture everything
         FileLogger.Initialize();
         
@@ -204,6 +218,17 @@ public partial class App : System.Windows.Application
         Console.WriteLine(message);
         
         MessageBox.Show(message, "Hardware Detection Test", MessageBoxButton.OK, MessageBoxImage.Information);
+    }
+
+    /// <summary>
+    /// Checks if the current Windows version meets minimum requirements.
+    /// Requires Windows 10 version 2004 (build 19041) or later for WinRT APIs.
+    /// </summary>
+    private static bool IsWindowsVersionSupported()
+    {
+        // Windows 10 2004 is build 10.0.19041
+        // OperatingSystem.IsWindowsVersionAtLeast is the modern way to check
+        return OperatingSystem.IsWindowsVersionAtLeast(10, 0, 19041);
     }
 }
 
