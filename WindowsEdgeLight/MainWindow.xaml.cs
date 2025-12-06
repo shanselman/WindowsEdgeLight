@@ -163,8 +163,9 @@ public partial class MainWindow : Window
             }
             else
             {
-                // Try application icon from exe
-                var appIcon = System.Drawing.Icon.ExtractAssociatedIcon(Environment.ProcessPath ?? System.Reflection.Assembly.GetExecutingAssembly().Location);
+                // Try application icon from exe - use ProcessPath for single-file apps
+                var exePath = Environment.ProcessPath ?? AppContext.BaseDirectory;
+                var appIcon = System.Drawing.Icon.ExtractAssociatedIcon(exePath);
                 notifyIcon.Icon = appIcon ?? System.Drawing.SystemIcons.Application;
             }
         }
@@ -1040,8 +1041,6 @@ Version {version}";
         }
     }
 
-    private bool _faceDetectedOnce = false;
-    
     private void OnFacePositionUpdated(object? sender, AI.FaceTrackingEventArgs e)
     {
         if (_lightingMapper == null || !_isAITrackingEnabled)

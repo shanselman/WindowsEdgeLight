@@ -175,6 +175,9 @@ public class FaceToLightingMapper
         if (SmoothingFactor <= 0.01)
             return target;
             
+        // Note: This code is currently unreachable since SmoothingFactor = 0.0
+        // Kept for future use if we re-enable smoothing
+#pragma warning disable CS0162
         return new LightingParameters
         {
             Brightness = Lerp(current.Brightness, target.Brightness, 1 - SmoothingFactor),
@@ -185,6 +188,7 @@ public class FaceToLightingMapper
             IsTracking = target.IsTracking,
             FaceDetected = target.FaceDetected
         };
+#pragma warning restore CS0162
     }
 
     private static double Lerp(double a, double b, double t)
