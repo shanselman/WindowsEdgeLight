@@ -743,7 +743,8 @@ Version {version}";
             var result = SetWindowDisplayAffinity(hwnd, settings.ExcludeFromCapture ? WDA_EXCLUDEFROMCAPTURE : WDA_NONE);
             if (!result)
             {
-                System.Diagnostics.Debug.WriteLine($"Failed to set display affinity for main window. Error: {Marshal.GetLastWin32Error()}");
+                var error = Marshal.GetLastWin32Error();
+                System.Diagnostics.Debug.WriteLine($"Failed to set display affinity for main window. Error: {error}");
             }
         }
         
@@ -756,7 +757,8 @@ Version {version}";
                 var result = SetWindowDisplayAffinity(controlHwnd, settings.ExcludeFromCapture ? WDA_EXCLUDEFROMCAPTURE : WDA_NONE);
                 if (!result)
                 {
-                    System.Diagnostics.Debug.WriteLine($"Failed to set display affinity for control window. Error: {Marshal.GetLastWin32Error()}");
+                    var error = Marshal.GetLastWin32Error();
+                    System.Diagnostics.Debug.WriteLine($"Failed to set display affinity for control window. Error: {error}");
                 }
             }
         }
@@ -770,7 +772,8 @@ Version {version}";
                 var result = SetWindowDisplayAffinity(monitorHwnd, settings.ExcludeFromCapture ? WDA_EXCLUDEFROMCAPTURE : WDA_NONE);
                 if (!result)
                 {
-                    System.Diagnostics.Debug.WriteLine($"Failed to set display affinity for monitor window. Error: {Marshal.GetLastWin32Error()}");
+                    var error = Marshal.GetLastWin32Error();
+                    System.Diagnostics.Debug.WriteLine($"Failed to set display affinity for monitor window. Error: {error}");
                 }
             }
         }
@@ -1117,7 +1120,8 @@ Version {version}";
             var result = SetWindowDisplayAffinity(hwnd, settings.ExcludeFromCapture ? WDA_EXCLUDEFROMCAPTURE : WDA_NONE);
             if (!result)
             {
-                System.Diagnostics.Debug.WriteLine($"Failed to set display affinity for monitor window during creation. Error: {Marshal.GetLastWin32Error()}");
+                var error = Marshal.GetLastWin32Error();
+                System.Diagnostics.Debug.WriteLine($"Failed to set display affinity for monitor window during creation. Error: {error}");
             }
 
             // Verify and update DPI if WPF reports a different value after window is loaded
