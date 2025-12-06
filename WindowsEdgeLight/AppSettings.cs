@@ -29,9 +29,32 @@ public class AppSettings
             if (File.Exists(SettingsFilePath))
             {
                 var json = File.ReadAllText(SettingsFilePath);
-                var settings = JsonSerializer.Deserialize<AppSettings>(json);
-                return settings ?? new AppSettings();
+                var options = new JsonSerializerOptions
+                {
+                    AllowTrailingCommas = true,
+                    ReadCommentHandling = JsonCommentHandling.Skip
+                };
+                var settings = JsonSerializer.Deserialize<AppSettings>(json, options);
+                
+                // Validate deserialized settings
+                if (settings != null)
+                {
+                    return settings;
+                }
             }
+        }
+        catch (JsonException ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Failed to parse settings file: {ex.Message}");
+            // Delete corrupted settings file
+            try
+            {
+                if (File.Exists(SettingsFilePath))
+                {
+                    File.Delete(SettingsFilePath);
+                }
+            }
+            catch { /* Ignore deletion errors */ }
         }
         catch (Exception ex)
         {

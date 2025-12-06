@@ -78,7 +78,7 @@ public partial class MainWindow : Window
     [DllImport("user32.dll")]
     private static extern bool UnregisterHotKey(IntPtr hWnd, int id);
 
-    [DllImport("user32.dll")]
+    [DllImport("user32.dll", SetLastError = true)]
     private static extern bool SetWindowDisplayAffinity(IntPtr hWnd, uint dwAffinity);
     
     private const uint WDA_NONE = 0x00000000;
@@ -740,7 +740,11 @@ Version {version}";
         var hwnd = new WindowInteropHelper(this).Handle;
         if (hwnd != IntPtr.Zero)
         {
-            SetWindowDisplayAffinity(hwnd, settings.ExcludeFromCapture ? WDA_EXCLUDEFROMCAPTURE : WDA_NONE);
+            var result = SetWindowDisplayAffinity(hwnd, settings.ExcludeFromCapture ? WDA_EXCLUDEFROMCAPTURE : WDA_NONE);
+            if (!result)
+            {
+                System.Diagnostics.Debug.WriteLine($"Failed to set display affinity for main window. Error: {Marshal.GetLastWin32Error()}");
+            }
         }
         
         // Apply to control window
@@ -749,7 +753,11 @@ Version {version}";
             var controlHwnd = new WindowInteropHelper(controlWindow).Handle;
             if (controlHwnd != IntPtr.Zero)
             {
-                SetWindowDisplayAffinity(controlHwnd, settings.ExcludeFromCapture ? WDA_EXCLUDEFROMCAPTURE : WDA_NONE);
+                var result = SetWindowDisplayAffinity(controlHwnd, settings.ExcludeFromCapture ? WDA_EXCLUDEFROMCAPTURE : WDA_NONE);
+                if (!result)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Failed to set display affinity for control window. Error: {Marshal.GetLastWin32Error()}");
+                }
             }
         }
         
@@ -759,7 +767,11 @@ Version {version}";
             var monitorHwnd = new WindowInteropHelper(ctx.Window).Handle;
             if (monitorHwnd != IntPtr.Zero)
             {
-                SetWindowDisplayAffinity(monitorHwnd, settings.ExcludeFromCapture ? WDA_EXCLUDEFROMCAPTURE : WDA_NONE);
+                var result = SetWindowDisplayAffinity(monitorHwnd, settings.ExcludeFromCapture ? WDA_EXCLUDEFROMCAPTURE : WDA_NONE);
+                if (!result)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Failed to set display affinity for monitor window. Error: {Marshal.GetLastWin32Error()}");
+                }
             }
         }
     }
@@ -1102,7 +1114,11 @@ Version {version}";
             SetWindowLong(hwnd, GWL_EXSTYLE, extendedStyle | WS_EX_TRANSPARENT | WS_EX_LAYERED);
 
             // Apply exclude from capture setting
-            SetWindowDisplayAffinity(hwnd, settings.ExcludeFromCapture ? WDA_EXCLUDEFROMCAPTURE : WDA_NONE);
+            var result = SetWindowDisplayAffinity(hwnd, settings.ExcludeFromCapture ? WDA_EXCLUDEFROMCAPTURE : WDA_NONE);
+            if (!result)
+            {
+                System.Diagnostics.Debug.WriteLine($"Failed to set display affinity for monitor window during creation. Error: {Marshal.GetLastWin32Error()}");
+            }
 
             // Verify and update DPI if WPF reports a different value after window is loaded
             var source = PresentationSource.FromVisual(window);

@@ -29,8 +29,15 @@ public partial class ControlWindow : Window
 
     public void UpdateExcludeFromCaptureButtonState()
     {
+        bool isEnabled = mainWindow.IsExcludeFromCaptureEnabled();
+        
         // Update button opacity to show state (more opaque when active)
-        ExcludeFromCaptureButton.Opacity = mainWindow.IsExcludeFromCaptureEnabled() ? 1.0 : 0.5;
+        ExcludeFromCaptureButton.Opacity = isEnabled ? 1.0 : 0.5;
+        
+        // Update tooltip for better accessibility
+        ExcludeFromCaptureButton.ToolTip = isEnabled 
+            ? "Exclude from screen capture: ON (invisible in Teams/Zoom sharing)" 
+            : "Exclude from screen capture: OFF (click to hide from screen sharing)";
     }
 
     private void BrightnessDown_Click(object sender, RoutedEventArgs e)
