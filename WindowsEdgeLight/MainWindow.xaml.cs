@@ -158,7 +158,7 @@ public partial class MainWindow : Window
         
         // If HDR is active and user hasn't disabled HDR-aware rendering, 
         // adjust default color temperature for better HDR experience
-        if (_hdrCapability.IsHdrActive && _hdrAwareRenderingEnabled)
+        if (_hdrCapability?.IsHdrActive == true && _hdrAwareRenderingEnabled)
         {
             _colorTemperature = HdrColorManager.GetRecommendedColorTemperatureForHdr();
         }
