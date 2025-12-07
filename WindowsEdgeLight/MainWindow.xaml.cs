@@ -763,7 +763,6 @@ Version {version}";
             notifyIcon.ContextMenuStrip = null;
             oldMenu?.Dispose();
             
-            var newMenu = new ContextMenuStrip();
             notifyIcon.ContextMenuStrip = BuildContextMenu();
         }
         
