@@ -36,6 +36,10 @@ public partial class MainWindow : Window
     // Tracks whether the control window should be visible (controls initial visibility and toggle state)
     private bool isControlWindowVisible = true;
     private ToolStripMenuItem? toggleControlsMenuItem;
+    
+    // HDR support
+    private HdrCapability? _hdrCapability;
+    private bool _hdrAwareRenderingEnabled = true; // Default to true to use HDR when available
 
     private class MonitorWindowContext
     {
@@ -141,7 +145,23 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         hoverCursorRing = FindName("HoverCursorRing") as Ellipse;
+        
+        // Detect HDR capability early
+        DetectHdrCapability();
+        
         SetupNotifyIcon();
+    }
+    
+    private void DetectHdrCapability()
+    {
+        _hdrCapability = HdrColorManager.DetectHdrCapability();
+        
+        // If HDR is active and user hasn't disabled HDR-aware rendering, 
+        // adjust default color temperature for better HDR experience
+        if (_hdrCapability.IsHdrActive && _hdrAwareRenderingEnabled)
+        {
+            _colorTemperature = HdrColorManager.GetRecommendedColorTemperatureForHdr();
+        }
     }
 
     private void SetupNotifyIcon()
@@ -172,38 +192,28 @@ public partial class MainWindow : Window
         notifyIcon.Text = "Windows Edge Light - Right-click for options";
         notifyIcon.Visible = true;
         
-    var contextMenu = new ContextMenuStrip();
-    contextMenu.Items.Add("📋 Keyboard Shortcuts", null, (s, e) => ShowHelp());
-    contextMenu.Items.Add(new ToolStripSeparator());
-    contextMenu.Items.Add("💡 Toggle Light (Ctrl+Shift+L)", null, (s, e) => ToggleLight());
-    contextMenu.Items.Add("🔆 Brightness Up (Ctrl+Shift+↑)", null, (s, e) => IncreaseBrightness());
-    contextMenu.Items.Add("🔅 Brightness Down (Ctrl+Shift+↓)", null, (s, e) => DecreaseBrightness());
-    contextMenu.Items.Add(new ToolStripSeparator());
-    contextMenu.Items.Add("🔥 K- Warmer Light", null, (s, e) => IncreaseColorTemperature());
-    contextMenu.Items.Add("❄️ K+ Cooler Light", null, (s, e) => DecreaseColorTemperature());
-    contextMenu.Items.Add(new ToolStripSeparator());
-    contextMenu.Items.Add("🖥️ Switch Monitor", null, (s, e) => MoveToNextMonitor());
-    contextMenu.Items.Add("🖥️🖥️ Toggle All Monitors", null, (s, e) => ToggleAllMonitors());
-    contextMenu.Items.Add(new ToolStripSeparator());
-    
-    // Add toggle controls menu item - text will be set by UpdateTrayMenuToggleControlsText
-    toggleControlsMenuItem = new ToolStripMenuItem("🎛️ Hide Controls", null, (s, e) => ToggleControlsVisibility());
-    contextMenu.Items.Add(toggleControlsMenuItem);
-    
-    contextMenu.Items.Add(new ToolStripSeparator());
-    contextMenu.Items.Add("✖ Exit", null, (s, e) => System.Windows.Application.Current.Shutdown());
-        
-        notifyIcon.ContextMenuStrip = contextMenu;
+        // Build the context menu
+        notifyIcon.ContextMenuStrip = BuildContextMenu();
         notifyIcon.DoubleClick += (s, e) => ShowHelp();
-        
-        // Set initial menu text based on current state
-        UpdateTrayMenuToggleControlsText();
     }
 
     private void ShowHelp()
     {
         var version = System.Reflection.Assembly.GetExecutingAssembly()
             .GetName().Version?.ToString() ?? "Unknown";
+        
+        string hdrInfo = "";
+        if (_hdrCapability != null)
+        {
+            if (_hdrCapability.IsHdrActive)
+            {
+                hdrInfo = $"\n🎨 HDR Display: Active ({_hdrCapability.BitsPerColor}-bit color)\n   HDR-Aware Rendering: {(_hdrAwareRenderingEnabled ? "Enabled" : "Disabled")}";
+            }
+            else if (_hdrCapability.IsSupported)
+            {
+                hdrInfo = "\n🎨 HDR Display: Supported (Enable in Windows Settings)";
+            }
+        }
         
         var helpMessage = $@"Windows Edge Light - Keyboard Shortcuts
 
@@ -218,6 +228,7 @@ public partial class MainWindow : Window
 • Control toolbar with brightness, color temp, and monitor options
 • Color temperature controls (🔥 warmer, ❄️ cooler)
 • Switch between monitors or show on all monitors
+• HDR/Advanced Color support - respects Windows color management{hdrInfo}
 
 Created by Scott Hanselman
 Version {version}";
@@ -691,6 +702,108 @@ Version {version}";
         {
             toggleControlsMenuItem.Text = isControlWindowVisible ? "🎛️ Hide Controls" : "🎛️ Show Controls";
         }
+    }
+    
+    private void AddHdrMenuItems(ContextMenuStrip contextMenu)
+    {
+        if (_hdrCapability == null) return;
+        
+        // Show HDR status
+        if (_hdrCapability.IsHdrActive)
+        {
+            string hdrStatus = $"🎨 HDR Active ({_hdrCapability.BitsPerColor}-bit)";
+            var statusItem = contextMenu.Items.Add(hdrStatus);
+            statusItem.Enabled = false; // Display only, not clickable
+            
+            // Add toggle for HDR-aware rendering
+            string toggleText = _hdrAwareRenderingEnabled ? "✓ HDR-Aware Rendering" : "HDR-Aware Rendering";
+            contextMenu.Items.Add(toggleText, null, (s, e) => ToggleHdrAwareRendering());
+        }
+        else if (_hdrCapability.IsSupported)
+        {
+            var statusItem = contextMenu.Items.Add("🎨 HDR Supported (Not Enabled)");
+            statusItem.Enabled = false;
+        }
+        else
+        {
+            var statusItem = contextMenu.Items.Add("🎨 SDR Display");
+            statusItem.Enabled = false;
+        }
+        
+        // Add info about Windows Auto Color Management
+        if (HdrColorManager.IsAutoColorManagementAvailable())
+        {
+            var acmItem = contextMenu.Items.Add("ℹ️ Auto Color Management Active");
+            acmItem.Enabled = false;
+        }
+    }
+    
+    private void ToggleHdrAwareRendering()
+    {
+        _hdrAwareRenderingEnabled = !_hdrAwareRenderingEnabled;
+        
+        // Re-detect and apply settings
+        DetectHdrCapability();
+        
+        // Update color temperature based on current HDR state
+        if (_hdrCapability?.IsHdrActive == true && _hdrAwareRenderingEnabled)
+        {
+            SetColorTemperature(HdrColorManager.GetRecommendedColorTemperatureForHdr());
+        }
+        else if (!_hdrAwareRenderingEnabled)
+        {
+            // Reset to neutral when HDR-aware rendering is disabled
+            SetColorTemperature(0.5);
+        }
+        
+        // Recreate the notify icon menu to update checkmark
+        if (notifyIcon != null)
+        {
+            var oldMenu = notifyIcon.ContextMenuStrip;
+            notifyIcon.ContextMenuStrip = null;
+            oldMenu?.Dispose();
+            
+            var newMenu = new ContextMenuStrip();
+            notifyIcon.ContextMenuStrip = BuildContextMenu();
+        }
+        
+        var message = _hdrAwareRenderingEnabled 
+            ? "HDR-aware rendering enabled. Colors optimized for HDR displays." 
+            : "HDR-aware rendering disabled. Using standard SDR colors.";
+        System.Windows.MessageBox.Show(message, "HDR Rendering", MessageBoxButton.OK, MessageBoxImage.Information);
+    }
+    
+    private ContextMenuStrip BuildContextMenu()
+    {
+        var contextMenu = new ContextMenuStrip();
+        contextMenu.Items.Add("📋 Keyboard Shortcuts", null, (s, e) => ShowHelp());
+        contextMenu.Items.Add(new ToolStripSeparator());
+        
+        // Add HDR status and control
+        AddHdrMenuItems(contextMenu);
+        contextMenu.Items.Add(new ToolStripSeparator());
+        
+        contextMenu.Items.Add("💡 Toggle Light (Ctrl+Shift+L)", null, (s, e) => ToggleLight());
+        contextMenu.Items.Add("🔆 Brightness Up (Ctrl+Shift+↑)", null, (s, e) => IncreaseBrightness());
+        contextMenu.Items.Add("🔅 Brightness Down (Ctrl+Shift+↓)", null, (s, e) => DecreaseBrightness());
+        contextMenu.Items.Add(new ToolStripSeparator());
+        contextMenu.Items.Add("🔥 K- Warmer Light", null, (s, e) => IncreaseColorTemperature());
+        contextMenu.Items.Add("❄️ K+ Cooler Light", null, (s, e) => DecreaseColorTemperature());
+        contextMenu.Items.Add(new ToolStripSeparator());
+        contextMenu.Items.Add("🖥️ Switch Monitor", null, (s, e) => MoveToNextMonitor());
+        contextMenu.Items.Add("🖥️🖥️ Toggle All Monitors", null, (s, e) => ToggleAllMonitors());
+        contextMenu.Items.Add(new ToolStripSeparator());
+        
+        // Add toggle controls menu item - text will be set by UpdateTrayMenuToggleControlsText
+        toggleControlsMenuItem = new ToolStripMenuItem("🎛️ Hide Controls", null, (s, e) => ToggleControlsVisibility());
+        contextMenu.Items.Add(toggleControlsMenuItem);
+        
+        contextMenu.Items.Add(new ToolStripSeparator());
+        contextMenu.Items.Add("✖ Exit", null, (s, e) => System.Windows.Application.Current.Shutdown());
+        
+        UpdateTrayMenuToggleControlsText();
+        
+        return contextMenu;
     }
 
     public void IncreaseBrightness()
