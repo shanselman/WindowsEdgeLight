@@ -9,6 +9,15 @@ namespace WindowsEdgeLight;
 /// </summary>
 public class HdrColorManager
 {
+    // HDR color temperature recommendation
+    private const double HDR_RECOMMENDED_COLOR_TEMP = 0.55;
+    
+    // Default fallback capability for non-HDR displays
+    private static readonly HdrCapability DefaultCapability = new HdrCapability 
+    { 
+        IsSupported = false, 
+        IsEnabled = false 
+    };
     // Display configuration structures and flags
     [StructLayout(LayoutKind.Sequential)]
     private struct LUID
@@ -106,7 +115,7 @@ public class HdrColorManager
             
             if (error != 0 || pathCount == 0)
             {
-                return new HdrCapability { IsSupported = false, IsEnabled = false };
+                return DefaultCapability;
             }
 
             // Query active display paths
@@ -115,7 +124,7 @@ public class HdrColorManager
             
             if (error != 0)
             {
-                return new HdrCapability { IsSupported = false, IsEnabled = false };
+                return DefaultCapability;
             }
 
             // Check the first active display (typically the primary)
@@ -160,7 +169,7 @@ public class HdrColorManager
             // If any error occurs, fall back to SDR mode
         }
 
-        return new HdrCapability { IsSupported = false, IsEnabled = false };
+        return DefaultCapability;
     }
 
     /// <summary>
@@ -169,8 +178,8 @@ public class HdrColorManager
     /// </summary>
     public static double GetRecommendedColorTemperatureForHdr()
     {
-        // For HDR displays, a slightly warmer default (0.55) provides better visual comfort
-        return 0.55;
+        // For HDR displays, a slightly warmer default provides better visual comfort
+        return HDR_RECOMMENDED_COLOR_TEMP;
     }
 
     /// <summary>

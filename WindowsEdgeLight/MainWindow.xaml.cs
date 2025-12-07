@@ -768,10 +768,14 @@ Version {version}";
             notifyIcon.ContextMenuStrip = BuildContextMenu();
         }
         
-        var message = _hdrAwareRenderingEnabled 
-            ? "HDR-aware rendering enabled. Colors optimized for HDR displays." 
-            : "HDR-aware rendering disabled. Using standard SDR colors.";
-        System.Windows.MessageBox.Show(message, "HDR Rendering", MessageBoxButton.OK, MessageBoxImage.Information);
+        // Only show message if HDR is actually supported
+        if (_hdrCapability?.IsSupported == true)
+        {
+            var message = _hdrAwareRenderingEnabled 
+                ? "HDR-aware rendering enabled. Colors optimized for HDR displays." 
+                : "HDR-aware rendering disabled. Using standard SDR colors.";
+            System.Windows.MessageBox.Show(message, "HDR Rendering", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
     }
     
     private ContextMenuStrip BuildContextMenu()
