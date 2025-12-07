@@ -181,10 +181,12 @@ public class HdrColorManager
     {
         try
         {
-            // Check Windows version - ACM is Windows 11 22H2 and later
+            // Check Windows version - ACM is Windows 11 and later
             var version = Environment.OSVersion.Version;
             
             // Windows 11 is version 10.0.22000 and higher
+            // Note: Full Auto Color Management with all features is in 22H2 (build 22621+)
+            // but basic advanced color support exists from initial Windows 11 (build 22000)
             if (version.Major >= 10 && version.Build >= 22000)
             {
                 return true;

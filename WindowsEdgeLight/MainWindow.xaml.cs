@@ -24,6 +24,7 @@ public partial class MainWindow : Window
     private const double ColorTempStep = 0.1;
     private const double MinColorTemp = 0.0;
     private const double MaxColorTemp = 1.0;
+    private const double NeutralColorTemp = 0.5; // Neutral color temperature (balanced)
 
     // DPI Scale
     private double _dpiScaleX = 1.0;
@@ -160,7 +161,8 @@ public partial class MainWindow : Window
         // adjust default color temperature for better HDR experience
         if (_hdrCapability?.IsHdrActive == true && _hdrAwareRenderingEnabled)
         {
-            _colorTemperature = HdrColorManager.GetRecommendedColorTemperatureForHdr();
+            // Use SetColorTemperature to ensure UI elements are properly updated
+            SetColorTemperature(HdrColorManager.GetRecommendedColorTemperatureForHdr());
         }
     }
 
@@ -753,7 +755,7 @@ Version {version}";
         else if (!_hdrAwareRenderingEnabled)
         {
             // Reset to neutral when HDR-aware rendering is disabled
-            SetColorTemperature(0.5);
+            SetColorTemperature(NeutralColorTemp);
         }
         
         // Recreate the notify icon menu to update checkmark

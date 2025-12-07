@@ -61,9 +61,9 @@ The `app.manifest` file is configured to:
 - Be compatible with Windows Advanced Color features
 
 ### 2. Display Configuration API
-Uses Windows Display Configuration APIs to query:
+Uses Windows Display Configuration APIs to query display advanced color information:
 ```
-DISPLAYCONFIG_GET_ADVANCED_COLOR_INFO
+DisplayConfigGetDeviceInfo with DISPLAYCONFIG_DEVICE_INFO_GET_ADVANCED_COLOR_INFO
 ```
 This provides:
 - Advanced color support status
