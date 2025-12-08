@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
@@ -17,6 +17,7 @@ public partial class MainWindow : Window
     private const double OpacityStep = 0.15;
     private const double MinOpacity = 0.2;
     private const double MaxOpacity = 1.0;
+	
 
     // Color temperature ("cool" blue-ish to "warm" amber-ish)
     // We'll model this as a simple 0-1 slider where 0 = coolest, 1 = warmest.

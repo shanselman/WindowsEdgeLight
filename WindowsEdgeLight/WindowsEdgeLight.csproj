@@ -42,7 +42,7 @@
 
   <ItemGroup>
 
-    <PackageReference Include="Updatum" Version="1.1.6" />
+    <PackageReference Include="Updatum" Version="1.2.1" />
 
   </ItemGroup>
 
