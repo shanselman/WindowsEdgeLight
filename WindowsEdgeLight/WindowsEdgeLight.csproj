@@ -27,6 +27,11 @@
     <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+    
+    <!-- Suppress expected warnings -->
+    <!-- WFO0003: Using Windows Forms (NotifyIcon, Screen API) in WPF app - intentional design choice -->
+    <!-- IL3000: Assembly.Location returns empty in single-file apps - we handle this with fallbacks -->
+    <NoWarn>$(NoWarn);WFO0003;IL3000</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
