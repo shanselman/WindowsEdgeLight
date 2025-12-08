@@ -5,6 +5,7 @@ A lightweight WPF application that adds a customizable glowing edge light effect
 ## Features
 
 - **Automatic Updates**: Built-in update system checks GitHub Releases for new versions
+- **HDR Support**: Full support for HDR/Advanced Color displays without affecting other apps
 - **Primary Monitor Display**: Automatically detects and displays on your primary monitor, even in multi-monitor setups
 - **DPI Aware**: Properly handles high-DPI displays (4K monitors with scaling)
 - **Fluent Design**: Modern UX that fits in with the Windows look and feel
@@ -93,7 +94,7 @@ The executable will be in `bin\Release\net10.0-windows\win-x64\publish\WindowsEd
 - **Ctrl+Shift+L**: Toggle the edge light on/off
 - **Ctrl+Shift+Up**: Increase brightness
 - **Ctrl+Shift+Down**: Decrease brightness
-- **Taskbar**: Right-click the taskbar icon for a menu with toggle, brightness, and color temperature controls
+- **Taskbar**: Right-click the taskbar icon for a menu with toggle, brightness, color temperature, HDR status, and monitor controls
 
 ## Technical Details
 
@@ -118,6 +119,17 @@ The application specifically targets the **primary monitor** in your display set
 - Correctly handles DPI scaling (e.g., 150%, 200% on 4K displays)
 - Works with any monitor arrangement (horizontal, vertical, mixed)
 - Does not span across multiple monitors
+- Supports HDR/Advanced Color on compatible displays
+
+## HDR and Advanced Color Support
+
+Windows Edge Light fully supports HDR (High Dynamic Range) and Windows Advanced Color:
+- Automatic detection of HDR-capable displays
+- HDR-aware color rendering when enabled
+- Respects Windows Auto Color Management (Windows 11+)
+- Zero impact on other applications' color management
+- Toggle HDR-aware rendering via system tray menu
+- See [HDR_SUPPORT.md](docs/HDR_SUPPORT.md) for detailed information
 
 ## Development
 
