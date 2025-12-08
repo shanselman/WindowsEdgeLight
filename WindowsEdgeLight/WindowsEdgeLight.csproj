@@ -39,6 +39,14 @@
 
     <PackageReference Include="Updatum" Version="1.1.6" />
 
+    <PackageReference Include="Vortice.D3DCompiler" Version="3.8.1" />
+
+    <PackageReference Include="Vortice.Direct3D11" Version="3.8.1" />
+
+    <PackageReference Include="Vortice.DirectComposition" Version="3.8.1" />
+
+    <PackageReference Include="Vortice.DXGI" Version="3.8.1" />
+
   </ItemGroup>
 
 </Project>

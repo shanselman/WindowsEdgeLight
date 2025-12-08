@@ -41,6 +41,12 @@ public partial class MainWindow : Window
     // HDR support
     private HdrCapability? _hdrCapability;
     private bool _hdrAwareRenderingEnabled = true; // Default to true to use HDR when available
+    
+    // HDR brightness rendering - uses native D3D overlay for true HDR brightness
+    private HdrOverlayWindow? _hdrOverlay;
+    private bool _useHdrOverlay = false;  // Whether to use D3D HDR overlay instead of WPF
+    private float _hdrBrightness = 6.0f;   // HDR brightness multiplier - 6x SDR = ~480 nits (reasonable default)
+    private bool _isClosing = false;       // Track if window is closing to avoid visibility changes
 
     private class MonitorWindowContext
     {
@@ -354,6 +360,9 @@ Version {version}";
 
     private void HandleMouseMove(int screenX, int screenY)
     {
+        // Skip hole punch logic when HDR overlay is active (it handles its own rendering)
+        if (_useHdrOverlay) return;
+        
         if (!isLightOn)
         {
             if (EdgeLightBorder.Visibility != Visibility.Collapsed)
@@ -608,12 +617,17 @@ Version {version}";
 
     protected override void OnClosed(EventArgs e)
     {
+        _isClosing = true;  // Prevent visibility changes during shutdown
+        
         UninstallMouseHook();
         
         var hwnd = new WindowInteropHelper(this).Handle;
         UnregisterHotKey(hwnd, HOTKEY_TOGGLE);
         UnregisterHotKey(hwnd, HOTKEY_BRIGHTNESS_UP);
         UnregisterHotKey(hwnd, HOTKEY_BRIGHTNESS_DOWN);
+        
+        // Clean up HDR overlay
+        DisposeHdrOverlay();
         
         if (notifyIcon != null)
         {
@@ -649,6 +663,21 @@ Version {version}";
     private void ToggleLight()
     {
         isLightOn = !isLightOn;
+        
+        // Handle HDR overlay visibility
+        if (_useHdrOverlay && _hdrOverlay != null)
+        {
+            if (isLightOn)
+            {
+                _hdrOverlay.Show();
+            }
+            else
+            {
+                _hdrOverlay.Hide();
+            }
+            return; // Don't touch WPF elements when in HDR mode
+        }
+        
         if (isLightOn)
         {
             EdgeLightBorder.Visibility = Visibility.Visible;
@@ -710,71 +739,139 @@ Version {version}";
     {
         if (_hdrCapability == null) return;
         
-        // Show HDR status
+        // Show HDR status and Bright Mode option
         if (_hdrCapability.IsHdrActive)
         {
             string hdrStatus = $"🎨 HDR Active ({_hdrCapability.BitsPerColor}-bit)";
             var statusItem = contextMenu.Items.Add(hdrStatus);
             statusItem.Enabled = false; // Display only, not clickable
             
-            // Add toggle for HDR-aware rendering
-            string toggleText = _hdrAwareRenderingEnabled ? "✓ HDR-Aware Rendering" : "HDR-Aware Rendering";
-            contextMenu.Items.Add(toggleText, null, (s, e) => ToggleHdrAwareRendering());
+            // Add toggle for HDR Bright Mode (true HDR brightness via D3D)
+            string overlayText = _useHdrOverlay ? "✓ HDR Bright Mode" : "HDR Bright Mode";
+            contextMenu.Items.Add(overlayText, null, (s, e) => ToggleHdrOverlay());
+            
+            // Show current HDR brightness level when active (info only - use main controls to adjust)
+            if (_useHdrOverlay)
+            {
+                contextMenu.Items.Add($"  ☀️ {_hdrBrightness:F1}x (~{_hdrBrightness * 80:F0} nits)").Enabled = false;
+            }
         }
         else if (_hdrCapability.IsSupported)
         {
-            var statusItem = contextMenu.Items.Add("🎨 HDR Supported (Not Enabled)");
+            // HDR supported but not enabled - show grayed out option
+            var statusItem = contextMenu.Items.Add("🎨 HDR Supported (Enable in Windows Settings)");
             statusItem.Enabled = false;
+            
+            var brightModeItem = contextMenu.Items.Add("HDR Bright Mode (requires HDR enabled)");
+            brightModeItem.Enabled = false;
         }
         else
         {
+            // SDR display - show grayed out option
             var statusItem = contextMenu.Items.Add("🎨 SDR Display");
             statusItem.Enabled = false;
-        }
-        
-        // Add info about Windows Auto Color Management
-        if (HdrColorManager.IsAutoColorManagementAvailable())
-        {
-            var acmItem = contextMenu.Items.Add("ℹ️ Auto Color Management Active");
-            acmItem.Enabled = false;
+            
+            var brightModeItem = contextMenu.Items.Add("HDR Bright Mode (requires HDR display)");
+            brightModeItem.Enabled = false;
         }
     }
     
-    private void ToggleHdrAwareRendering()
+    private void ToggleHdrOverlay()
     {
-        _hdrAwareRenderingEnabled = !_hdrAwareRenderingEnabled;
+        _useHdrOverlay = !_useHdrOverlay;
         
-        // Re-detect and apply settings
-        DetectHdrCapability();
-        
-        // Update color temperature based on current HDR state
-        if (_hdrCapability?.IsHdrActive == true && _hdrAwareRenderingEnabled)
+        if (_useHdrOverlay)
         {
-            SetColorTemperature(HdrColorManager.GetRecommendedColorTemperatureForHdr());
+            // Initialize and show HDR overlay
+            InitializeHdrOverlay();
         }
-        else if (!_hdrAwareRenderingEnabled)
+        else
         {
-            // Reset to neutral when HDR-aware rendering is disabled
-            SetColorTemperature(NeutralColorTemp);
+            // Dispose HDR overlay, show WPF window (DisposeHdrOverlay restores visibility)
+            DisposeHdrOverlay();
         }
         
-        // Recreate the notify icon menu to update checkmark
+        RefreshContextMenu();
+    }
+    
+    private void InitializeHdrOverlay()
+    {
+        if (_hdrOverlay != null) return;
+        
+        // Get current screen
+        var screen = availableMonitors.Length > currentMonitorIndex 
+            ? availableMonitors[currentMonitorIndex] 
+            : Screen.PrimaryScreen;
+        
+        if (screen == null) return;
+        
+        // Use WorkingArea (excludes taskbar) like WPF does
+        var workingArea = screen.WorkingArea;
+        
+        _hdrOverlay = new HdrOverlayWindow();
+        if (_hdrOverlay.Initialize(workingArea.Left, workingArea.Top, workingArea.Width, workingArea.Height, out var errorMessage))
+        {
+            _hdrOverlay.HdrBrightness = _hdrBrightness;
+            _hdrOverlay.ColorTemperature = (float)_colorTemperature;
+            
+            // Calculate physical pixel values from WPF logical pixels using current DPI
+            // WPF uses: frameThickness=80, outerRadius=100, margin=20
+            float dpiScale = (float)_dpiScaleX; // Assuming uniform scaling
+            _hdrOverlay.EdgeThickness = 80.0f * dpiScale;
+            _hdrOverlay.CornerRadius = 100.0f * dpiScale;
+            _hdrOverlay.InnerCornerRadius = 60.0f * dpiScale; // WPF uses 60 for inner corners
+            _hdrOverlay.Margin = 20.0f * dpiScale;
+            
+            // Hide entire WPF window (not just EdgeLightBorder) so it doesn't show behind HDR overlay
+            this.Visibility = Visibility.Hidden;
+            _hdrOverlay.Show();
+        }
+        else
+        {
+            _hdrOverlay.Dispose();
+            _hdrOverlay = null;
+            _useHdrOverlay = false;
+            System.Windows.MessageBox.Show(
+                $"Failed to initialize HDR overlay.\n\nError: {errorMessage ?? "Unknown error"}",
+                "HDR Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+    }
+    
+    private void DisposeHdrOverlay()
+    {
+        _hdrOverlay?.Dispose();
+        _hdrOverlay = null;
+        
+        // Show WPF window again (only if window is still open)
+        if (IsLoaded && !_isClosing)
+        {
+            this.Visibility = Visibility.Visible;
+        }
+    }
+    
+    private void ShowHdrDiagnostics()
+    {
+        var diagnostics = HdrColorManager.GetHdrDiagnostics();
+        System.Windows.MessageBox.Show(diagnostics, "HDR Diagnostics", MessageBoxButton.OK, MessageBoxImage.Information);
+    }
+    
+    private void UpdateHdrOverlay()
+    {
+        if (_hdrOverlay != null)
+        {
+            _hdrOverlay.HdrBrightness = _hdrBrightness;
+            _hdrOverlay.ColorTemperature = (float)_colorTemperature;
+        }
+    }
+    
+    private void RefreshContextMenu()
+    {
         if (notifyIcon != null)
         {
             var oldMenu = notifyIcon.ContextMenuStrip;
             notifyIcon.ContextMenuStrip = null;
             oldMenu?.Dispose();
-            
             notifyIcon.ContextMenuStrip = BuildContextMenu();
-        }
-        
-        // Only show message if HDR is actually supported
-        if (_hdrCapability?.IsSupported == true)
-        {
-            var message = _hdrAwareRenderingEnabled 
-                ? "HDR-aware rendering enabled. Colors optimized for HDR displays." 
-                : "HDR-aware rendering disabled. Using standard SDR colors.";
-            System.Windows.MessageBox.Show(message, "HDR Rendering", MessageBoxButton.OK, MessageBoxImage.Information);
         }
     }
     
@@ -813,20 +910,38 @@ Version {version}";
 
     public void IncreaseBrightness()
     {
-        currentOpacity = Math.Min(MaxOpacity, currentOpacity + OpacityStep);
-        EdgeLightBorder.Opacity = currentOpacity;
-        
-        // Update all additional monitor windows
-        UpdateAdditionalMonitorWindows();
+        if (_useHdrOverlay && _hdrOverlay != null)
+        {
+            // In HDR mode, increase HDR brightness
+            _hdrBrightness = Math.Min(HdrOverlayWindow.MaxHdrBrightness, _hdrBrightness + 0.5f);
+            _hdrOverlay.HdrBrightness = _hdrBrightness;
+            RefreshContextMenu();
+        }
+        else
+        {
+            // Standard WPF brightness (opacity)
+            currentOpacity = Math.Min(MaxOpacity, currentOpacity + OpacityStep);
+            EdgeLightBorder.Opacity = currentOpacity;
+            UpdateAdditionalMonitorWindows();
+        }
     }
 
     public void DecreaseBrightness()
     {
-        currentOpacity = Math.Max(MinOpacity, currentOpacity - OpacityStep);
-        EdgeLightBorder.Opacity = currentOpacity;
-        
-        // Update all additional monitor windows
-        UpdateAdditionalMonitorWindows();
+        if (_useHdrOverlay && _hdrOverlay != null)
+        {
+            // In HDR mode, decrease HDR brightness
+            _hdrBrightness = Math.Max(HdrOverlayWindow.MinHdrBrightness, _hdrBrightness - 0.5f);
+            _hdrOverlay.HdrBrightness = _hdrBrightness;
+            RefreshContextMenu();
+        }
+        else
+        {
+            // Standard WPF brightness (opacity)
+            currentOpacity = Math.Max(MinOpacity, currentOpacity - OpacityStep);
+            EdgeLightBorder.Opacity = currentOpacity;
+            UpdateAdditionalMonitorWindows();
+        }
     }
 
     private void UpdateAdditionalMonitorWindows()
@@ -875,6 +990,12 @@ Version {version}";
     public void SetColorTemperature(double value)
     {
         _colorTemperature = Math.Max(MinColorTemp, Math.Min(MaxColorTemp, value));
+        
+        // Update HDR overlay if active
+        if (_useHdrOverlay && _hdrOverlay != null)
+        {
+            _hdrOverlay.ColorTemperature = (float)_colorTemperature;
+        }
 
         // Map 0-1 slider to a simple cool-to-warm gradient.
         // We'll bias the inner gradient stops from blueish-white (cool) to amber (warm).
@@ -917,6 +1038,15 @@ Version {version}";
     {
         // If in all monitors mode, do nothing
         if (showOnAllMonitors) return;
+        
+        // HDR Bright Mode currently only supports the current monitor
+        if (_useHdrOverlay)
+        {
+            System.Windows.MessageBox.Show(
+                "HDR Bright Mode currently only works on the current monitor.\n\nDisable HDR Bright Mode to switch monitors.",
+                "HDR Limitation", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
         
         // Refresh monitor list in case of hot-plug/unplug
         availableMonitors = Screen.AllScreens;
@@ -981,6 +1111,15 @@ Version {version}";
 
     public void ToggleAllMonitors()
     {
+        // HDR Bright Mode currently only supports the current monitor
+        if (_useHdrOverlay)
+        {
+            System.Windows.MessageBox.Show(
+                "HDR Bright Mode currently only works on the current monitor.\n\nDisable HDR Bright Mode to use multi-monitor mode.",
+                "HDR Limitation", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+        
         showOnAllMonitors = !showOnAllMonitors;
         
         if (showOnAllMonitors)

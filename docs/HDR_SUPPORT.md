@@ -48,6 +48,25 @@ Right-click the system tray icon and look for:
 - ✓ HDR-Aware Rendering - Currently enabled
 - HDR-Aware Rendering - Currently disabled (click to enable)
 
+### HDR Bright Mode (Direct3D)
+When HDR is active, a new **HDR Bright Mode** option becomes available:
+- Uses Direct3D 11 with scRGB color space (R16G16B16A16_FLOAT format)
+- Allows brightness values **above SDR white** (up to 8x = ~640 nits)
+- Renders the edge light with true HDR luminance
+- Adjustable brightness from 1.0x (~80 nits) to 8.0x (~640 nits)
+
+#### How It Works
+When enabled, HDR Bright Mode:
+1. Creates a native Direct3D 11 overlay window
+2. Uses a floating-point swap chain with scRGB color space
+3. Renders with pixel shader values > 1.0 for brightness above SDR white
+4. The WPF edge light is hidden while the D3D overlay is active
+
+#### Controls
+- ☀️ HDR Brightness: Shows current brightness level (e.g., 2.0x = ~160 nits)
+- ☀️+ Increase HDR Brightness: Increase by 0.5x
+- ☀️- Decrease HDR Brightness: Decrease by 0.5x
+
 ### Auto Color Management Indicator
 If you're running Windows 11 22H2 or later with Auto Color Management:
 - ℹ️ Auto Color Management Active - Displayed in the menu
@@ -70,13 +89,24 @@ This provides:
 - Advanced color enabled status
 - Bits per color channel
 
-### 3. Color Space Handling
+### 3. Standard Color Space Handling (WPF Mode)
 - Renders in standard sRGB color space
 - Windows composition layer (DWM) automatically converts to HDR when needed
 - No explicit scRGB or HDR10 color space manipulation required
 - Lets Windows handle the color space conversions automatically
 
-### 4. No Impact on Other Applications
+### 4. HDR Bright Mode (Direct3D Mode)
+When HDR Bright Mode is enabled:
+- Creates a Direct3D 11 device with hardware acceleration
+- Uses `DXGI_FORMAT_R16G16B16A16_FLOAT` swap chain format
+- Sets `DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709` (scRGB linear) color space
+- Pixel shader outputs values > 1.0 for brightness above SDR white:
+  - 1.0 = SDR white (~80 nits)
+  - 2.0 = ~160 nits
+  - 4.0 = ~320 nits
+  - 8.0 = ~640 nits (max setting)
+
+### 5. No Impact on Other Applications
 Because the app:
 - Uses system-managed color pipelines
 - Doesn't install custom color profiles
