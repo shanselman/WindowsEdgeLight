@@ -728,9 +728,6 @@ Version {version}";
             excludeFromCaptureMenuItem.Checked = settings.ExcludeFromCapture;
         }
         
-        // Update control window button state
-        controlWindow?.UpdateExcludeFromCaptureButtonState();
-        
         // Apply the setting to all windows
         ApplyExcludeFromCapture();
     }

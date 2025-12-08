@@ -13,7 +13,6 @@ public partial class ControlWindow : Window
         
         // Disable switch monitor button if only one monitor
         UpdateMonitorButtonState();
-        UpdateExcludeFromCaptureButtonState();
     }
 
     private void UpdateMonitorButtonState()
@@ -25,19 +24,6 @@ public partial class ControlWindow : Window
     public void UpdateAllMonitorsButtonState()
     {
         UpdateMonitorButtonState();
-    }
-
-    public void UpdateExcludeFromCaptureButtonState()
-    {
-        bool isEnabled = mainWindow.IsExcludeFromCaptureEnabled();
-        
-        // Update button opacity to show state (more opaque when active)
-        ExcludeFromCaptureButton.Opacity = isEnabled ? 1.0 : 0.5;
-        
-        // Update tooltip for better accessibility
-        ExcludeFromCaptureButton.ToolTip = isEnabled 
-            ? "Exclude from screen capture: ON (invisible in Teams/Zoom sharing)" 
-            : "Exclude from screen capture: OFF (click to hide from screen sharing)";
     }
 
     private void BrightnessDown_Click(object sender, RoutedEventArgs e)
@@ -74,12 +60,6 @@ public partial class ControlWindow : Window
     private void AllMonitors_Click(object sender, RoutedEventArgs e)
     {
         mainWindow.ToggleAllMonitors();
-    }
-
-    private void ExcludeFromCapture_Click(object sender, RoutedEventArgs e)
-    {
-        mainWindow.ToggleExcludeFromCapture();
-        UpdateExcludeFromCaptureButtonState();
     }
 
     private void Close_Click(object sender, RoutedEventArgs e)

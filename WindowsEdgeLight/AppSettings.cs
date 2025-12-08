@@ -18,7 +18,7 @@ public class AppSettings
     /// When enabled, excludes the edge light from screen capture (Teams, screenshots, etc.)
     /// Note: When enabled, screenshots won't capture the edge light effect
     /// </summary>
-    public bool ExcludeFromCapture { get; set; } = false;
+    public bool ExcludeFromCapture { get; set; } = true;
 
     /// <summary>
     /// Load settings from disk
