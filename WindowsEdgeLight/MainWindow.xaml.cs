@@ -36,6 +36,10 @@ public partial class MainWindow : Window
     // Tracks whether the control window should be visible (controls initial visibility and toggle state)
     private bool isControlWindowVisible = true;
     private ToolStripMenuItem? toggleControlsMenuItem;
+    private ToolStripMenuItem? excludeFromCaptureMenuItem;
+    
+    // Application settings
+    private AppSettings settings = new AppSettings();
 
     private class MonitorWindowContext
     {
@@ -73,6 +77,12 @@ public partial class MainWindow : Window
     
     [DllImport("user32.dll")]
     private static extern bool UnregisterHotKey(IntPtr hWnd, int id);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern bool SetWindowDisplayAffinity(IntPtr hWnd, uint dwAffinity);
+    
+    private const uint WDA_NONE = 0x00000000;
+    private const uint WDA_EXCLUDEFROMCAPTURE = 0x00000011;
 
     [DllImport("user32.dll")]
     private static extern IntPtr MonitorFromPoint(POINT pt, uint dwFlags);
@@ -141,6 +151,10 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         hoverCursorRing = FindName("HoverCursorRing") as Ellipse;
+        
+        // Load settings
+        settings = AppSettings.Load();
+        
         SetupNotifyIcon();
     }
 
@@ -190,6 +204,12 @@ public partial class MainWindow : Window
     toggleControlsMenuItem = new ToolStripMenuItem("🎛️ Hide Controls", null, (s, e) => ToggleControlsVisibility());
     contextMenu.Items.Add(toggleControlsMenuItem);
     
+    // Add exclude from capture menu item with checkmark
+    excludeFromCaptureMenuItem = new ToolStripMenuItem("🎥 Exclude from Screen Capture", null, (s, e) => ToggleExcludeFromCapture());
+    excludeFromCaptureMenuItem.CheckOnClick = true;
+    excludeFromCaptureMenuItem.Checked = settings.ExcludeFromCapture;
+    contextMenu.Items.Add(excludeFromCaptureMenuItem);
+    
     contextMenu.Items.Add(new ToolStripSeparator());
     contextMenu.Items.Add("✖ Exit", null, (s, e) => System.Windows.Application.Current.Shutdown());
         
@@ -218,6 +238,7 @@ public partial class MainWindow : Window
 • Control toolbar with brightness, color temp, and monitor options
 • Color temperature controls (🔥 warmer, ❄️ cooler)
 • Switch between monitors or show on all monitors
+• Exclude from screen capture (🎥) - invisible in Teams/Zoom sharing
 
 Created by Scott Hanselman
 Version {version}";
@@ -296,6 +317,9 @@ Version {version}";
         // Listen for window size/location changes (docking/undocking)
         this.SizeChanged += Window_SizeChanged;
         this.LocationChanged += Window_LocationChanged;
+
+        // Apply exclude from capture setting
+        ApplyExcludeFromCapture();
 
         InstallMouseHook();
     }
@@ -693,6 +717,65 @@ Version {version}";
         }
     }
 
+    public void ToggleExcludeFromCapture()
+    {
+        settings.ExcludeFromCapture = !settings.ExcludeFromCapture;
+        settings.Save();
+        
+        // Update menu checkmark
+        if (excludeFromCaptureMenuItem != null)
+        {
+            excludeFromCaptureMenuItem.Checked = settings.ExcludeFromCapture;
+        }
+        
+        // Apply the setting to all windows
+        ApplyExcludeFromCapture();
+    }
+
+    private void ApplyExcludeFromCapture()
+    {
+        var hwnd = new WindowInteropHelper(this).Handle;
+        if (hwnd != IntPtr.Zero)
+        {
+            var result = SetWindowDisplayAffinity(hwnd, settings.ExcludeFromCapture ? WDA_EXCLUDEFROMCAPTURE : WDA_NONE);
+            if (!result)
+            {
+                var error = Marshal.GetLastWin32Error();
+                System.Diagnostics.Debug.WriteLine($"Failed to set display affinity for main window. Error: {error}");
+            }
+        }
+        
+        // Apply to control window
+        if (controlWindow != null)
+        {
+            var controlHwnd = new WindowInteropHelper(controlWindow).Handle;
+            if (controlHwnd != IntPtr.Zero)
+            {
+                var result = SetWindowDisplayAffinity(controlHwnd, settings.ExcludeFromCapture ? WDA_EXCLUDEFROMCAPTURE : WDA_NONE);
+                if (!result)
+                {
+                    var error = Marshal.GetLastWin32Error();
+                    System.Diagnostics.Debug.WriteLine($"Failed to set display affinity for control window. Error: {error}");
+                }
+            }
+        }
+        
+        // Apply to all additional monitor windows
+        foreach (var ctx in additionalMonitorWindows)
+        {
+            var monitorHwnd = new WindowInteropHelper(ctx.Window).Handle;
+            if (monitorHwnd != IntPtr.Zero)
+            {
+                var result = SetWindowDisplayAffinity(monitorHwnd, settings.ExcludeFromCapture ? WDA_EXCLUDEFROMCAPTURE : WDA_NONE);
+                if (!result)
+                {
+                    var error = Marshal.GetLastWin32Error();
+                    System.Diagnostics.Debug.WriteLine($"Failed to set display affinity for monitor window. Error: {error}");
+                }
+            }
+        }
+    }
+
     public void IncreaseBrightness()
     {
         currentOpacity = Math.Min(MaxOpacity, currentOpacity + OpacityStep);
@@ -1030,6 +1113,14 @@ Version {version}";
             int extendedStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
             SetWindowLong(hwnd, GWL_EXSTYLE, extendedStyle | WS_EX_TRANSPARENT | WS_EX_LAYERED);
 
+            // Apply exclude from capture setting
+            var result = SetWindowDisplayAffinity(hwnd, settings.ExcludeFromCapture ? WDA_EXCLUDEFROMCAPTURE : WDA_NONE);
+            if (!result)
+            {
+                var error = Marshal.GetLastWin32Error();
+                System.Diagnostics.Debug.WriteLine($"Failed to set display affinity for monitor window during creation. Error: {error}");
+            }
+
             // Verify and update DPI if WPF reports a different value after window is loaded
             var source = PresentationSource.FromVisual(window);
             if (source != null)
@@ -1107,6 +1198,11 @@ Version {version}";
         // Refresh monitor count to handle hot-plug scenarios
         availableMonitors = Screen.AllScreens;
         return availableMonitors.Length > 1;
+    }
+
+    public bool IsExcludeFromCaptureEnabled()
+    {
+        return settings.ExcludeFromCapture;
     }
 
     private void Window_SizeChanged(object sender, SizeChangedEventArgs e)

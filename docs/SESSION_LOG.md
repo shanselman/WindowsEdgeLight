@@ -2535,6 +2535,169 @@ Example with Monitor 2:
 
 ---
 
-*This session log now comprehensively documents the entire Windows Edge Light journey from initial concept through production release v1.10.2 with critical multi-monitor DPI bug fix.*
+## Phase 15: Exclude from Capture Feature (December 7-8, 2025)
+
+**Branch**: `copilot/exclude-edge-light-capture`
+**Date**: December 7-8, 2025
+**Duration**: Ongoing
+
+### Feature Overview
+
+**Goal**: Add `WDA_EXCLUDEFROMCAPTURE` support to hide edge light from screen capture/sharing (Teams, Zoom, screenshots)
+
+### Implementation History
+
+#### Initial Implementation (Dec 7, Commits ec296a1 - f092e43)
+
+**Commit ec296a1**: Initial plan
+- Outlined approach for implementing WDA_EXCLUDEFROMCAPTURE feature
+
+**Commit 1f093ad**: Implement WDA_EXCLUDEFROMCAPTURE feature with settings persistence
+- Added `SetWindowDisplayAffinity` P/Invoke to MainWindow.xaml.cs
+- Added `ExcludeFromCapture` setting to AppSettings.cs (default: `false`)
+- Added tray menu checkbox for toggling the feature
+- Applied setting to main window and all additional monitor windows
+- Persisted setting across app restarts
+
+**Commit ace1193**: Add error handling and improve accessibility
+- Added robust error handling for Win32 API calls
+- Improved accessibility with proper AutomationProperties.Name
+- Added UI button to ControlWindow with eye icon (👁)
+- Button shows visual state (opacity 1.0 when enabled, 0.5 when disabled)
+- Dynamic tooltip updates based on state
+
+**Commit f092e43**: Fix error handling to capture Win32 error codes immediately
+- Fixed issue where error codes were being lost before capture
+- Improved reliability of error reporting
+
+### Current Work in Progress (December 8, 2025)
+
+**Uncommitted Changes**:
+
+1. **AppSettings.cs**: Changed default to `true`
+   - Users expect edge light hidden from capture by default
+   - Still configurable via tray menu
+
+2. **ControlWindow.xaml**: Removed ExcludeFromCapture button
+   - Button was cluttering the UI
+   - Feature accessible via tray menu (right-click)
+   - Reduced control window width from 410px to 366px
+
+3. **ControlWindow.xaml.cs**: Removed button-related code
+   - Removed `UpdateExcludeFromCaptureButtonState()` method
+   - Removed `ExcludeFromCapture_Click` event handler
+   - Cleaner codebase
+
+4. **MainWindow.xaml.cs**: Removed button state update call
+   - No longer needed since button was removed
+
+### Technical Details
+
+**Windows API Used**:
+```csharp
+[DllImport("user32.dll")]
+private static extern bool SetWindowDisplayAffinity(IntPtr hwnd, uint dwAffinity);
+
+private const uint WDA_NONE = 0x00000000;
+private const uint WDA_EXCLUDEFROMCAPTURE = 0x00000011;
+```
+
+**How It Works**:
+- `WDA_EXCLUDEFROMCAPTURE` is a Windows 10 2004+ feature
+- Makes window completely invisible to screen capture APIs
+- Works with: Teams, Zoom, OBS, Windows Snipping Tool, ShareX, etc.
+- Does NOT affect: Direct monitor capture, hardware capture cards
+
+**Settings Persistence**:
+```csharp
+// AppSettings.cs
+public bool ExcludeFromCapture { get; set; } = true;
+
+// Loaded on startup, applied to all windows
+// Changed via tray menu checkbox
+```
+
+**Application to All Windows**:
+```csharp
+private void ApplyExcludeFromCapture()
+{
+    // Apply to main window
+    SetExcludeFromCapture(this, settings.ExcludeFromCapture);
+    
+    // Apply to all additional monitor windows
+    foreach (var ctx in additionalMonitorWindows)
+    {
+        SetExcludeFromCapture(ctx.Window, settings.ExcludeFromCapture);
+    }
+}
+```
+
+### Files Changed
+
+| File | Changes |
+|------|---------|
+| `AppSettings.cs` | +1 line (default change) |
+| `ControlWindow.xaml` | -11 lines (button removal) |
+| `ControlWindow.xaml.cs` | -20 lines (button code removal) |
+| `MainWindow.xaml.cs` | -3 lines (button update removal) |
+| **Net** | **-33 lines** (simplification) |
+
+### User Experience
+
+**Before (with button)**:
+- Button on control window for quick toggle
+- Tray menu checkbox
+- Default: OFF (visible in capture)
+
+**After (current work)**:
+- Tray menu checkbox only (cleaner UI)
+- Default: ON (hidden from capture by default)
+- Users presenting want this behavior
+
+**Tray Menu**:
+```
+Right-click tray icon →
+  ✓ Exclude from Screen Capture
+    ↳ Checked = hidden from Teams/Zoom sharing
+    ↳ Unchecked = visible in screen capture
+```
+
+### Next Steps
+
+- [ ] Test current changes
+- [ ] Commit and push changes
+- [ ] Create PR for merge to master
+- [ ] Consider v1.10.3 or v1.11.0 release
+
+### Design Decision: Why Default True?
+
+**Rationale**:
+1. **Primary Use Case**: Edge light is for the user's viewing experience
+2. **Presentation Scenario**: Users don't want colored borders in their screen shares
+3. **Professional Appearance**: Cleaner look when sharing screen
+4. **Opt-Out vs Opt-In**: Better UX to start with desired state
+
+**When Users Might Disable**:
+- Recording tutorials about the edge light feature itself
+- Demonstrating the application to others
+- Specific scenarios requiring visible edge effect in capture
+
+---
+
+## Current Status (December 8, 2025)
+
+**Branch**: `copilot/exclude-edge-light-capture`
+**State**: 4 files with uncommitted changes
+**Ready for**: Commit and PR
+
+**Recent Commits on Branch**:
+1. `f092e43` - Fix error handling to capture Win32 error codes immediately
+2. `ace1193` - Add error handling and improve accessibility
+3. `1f093ad` - Implement WDA_EXCLUDEFROMCAPTURE feature with settings persistence
+4. `ec296a1` - Initial plan
+
+---
+
+*Session log updated December 8, 2025 with Phase 15: Exclude from Capture feature development.*
 
 
