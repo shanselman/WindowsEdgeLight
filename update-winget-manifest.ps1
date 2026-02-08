@@ -196,6 +196,14 @@ Write-Host "Created: $localeFile" -ForegroundColor Green
 if (-not $SkipValidation) {
     Write-Host "`nValidating manifests..." -ForegroundColor Yellow
     
+    # Check for placeholder hashes
+    $installerContent = Get-Content $installerFile -Raw
+    if ($installerContent -match 'YOUR_SHA256_HASH_HERE') {
+        Write-Host "ERROR: Placeholder SHA256 hashes detected!" -ForegroundColor Red
+        Write-Host "This should not happen. The script should have calculated real hashes." -ForegroundColor Red
+        exit 1
+    }
+    
     # Check if winget is available
     $wingetAvailable = Get-Command winget -ErrorAction SilentlyContinue
     
