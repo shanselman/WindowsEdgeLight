@@ -1,0 +1,22 @@
+PackageIdentifier: ScottHanselman.WindowsEdgeLight
+PackageVersion: 0.6.0
+Platform:
+  - Windows.Desktop
+MinimumOSVersion: 10.0.0.0
+InstallerType: zip
+NestedInstallerType: portable
+NestedInstallerFiles:
+  - RelativeFilePath: WindowsEdgeLight.exe
+    PortableCommandAlias: WindowsEdgeLight
+Commands:
+  - WindowsEdgeLight
+ReleaseDate: 2025-02-08
+Installers:
+  - Architecture: x64
+    InstallerUrl: https://github.com/shanselman/WindowsEdgeLight/releases/download/v0.6.0/WindowsEdgeLight-v0.6.0-win-x64.zip
+    InstallerSha256: YOUR_SHA256_HASH_HERE
+  - Architecture: arm64
+    InstallerUrl: https://github.com/shanselman/WindowsEdgeLight/releases/download/v0.6.0/WindowsEdgeLight-v0.6.0-win-arm64.zip
+    InstallerSha256: YOUR_SHA256_HASH_HERE
+ManifestType: installer
+ManifestVersion: 1.10.0
