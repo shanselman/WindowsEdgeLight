@@ -33,11 +33,24 @@ The application creates a smooth, glowing border around the edges of your primar
 
 ## Installation
 
-### Option 1: Download Pre-built Executable
+### Option 1: Windows Package Manager (Winget)
+
+The easiest way to install Windows Edge Light is via Winget:
+
+```bash
+winget install ScottHanselman.WindowsEdgeLight
+```
+
+To upgrade to the latest version:
+```bash
+winget upgrade ScottHanselman.WindowsEdgeLight
+```
+
+### Option 2: Download Pre-built Executable
 
 Download the latest `WindowsEdgeLight.exe` from the [Releases page](https://github.com/shanselman/WindowsEdgeLight/releases). This is a single-file executable that includes everything you need - no .NET installation required!
 
-### Option 2: Build from Source
+### Option 3: Build from Source
 
 #### Prerequisites
 
