@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:WindowsEdgeLight"
+    xmlns:converters="clr-namespace:WindowsEdgeLight.Converters"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Title="Windows Edge Light"
     Width="800"
@@ -18,6 +19,10 @@
     WindowStyle="None"
     mc:Ignorable="d">
 
+    <Window.Resources>
+        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+    </Window.Resources>
+
     <Window.TaskbarItemInfo>
         <TaskbarItemInfo Description="Windows Edge Light - Right-click for options" />
     </Window.TaskbarItemInfo>
@@ -28,13 +33,15 @@
             x:Name="EdgeLightBorder"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
-            Stretch="None">
+            Stretch="None"
+            Opacity="{Binding CurrentOpacity}"
+            Visibility="{Binding IsLightVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
             <Path.Fill>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
                     <GradientStop Offset="0.0" Color="#FFFFFF" />
-                    <GradientStop Offset="0.3" Color="#F0F0F0" />
-                    <GradientStop Offset="0.5" Color="#FFFFFF" />
-                    <GradientStop Offset="0.7" Color="#F0F0F0" />
+                    <GradientStop Offset="0.3" Color="{Binding EdgeColor}" />
+                    <GradientStop Offset="0.5" Color="{Binding EdgeColor}" />
+                    <GradientStop Offset="0.7" Color="{Binding EdgeColor}" />
                     <GradientStop Offset="1.0" Color="#FFFFFF" />
                 </LinearGradientBrush>
             </Path.Fill>

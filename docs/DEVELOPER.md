@@ -41,11 +41,34 @@ WindowsEdgeLight/
 ├── .github/
 │   └── workflows/
 │       └── build.yml           # GitHub Actions workflow
+├── docs/
+│   ├── MVVM_ARCHITECTURE.md    # MVVM pattern documentation
+│   ├── DEVELOPER.md            # Developer guide (this file)
+│   └── ...                     # Other documentation
 ├── WindowsEdgeLight/
+│   ├── ViewModels/
+│   │   ├── ViewModelBase.cs    # Base ViewModel with INotifyPropertyChanged
+│   │   └── MainViewModel.cs    # Main window business logic
+│   ├── Services/
+│   │   ├── Interfaces/
+│   │   │   ├── IMonitorService.cs
+│   │   │   ├── IHotkeyService.cs
+│   │   │   └── IGeometryService.cs
+│   │   ├── MonitorService.cs   # Monitor and DPI management
+│   │   ├── HotkeyService.cs    # Global hotkey registration
+│   │   └── GeometryService.cs  # Frame geometry calculations
+│   ├── Models/
+│   │   └── MonitorWindowContext.cs  # Monitor window data
+│   ├── Commands/
+│   │   └── RelayCommand.cs     # ICommand implementation
+│   ├── Converters/
+│   │   └── BooleanToVisibilityConverter.cs
 │   ├── App.xaml                # Application entry point
 │   ├── App.xaml.cs
-│   ├── MainWindow.xaml         # Main UI layout
-│   ├── MainWindow.xaml.cs      # Application logic
+│   ├── MainWindow.xaml         # Main UI layout with data bindings
+│   ├── MainWindow.xaml.cs      # Thin view layer (P/Invoke, HWND management)
+│   ├── ControlWindow.xaml      # Control panel UI
+│   ├── ControlWindow.xaml.cs   # Control panel code-behind
 │   ├── AssemblyInfo.cs
 │   ├── ringlight_cropped.ico   # Application icon
 │   └── WindowsEdgeLight.csproj # Project file
@@ -113,39 +136,69 @@ The script will:
 - **UI Framework**: WPF (Windows Presentation Foundation)
 - **Additional APIs**: Windows Forms (for NotifyIcon and Screen detection)
 - **Language**: C# 12
+- **Architecture Pattern**: MVVM (Model-View-ViewModel)
+
+### MVVM Architecture
+
+The application follows the MVVM pattern for clean separation of concerns. For detailed information, see [MVVM_ARCHITECTURE.md](MVVM_ARCHITECTURE.md).
+
+**Key Layers:**
+- **ViewModels**: Business logic and state management (`MainViewModel`)
+- **Services**: Isolated functionality (Monitor, Hotkey, Geometry services)
+- **Models**: Data structures (`MonitorWindowContext`)
+- **Views**: XAML UI with data bindings (`MainWindow.xaml`)
+- **Commands**: ICommand implementations for user actions
 
 ### Key Components
 
 #### 1. Main Window (`MainWindow.xaml/.cs`)
 - Transparent, click-through overlay window
 - Uses Win32 `WS_EX_TRANSPARENT` flag for click-through
-- Positioned and sized using `Screen.PrimaryScreen` API
+- Positioned and sized using monitor services
 - DPI-aware scaling using `PresentationSource`
+- Data binding to `MainViewModel` for reactive UI updates
 
-#### 2. Global Hotkeys
-- Registered using Win32 `RegisterHotKey` API
+#### 2. ViewModels
+- **MainViewModel**: Central business logic for light control
+  - Properties: `IsLightOn`, `CurrentOpacity`, `ColorTemperature`
+  - Commands: `ToggleLightCommand`, `IncreaseBrightnessCommand`, etc.
+  - Implements `INotifyPropertyChanged` for automatic UI updates
+
+#### 3. Services
+- **MonitorService**: Screen enumeration and DPI calculations
+- **HotkeyService**: Global hotkey registration via Win32 API
+- **GeometryService**: Frame geometry and rounded rectangle calculations
+
+#### 4. Global Hotkeys
+- Registered using Win32 `RegisterHotKey` API via `HotkeyService`
 - Hooks into Windows message pump via `HwndSource`
+- Triggers ViewModel commands
 - Supported hotkeys:
   - `Ctrl+Shift+L` - Toggle light
   - `Ctrl+Shift+Up` - Increase brightness
   - `Ctrl+Shift+Down` - Decrease brightness
 
-#### 3. System Tray Icon
+#### 5. System Tray Icon
 - Uses Windows Forms `NotifyIcon`
-- Right-click context menu for all operations
+- Right-click context menu executes ViewModel commands
 - Double-click shows help dialog
 - Icon loaded from file or falls back to system icon
 
-#### 4. Edge Light Effect
-- XAML Rectangle with LinearGradientBrush
-- BlurEffect for glow appearance
-- Adjustable opacity (20% - 100%)
+#### 6. Edge Light Effect
+- XAML Path with LinearGradientBrush
+- DropShadowEffect for glow appearance
+- Opacity bound to `MainViewModel.CurrentOpacity`
+- Visibility bound to `MainViewModel.IsLightVisible`
 - 20px margin from screen edges
 
 ### Design Patterns
 
+- **MVVM Pattern**: Separation of business logic (ViewModel) from UI (View)
+- **Command Pattern**: User actions encapsulated as `ICommand` implementations
+- **Service Layer**: Isolated, testable functionality in dedicated services
+- **Data Binding**: Automatic synchronization between ViewModel and View
+- **Dependency Injection**: Services can be injected for testing
 - **Event-driven architecture**: Responds to hotkeys and user interactions
-- **Separation of concerns**: XAML for UI, C# for logic
 - **Defensive programming**: Try-catch blocks, null checks, fallbacks
 
 ---
