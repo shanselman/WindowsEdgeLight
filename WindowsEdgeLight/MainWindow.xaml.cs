@@ -1147,6 +1147,19 @@ Version {version}";
             }
         };
 
+        window.DpiChanged += (s, dpiArgs) =>
+        {
+            ctx.DpiScaleX = dpiArgs.NewDpi.DpiScaleX;
+            ctx.DpiScaleY = dpiArgs.NewDpi.DpiScaleY;
+
+            window.Left = screen.WorkingArea.X / ctx.DpiScaleX;
+            window.Top = screen.WorkingArea.Y / ctx.DpiScaleY;
+            window.Width = screen.WorkingArea.Width / ctx.DpiScaleX;
+            window.Height = screen.WorkingArea.Height / ctx.DpiScaleY;
+
+            UpdateMonitorGeometry(ctx);
+        };
+
         return ctx;
     }
 
