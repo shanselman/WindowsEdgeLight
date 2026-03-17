@@ -277,16 +277,8 @@ Version {version}";
         // Use WorkingArea instead of Bounds to exclude taskbar
         var workingArea = screen.WorkingArea;
         
-        // Get DPI scale factor
-        var source = PresentationSource.FromVisual(this);
-        _dpiScaleX = 1.0;
-        _dpiScaleY = 1.0;
-        
-        if (source != null)
-        {
-            _dpiScaleX = source.CompositionTarget.TransformToDevice.M11;
-            _dpiScaleY = source.CompositionTarget.TransformToDevice.M22;
-        }
+        // Get DPI scale factor for the target screen
+        (_dpiScaleX, _dpiScaleY) = GetDpiForScreen(screen);
         
         // Convert physical pixels to WPF DIPs
         this.Left = workingArea.X / _dpiScaleX;
@@ -1145,6 +1137,19 @@ Version {version}";
                     UpdateMonitorGeometry(ctx);
                 }
             }
+        };
+
+        window.DpiChanged += (s, dpiArgs) =>
+        {
+            ctx.DpiScaleX = dpiArgs.NewDpi.DpiScaleX;
+            ctx.DpiScaleY = dpiArgs.NewDpi.DpiScaleY;
+
+            window.Left = screen.WorkingArea.X / ctx.DpiScaleX;
+            window.Top = screen.WorkingArea.Y / ctx.DpiScaleY;
+            window.Width = screen.WorkingArea.Width / ctx.DpiScaleX;
+            window.Height = screen.WorkingArea.Height / ctx.DpiScaleY;
+
+            UpdateMonitorGeometry(ctx);
         };
 
         return ctx;
