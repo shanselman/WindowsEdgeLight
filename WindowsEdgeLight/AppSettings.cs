@@ -21,6 +21,22 @@ public class AppSettings
     public bool ExcludeFromCapture { get; set; } = true;
 
     /// <summary>
+    /// Whether the edge light is on or off (persisted across restarts)
+    /// </summary>
+    public bool IsLightOn { get; set; } = true;
+
+    /// <summary>
+    /// Brightness/opacity of the edge light, in the range [0.2, 1.0]
+    /// </summary>
+    public double Brightness { get; set; } = 1.0;
+
+    /// <summary>
+    /// Color temperature of the edge light, in the range [0.0, 1.0]
+    /// where 0.0 = coolest (blue-white) and 1.0 = warmest (amber)
+    /// </summary>
+    public double ColorTemperature { get; set; } = 0.5;
+
+    /// <summary>
     /// Load settings from disk
     /// </summary>
     public static AppSettings Load()

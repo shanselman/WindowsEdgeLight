@@ -156,6 +156,11 @@ public partial class MainWindow : Window
         // Load settings
         settings = AppSettings.Load();
         
+        // Restore persisted state
+        isLightOn = settings.IsLightOn;
+        currentOpacity = settings.Brightness;
+        _colorTemperature = settings.ColorTemperature;
+        
         SetupNotifyIcon();
     }
 
@@ -313,6 +318,16 @@ Version {version}";
 
         // Apply exclude from capture setting
         ApplyExcludeFromCapture();
+
+        // Apply persisted brightness and color temperature
+        EdgeLightBorder.Opacity = currentOpacity;
+        SetColorTemperature(_colorTemperature);
+
+        // Apply persisted on/off state
+        if (!isLightOn)
+        {
+            EdgeLightBorder.Visibility = Visibility.Collapsed;
+        }
 
         InstallMouseHook();
     }
@@ -673,6 +688,9 @@ Version {version}";
         
         // Update all additional monitor windows
         UpdateAdditionalMonitorWindows();
+        
+        settings.IsLightOn = isLightOn;
+        settings.Save();
     }
 
     public void HandleToggle()
@@ -776,6 +794,9 @@ Version {version}";
         
         // Update all additional monitor windows
         UpdateAdditionalMonitorWindows();
+        
+        settings.Brightness = currentOpacity;
+        settings.Save();
     }
 
     public void DecreaseBrightness()
@@ -785,6 +806,9 @@ Version {version}";
         
         // Update all additional monitor windows
         UpdateAdditionalMonitorWindows();
+        
+        settings.Brightness = currentOpacity;
+        settings.Save();
     }
 
     private void UpdateAdditionalMonitorWindows()
@@ -869,6 +893,9 @@ Version {version}";
         
         // Update all additional monitor windows
         UpdateAdditionalMonitorWindows();
+        
+        settings.ColorTemperature = _colorTemperature;
+        settings.Save();
     }
 
     public void MoveToNextMonitor()
