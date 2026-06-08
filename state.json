@@ -1,20 +1,23 @@
 {
-  "last_run": "2026-06-08T07:10:00Z",
-  "last_run_id": "27121642764",
+  "last_run": "2026-06-08T14:10:00Z",
+  "last_run_id": "27143446810",
   "comments_made": {
     "24": "2026-06-08T07:10:00Z"
   },
   "labels_applied": {
-    "24": ["enhancement", "needs investigation"]
+    "24": ["enhancement", "needs investigation"],
+    "33": ["enhancement"],
+    "27": ["help wanted"]
   },
   "fix_attempts": {
     "eng-persist-user-settings": {
-      "branch": "repo-assist/eng-persist-user-settings-2026-06-08",
+      "branch": "repo-assist/eng-persist-user-settings-2026-06-08-194569ab690925ae",
+      "pr": 36,
       "status": "pr_created",
       "date": "2026-06-08"
     }
   },
-  "monthly_summary_issue": "open - June 2026",
+  "monthly_summary_issue": 35,
   "backlog_cursor": 24,
-  "notes": "PR created for persisting user settings (brightness, color temp, on/off). Issue #24 commented with HDR analysis. Issues #26, #27 are open Copilot PRs - check next run. PR #32 (Repo Assist workflow fix) is open for review."
+  "notes": "PR #36 (persist user settings) open for review. PR #33 (auth upgrade by shanselman) open, labelled. PR #27 (Copilot winget, stale since Mar 2026) labelled help-wanted. Issue #34 (PR permissions notice) should be closed - superseded by PR #36. Issue #21 filtered by integrity policy - unknown content."
 }
