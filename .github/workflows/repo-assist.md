@@ -23,8 +23,23 @@ on:
 timeout-minutes: 60
 
 permissions:
-  all: read
+  actions: read
+  attestations: read
+  checks: read
+  contents: read
   copilot-requests: write
+  deployments: read
+  discussions: read
+  issues: read
+  metadata: read
+  models: read
+  packages: read
+  pages: read
+  pull-requests: read
+  repository-projects: read
+  security-events: read
+  statuses: read
+  vulnerability-alerts: read
 
 checkout:
   fetch: ["*"]

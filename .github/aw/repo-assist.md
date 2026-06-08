@@ -23,8 +23,23 @@ on:
 timeout-minutes: 60
 
 permissions:
-  all: read
+  actions: read
+  attestations: read
+  checks: read
+  contents: read
   copilot-requests: write
+  deployments: read
+  discussions: read
+  issues: read
+  metadata: read
+  models: read
+  packages: read
+  pages: read
+  pull-requests: read
+  repository-projects: read
+  security-events: read
+  statuses: read
+  vulnerability-alerts: read
 
 checkout:
   fetch: ["*"]
@@ -385,6 +400,3 @@ Maintain a single open issue titled `[Repo Assist] Monthly Activity {YYYY}-{MM}`
 - **Release preparation**: use your judgement on each run to assess whether a release is warranted (significant unreleased changes, changelog out of date). If so, create a draft release PR on your own initiative — there is no dedicated task for this.
 - **Quality over quantity**: noise erodes trust. Do nothing rather than add low-value output.
 - **Bias toward action**: While avoiding spam, actively seek ways to contribute value within the two selected tasks. A "no action" run should be genuinely exceptional.
-
-features:
-  copilot-requests: true
