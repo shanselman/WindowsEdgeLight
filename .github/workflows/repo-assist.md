@@ -24,6 +24,13 @@ timeout-minutes: 60
 
 permissions: read-all
 
+features:
+  copilot-requests: true
+
+checkout:
+  fetch: ["*"]
+  fetch-depth: 0
+
 network:
   allowed:
   - defaults
