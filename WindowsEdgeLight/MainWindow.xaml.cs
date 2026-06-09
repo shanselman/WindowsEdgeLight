@@ -42,6 +42,13 @@ public partial class MainWindow : Window
     // Application settings
     private AppSettings settings = new AppSettings();
 
+    // Pre-allocated geometry cache for the hole-punch effect; avoids per-mouse-move heap allocation.
+    private sealed class HolePunchCache
+    {
+        public EllipseGeometry? Hole;
+        public CombinedGeometry? Combined;
+    }
+
     private class MonitorWindowContext
     {
         public Window Window { get; set; } = null!;
@@ -55,6 +62,7 @@ public partial class MainWindow : Window
         public double PathOffsetY { get; set; }
         public double DpiScaleX { get; set; } = 1.0;
         public double DpiScaleY { get; set; } = 1.0;
+        public HolePunchCache HolePunchCache { get; } = new HolePunchCache();
     }
 
     // Monitor management
@@ -134,6 +142,13 @@ public partial class MainWindow : Window
     private IntPtr mouseHookHandle = IntPtr.Zero;
     private LowLevelMouseProc? mouseHookCallback;
 
+    // Coalesced mouse-move dispatch: avoids creating a new closure on every WM_MOUSEMOVE.
+    // The low-level hook fires on the UI thread; we post at most one deferred action at a time.
+    private int _pendingMouseX;
+    private int _pendingMouseY;
+    private bool _mouseMovePending;
+    private Action? _processMouseMoveAction;
+
     private Rect? frameOuterRect;
     private Rect? frameInnerRect;
     private readonly Ellipse? hoverCursorRing;
@@ -141,6 +156,7 @@ public partial class MainWindow : Window
     private Geometry? baseFrameGeometry; // original frame geometry (outer minus inner)
     private double pathOffsetX; // offset of geometry within window
     private double pathOffsetY;
+    private readonly HolePunchCache _mainHolePunchCache = new();
 
     private const uint MOD_CONTROL = 0x0002;
     private const uint MOD_SHIFT = 0x0004;
@@ -152,6 +168,13 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         hoverCursorRing = FindName("HoverCursorRing") as Ellipse;
+        
+        // Pre-allocate the mouse-move dispatch action once to avoid per-event heap allocation.
+        _processMouseMoveAction = () =>
+        {
+            _mouseMovePending = false;
+            HandleMouseMove(_pendingMouseX, _pendingMouseY);
+        };
         
         // Load settings
         settings = AppSettings.Load();
@@ -345,12 +368,18 @@ Version {version}";
         if (nCode >= 0 && wParam == (IntPtr)WM_MOUSEMOVE)
         {
             var hookStruct = Marshal.PtrToStructure<MSLLHOOKSTRUCT>(lParam);
-            
-            // Dispatch to UI thread for WPF operations
-            Dispatcher.BeginInvoke(new Action(() => 
+
+            // Always record the latest position so the dispatch sees the most recent coordinates.
+            _pendingMouseX = hookStruct.pt.x;
+            _pendingMouseY = hookStruct.pt.y;
+
+            // If a dispatch is already queued, skip posting another one.
+            // The queued action will consume _pendingMouseX/Y when it runs.
+            if (!_mouseMovePending)
             {
-                HandleMouseMove(hookStruct.pt.x, hookStruct.pt.y);
-            }), System.Windows.Threading.DispatcherPriority.Input);
+                _mouseMovePending = true;
+                Dispatcher.BeginInvoke(_processMouseMoveAction!, DispatcherPriority.Input);
+            }
         }
 
         return CallNextHookEx(mouseHookHandle, nCode, wParam, lParam);
@@ -404,7 +433,8 @@ Version {version}";
                     EdgeLightBorder,
                     baseFrameGeometry,
                     pathOffsetX, pathOffsetY,
-                    (ring, x, y) => { Canvas.SetLeft(ring, x); Canvas.SetTop(ring, y); }
+                    (ring, x, y) => { Canvas.SetLeft(ring, x); Canvas.SetTop(ring, y); },
+                    _mainHolePunchCache
                 );
             }
         }
@@ -423,7 +453,8 @@ Version {version}";
                     ctx.BorderPath,
                     ctx.BaseGeometry,
                     ctx.PathOffsetX, ctx.PathOffsetY,
-                    (ring, x, y) => { ring.Margin = new Thickness(x, y, 0, 0); }
+                    (ring, x, y) => { ring.Margin = new Thickness(x, y, 0, 0); },
+                    ctx.HolePunchCache
                 );
             }
             catch (InvalidOperationException)
@@ -442,7 +473,8 @@ Version {version}";
         System.Windows.Shapes.Path borderPath,
         Geometry baseGeometry,
         double pathOffsetX, double pathOffsetY,
-        Action<Ellipse, double, double> positionRing)
+        Action<Ellipse, double, double> positionRing,
+        HolePunchCache cache)
     {
         // Manual coordinate calculation to avoid PointFromScreen issues across monitors/DPIs
         // We positioned the window using dpiScaleX/Y relative to the screen WorkingArea.
@@ -476,11 +508,19 @@ Version {version}";
                 hoverRing.Visibility = Visibility.Visible;
             }
 
-            // Punch a transparent hole under the ring by excluding a circle geometry from the frame
-            // Convert window coordinates to geometry local coordinates by subtracting stored offsets
+            // Punch a transparent hole under the ring by excluding a circle geometry from the frame.
+            // Reuse pre-allocated geometry objects to avoid per-frame heap allocation.
             var localCenter = new System.Windows.Point(windowPt.X - pathOffsetX, windowPt.Y - pathOffsetY);
-            var hole = new EllipseGeometry(localCenter, holeRadius, holeRadius);
-            borderPath.Data = new CombinedGeometry(GeometryCombineMode.Exclude, baseGeometry, hole);
+            if (cache.Hole == null)
+            {
+                cache.Hole = new EllipseGeometry(localCenter, holeRadius, holeRadius);
+                cache.Combined = new CombinedGeometry(GeometryCombineMode.Exclude, baseGeometry, cache.Hole);
+            }
+            else
+            {
+                cache.Hole.Center = localCenter;
+            }
+            borderPath.Data = cache.Combined;
         }
         else
         {
@@ -537,6 +577,9 @@ Version {version}";
         var frameGeometry = new CombinedGeometry(GeometryCombineMode.Exclude, outerRect, innerRect);
         baseFrameGeometry = frameGeometry; // store original
         EdgeLightBorder.Data = frameGeometry;
+        // Invalidate hole-punch cache so it is rebuilt against the new base geometry.
+        _mainHolePunchCache.Hole = null;
+        _mainHolePunchCache.Combined = null;
         pathOffsetX = (ActualWidth - width) / 2.0; // store offsets for local coordinate conversion
         pathOffsetY = (ActualHeight - height) / 2.0;
         // Expand outer and contract inner rects for earlier hover detection based on ring hole radius.
@@ -1174,6 +1217,9 @@ Version {version}";
         
         ctx.BaseGeometry = frameGeometry;
         ctx.BorderPath.Data = frameGeometry;
+        // Invalidate hole-punch cache so it is rebuilt against the new base geometry.
+        ctx.HolePunchCache.Hole = null;
+        ctx.HolePunchCache.Combined = null;
         
         ctx.PathOffsetX = (ctx.Window.Width - width) / 2.0;
         ctx.PathOffsetY = (ctx.Window.Height - height) / 2.0;
