@@ -26,6 +26,12 @@ public partial class MainWindow : Window
     private const double MinColorTemp = 0.0;
     private const double MaxColorTemp = 1.0;
 
+    // Frame geometry constants — shared by CreateFrameGeometry, CreateMonitorWindow, and UpdateMonitorGeometry
+    private const double FrameWindowMargin = 40;  // 20 px on each side
+    private const double FrameThickness = 80;
+    private const double FrameOuterRadius = 100;  // Extra rounded like macOS
+    private const double FrameInnerRadius = 60;   // Keep proportional
+
     // DPI Scale
     private double _dpiScaleX = 1.0;
     private double _dpiScaleY = 1.0;
@@ -516,22 +522,18 @@ Version {version}";
     private void CreateFrameGeometry()
     {
         // Get actual dimensions (accounting for margin)
-        double width = this.ActualWidth - 40;  // 20px margin on each side
-        double height = this.ActualHeight - 40;
-        
-        const double frameThickness = 80;
-        const double outerRadius = 100;  // Extra rounded like macOS
-        const double innerRadius = 60;   // Keep proportional
+        double width = this.ActualWidth - FrameWindowMargin;
+        double height = this.ActualHeight - FrameWindowMargin;
         
         // Outer rounded rectangle
-        var outerRect = new RectangleGeometry(new Rect(0, 0, width, height), outerRadius, outerRadius);
+        var outerRect = new RectangleGeometry(new Rect(0, 0, width, height), FrameOuterRadius, FrameOuterRadius);
         
         // Inner rounded rectangle
         var innerRect = new RectangleGeometry(
-            new Rect(frameThickness, frameThickness, 
-                    width - (frameThickness * 2), 
-                    height - (frameThickness * 2)), 
-            innerRadius, innerRadius);
+            new Rect(FrameThickness, FrameThickness, 
+                    width - (FrameThickness * 2), 
+                    height - (FrameThickness * 2)), 
+            FrameInnerRadius, FrameInnerRadius);
         
         // Combine: outer minus inner = frame
         var frameGeometry = new CombinedGeometry(GeometryCombineMode.Exclude, outerRect, innerRect);
@@ -543,7 +545,7 @@ Version {version}";
         double ringDiameter = hoverCursorRing?.Width ?? 0;
         double holeRadius = ringDiameter / 2.0;
         frameOuterRect = new Rect(pathOffsetX - holeRadius, pathOffsetY - holeRadius, width + holeRadius * 2, height + holeRadius * 2);
-        frameInnerRect = new Rect(pathOffsetX + frameThickness + holeRadius, pathOffsetY + frameThickness + holeRadius, width - (frameThickness * 2) - holeRadius * 2, height - (frameThickness * 2) - holeRadius * 2);
+        frameInnerRect = new Rect(pathOffsetX + FrameThickness + holeRadius, pathOffsetY + FrameThickness + holeRadius, width - (FrameThickness * 2) - holeRadius * 2, height - (FrameThickness * 2) - holeRadius * 2);
     }
 
     private IntPtr HwndHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
@@ -1055,18 +1057,15 @@ Version {version}";
         // So removing effect to match.
         
         // Create frame geometry
-        double width = window.Width - 40;
-        double height = window.Height - 40;
-        const double frameThickness = 80;
-        const double outerRadius = 100;
-        const double innerRadius = 60;
+        double width = window.Width - FrameWindowMargin;
+        double height = window.Height - FrameWindowMargin;
         
-        var outerRect = new RectangleGeometry(new Rect(0, 0, width, height), outerRadius, outerRadius);
+        var outerRect = new RectangleGeometry(new Rect(0, 0, width, height), FrameOuterRadius, FrameOuterRadius);
         var innerRect = new RectangleGeometry(
-            new Rect(frameThickness, frameThickness, 
-                    width - (frameThickness * 2), 
-                    height - (frameThickness * 2)), 
-            innerRadius, innerRadius);
+            new Rect(FrameThickness, FrameThickness, 
+                    width - (FrameThickness * 2), 
+                    height - (FrameThickness * 2)), 
+            FrameInnerRadius, FrameInnerRadius);
         
         var frameGeometry = new CombinedGeometry(GeometryCombineMode.Exclude, outerRect, innerRect);
         path.Data = frameGeometry;
@@ -1082,7 +1081,7 @@ Version {version}";
         double ringDiameter = hoverRing.Width;
         double holeRadius = ringDiameter / 2.0;
         var frameOuterRect = new Rect(pathOffsetX - holeRadius, pathOffsetY - holeRadius, width + holeRadius * 2, height + holeRadius * 2);
-        var frameInnerRect = new Rect(pathOffsetX + frameThickness + holeRadius, pathOffsetY + frameThickness + holeRadius, width - (frameThickness * 2) - holeRadius * 2, height - (frameThickness * 2) - holeRadius * 2);
+        var frameInnerRect = new Rect(pathOffsetX + FrameThickness + holeRadius, pathOffsetY + FrameThickness + holeRadius, width - (FrameThickness * 2) - holeRadius * 2, height - (FrameThickness * 2) - holeRadius * 2);
 
         var ctx = new MonitorWindowContext
         {
@@ -1157,18 +1156,15 @@ Version {version}";
 
     private void UpdateMonitorGeometry(MonitorWindowContext ctx)
     {
-        double width = ctx.Window.Width - 40;
-        double height = ctx.Window.Height - 40;
-        const double frameThickness = 80;
-        const double outerRadius = 100;
-        const double innerRadius = 60;
+        double width = ctx.Window.Width - FrameWindowMargin;
+        double height = ctx.Window.Height - FrameWindowMargin;
         
-        var outerRect = new RectangleGeometry(new Rect(0, 0, width, height), outerRadius, outerRadius);
+        var outerRect = new RectangleGeometry(new Rect(0, 0, width, height), FrameOuterRadius, FrameOuterRadius);
         var innerRect = new RectangleGeometry(
-            new Rect(frameThickness, frameThickness, 
-                    width - (frameThickness * 2), 
-                    height - (frameThickness * 2)), 
-            innerRadius, innerRadius);
+            new Rect(FrameThickness, FrameThickness, 
+                    width - (FrameThickness * 2), 
+                    height - (FrameThickness * 2)), 
+            FrameInnerRadius, FrameInnerRadius);
         
         var frameGeometry = new CombinedGeometry(GeometryCombineMode.Exclude, outerRect, innerRect);
         
@@ -1182,7 +1178,7 @@ Version {version}";
         double holeRadius = ringDiameter / 2.0;
         
         ctx.FrameOuterRect = new Rect(ctx.PathOffsetX - holeRadius, ctx.PathOffsetY - holeRadius, width + holeRadius * 2, height + holeRadius * 2);
-        ctx.FrameInnerRect = new Rect(ctx.PathOffsetX + frameThickness + holeRadius, ctx.PathOffsetY + frameThickness + holeRadius, width - (frameThickness * 2) - holeRadius * 2, height - (frameThickness * 2) - holeRadius * 2);
+        ctx.FrameInnerRect = new Rect(ctx.PathOffsetX + FrameThickness + holeRadius, ctx.PathOffsetY + FrameThickness + holeRadius, width - (FrameThickness * 2) - holeRadius * 2, height - (FrameThickness * 2) - holeRadius * 2);
     }
 
     public bool IsShowingOnAllMonitors()
