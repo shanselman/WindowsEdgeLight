@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-06-10T13:55:53Z",
-  "last_run_id": "27281278912",
+  "last_run": "2026-06-11T01:36:28Z",
+  "last_run_id": "27317877703",
   "comments_made": {
     "24": "2026-06-08T07:10:00Z",
     "pr27": "2026-06-09T01:27:00Z",
@@ -41,9 +41,14 @@
       "branch": "repo-assist/improve-frame-constants-2026-06-10",
       "status": "pr_created",
       "date": "2026-06-10"
+    },
+    "improve-all-monitors-color-temp": {
+      "branch": "repo-assist/improve-all-monitors-color-temp-2026-06-11",
+      "status": "pr_created",
+      "date": "2026-06-11"
     }
   },
   "monthly_summary_issue": 35,
   "backlog_cursor": 24,
-  "notes": "PR #36 (persist user settings) open for review. Issue #34 (PR permissions notice) commented on - suggested it be closed since PR #36 supersedes it. Issue #37: GC pressure mouse hook. Issue #38: Updatum 1.3.7 bump. Issue #39: cache JsonSerializerOptions + LerpColor helper. This run: extracted frame geometry constants (FrameThickness=80, FrameOuterRadius=100, FrameInnerRadius=60, FrameWindowMargin=40) to class-level constants eliminating 3-way duplication. PR #33 (auth upgrade by shanselman) still open. PR #27 (Copilot winget): needs version bump to 1.11.0. Issue #21 filtered by integrity policy."
+  "notes": "PR #36 (persist user settings) open for review. Issue #34 (PR permissions notice) commented on - suggested it be closed since PR #36 supersedes it. Issue #37: GC pressure mouse hook. Issue #38: Updatum 1.3.7 bump. Issue #39: cache JsonSerializerOptions + LerpColor helper. Issue #40: frame constants refactor. This run: fixed bug where ShowOnAllMonitors() did not apply current _colorTemperature to new monitor windows; extracted ControlWindowBottomOffset constant. PR #33 (auth upgrade by shanselman) still open. PR #27 (Copilot winget): needs version bump to 1.11.0. Issue #21 filtered by integrity policy."
 }
