@@ -66,7 +66,8 @@ public class AppSettings
     }
 
     /// <summary>
-    /// Save settings to disk
+    /// Save settings to disk using an atomic write (temp file + rename) to prevent
+    /// corruption if the application is terminated mid-write.
     /// </summary>
     public void Save()
     {
@@ -82,7 +83,13 @@ public class AppSettings
             { 
                 WriteIndented = true 
             });
-            File.WriteAllText(SettingsFilePath, json);
+
+            // Write to a temp file first, then atomically rename to the real path.
+            // This ensures the settings file is never left in a partially-written state
+            // if the process is killed during the write.
+            var tempPath = SettingsFilePath + ".tmp";
+            File.WriteAllText(tempPath, json);
+            File.Move(tempPath, SettingsFilePath, overwrite: true);
         }
         catch (Exception ex)
         {
