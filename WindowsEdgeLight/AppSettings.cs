@@ -21,23 +21,28 @@ public class AppSettings
     public bool ExcludeFromCapture { get; set; } = true;
 
     /// <summary>
-    /// Load settings from disk
+    /// Load settings from the default AppData path.
     /// </summary>
-    public static AppSettings Load()
+    public static AppSettings Load() => LoadFrom(SettingsFilePath);
+
+    /// <summary>
+    /// Load settings from a specific file path.
+    /// Returns default settings if the file is missing, unreadable, or contains invalid JSON.
+    /// </summary>
+    public static AppSettings LoadFrom(string path)
     {
         try
         {
-            if (File.Exists(SettingsFilePath))
+            if (File.Exists(path))
             {
-                var json = File.ReadAllText(SettingsFilePath);
+                var json = File.ReadAllText(path);
                 var options = new JsonSerializerOptions
                 {
                     AllowTrailingCommas = true,
                     ReadCommentHandling = JsonCommentHandling.Skip
                 };
                 var settings = JsonSerializer.Deserialize<AppSettings>(json, options);
-                
-                // Validate deserialized settings
+
                 if (settings != null)
                 {
                     return settings;
@@ -47,12 +52,12 @@ public class AppSettings
         catch (JsonException ex)
         {
             System.Diagnostics.Debug.WriteLine($"Failed to parse settings file: {ex.Message}");
-            // Delete corrupted settings file
+            // Delete corrupted settings file so next launch starts fresh
             try
             {
-                if (File.Exists(SettingsFilePath))
+                if (File.Exists(path))
                 {
-                    File.Delete(SettingsFilePath);
+                    File.Delete(path);
                 }
             }
             catch { /* Ignore deletion errors */ }
@@ -66,23 +71,28 @@ public class AppSettings
     }
 
     /// <summary>
-    /// Save settings to disk
+    /// Save settings to the default AppData path.
     /// </summary>
-    public void Save()
+    public void Save() => SaveTo(SettingsFilePath);
+
+    /// <summary>
+    /// Save settings to a specific file path.
+    /// </summary>
+    public void SaveTo(string path)
     {
         try
         {
-            var directory = Path.GetDirectoryName(SettingsFilePath);
+            var directory = Path.GetDirectoryName(path);
             if (directory != null && !Directory.Exists(directory))
             {
                 Directory.CreateDirectory(directory);
             }
 
-            var json = JsonSerializer.Serialize(this, new JsonSerializerOptions 
-            { 
-                WriteIndented = true 
+            var json = JsonSerializer.Serialize(this, new JsonSerializerOptions
+            {
+                WriteIndented = true
             });
-            File.WriteAllText(SettingsFilePath, json);
+            File.WriteAllText(path, json);
         }
         catch (Exception ex)
         {
