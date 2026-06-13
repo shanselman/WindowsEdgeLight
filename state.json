@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-06-13T01:34:47Z",
-  "last_run_id": "27452606872",
+  "last_run": "2026-06-13T13:15:07Z",
+  "last_run_id": "27467776077",
   "comments_made": {
     "24": "2026-06-08T07:10:00Z",
     "pr27": "2026-06-09T01:27:00Z",
@@ -21,27 +21,27 @@
     },
     "perf-mouse-hook": {
       "branch": "repo-assist/perf-mouse-hook-2026-06-09-903cb0537278f1e4",
-      "status": "issue_47_branch_ready",
+      "status": "issue_48_branch_ready",
       "date": "2026-06-09",
-      "description": "Reduce GC pressure from low-level mouse hook (issue #45)"
+      "description": "Reduce GC pressure from low-level mouse hook (issue #48)"
     },
     "eng-updatum-1.3.7": {
-      "branch": "repo-assist/eng-updatum-1.3.7-2026-06-09-b14559a3df087a58",
-      "status": "pr_created_2026-06-13",
-      "date": "2026-06-09",
-      "description": "Bump Updatum from 1.2.1 to 1.3.7 - PR created this run"
+      "branch": "repo-assist/eng-updatum-1.3.7-local",
+      "status": "pr_created_2026-06-13-run2",
+      "date": "2026-06-13",
+      "description": "Bump Updatum from 1.2.1 to 1.3.7 - PR submitted via safeoutputs this run (run 27467776077)"
     },
     "perf-json-options-color-lerp": {
-      "branch": "repo-assist/perf-static-json-options-color-lerp-2026-06-10-72c8512de0f82bcf",
-      "status": "pr_created_2026-06-13",
-      "date": "2026-06-10",
-      "description": "Cache JsonSerializerOptions and extract colour Lerp helper - PR created this run"
+      "branch": "repo-assist/perf-json-cache-2026-06-13",
+      "status": "pr_created_2026-06-13-run2",
+      "date": "2026-06-13",
+      "description": "Cache JsonSerializerOptions and extract colour Lerp helper - PR submitted via safeoutputs this run"
     },
     "improve-frame-constants": {
       "branch": "repo-assist/improve-frame-constants-2026-06-10-a1417139cb1d7878",
-      "status": "pr_created_2026-06-13",
+      "status": "pr_pending_creation",
       "date": "2026-06-10",
-      "description": "Extract frame geometry constants - PR created this run"
+      "description": "Extract frame geometry constants - branch ready, PR not yet created as actual PR"
     },
     "improve-all-monitors-color-temp": {
       "branch": "repo-assist/improve-all-monitors-color-temp-2026-06-11-0d513561036f781f",
@@ -64,5 +64,5 @@
   },
   "monthly_summary_issue": 35,
   "backlog_cursor": 24,
-  "notes": "PR #36 still open. 3 PRs created this run via safeoutputs (eng-updatum, perf-json-color-lerp, improve-frame-constants). Issues #44-#47 are Repo Assist 'fake PRs' with branches ready and click-to-create links. Key ask for maintainer: enable 'Allow GitHub Actions to create and approve pull requests' in Settings. Real user issue #24 (HDR) already commented."
+  "notes": "PRs created this run (2026-06-13 run2): perf-json-cache and eng-updatum-1.3.7. Issues #38,#39,#49,#50 are duplicates that should be closed. Issues #44-#47 have branches ready with click-to-create links. PR #36 still open. Frame constants branch ready at repo-assist/improve-frame-constants-2026-06-10-a1417139cb1d7878 - can be turned into a PR next run."
 }
