@@ -17,6 +17,9 @@ public partial class MainWindow : Window
     private const double OpacityStep = 0.15;
     private const double MinOpacity = 0.2;
     private const double MaxOpacity = 1.0;
+
+    // Vertical offset (in DIPs) from the bottom of the main window to position the control toolbar
+    private const double ControlWindowBottomOffset = 124;
 	
 
     // Color temperature ("cool" blue-ish to "warm" amber-ish)
@@ -971,6 +974,9 @@ Version {version}";
                 monitorCtx.Window.Show();
             }
         }
+
+        // Sync brightness and color temperature to match the main window's current state
+        UpdateAdditionalMonitorWindows();
     }
 
     private void HideAdditionalMonitorWindows()
@@ -1196,7 +1202,7 @@ Version {version}";
 
         // Position at bottom center of main window
         controlWindow.Left = this.Left + (this.Width - controlWindow.Width) / 2;
-        controlWindow.Top = this.Top + this.Height - controlWindow.Height - 124;
+        controlWindow.Top = this.Top + this.Height - controlWindow.Height - ControlWindowBottomOffset;
     }
 
     public bool HasMultipleMonitors()
