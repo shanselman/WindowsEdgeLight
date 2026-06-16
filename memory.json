@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-06-15T14:48:59Z",
-  "last_run_id": "27554578116",
+  "last_run": "2026-06-16T01:41:19Z",
+  "last_run_id": "27588252638",
   "comments_made": {
     "24": "2026-06-08T07:10:00Z",
     "pr27": "2026-06-09T01:27:00Z",
@@ -21,54 +21,59 @@
     },
     "perf-mouse-hook": {
       "branch": "repo-assist/perf-mouse-hook-2026-06-09-903cb0537278f1e4",
-      "status": "issue_48_branch_ready",
-      "date": "2026-06-09",
-      "description": "Reduce GC pressure from low-level mouse hook (issue #48)"
+      "status": "issue_48_click_to_create",
+      "date": "2026-06-09"
     },
     "eng-updatum-1.3.7": {
       "branch": "repo-assist/eng-updatum-1.3.7-local-403cb660cc52a039",
-      "status": "issue_53_branch_ready",
-      "date": "2026-06-13",
-      "description": "Bump Updatum from 1.2.1 to 1.3.7 - issue #53 click-to-create"
+      "status": "issue_53_click_to_create",
+      "date": "2026-06-13"
     },
     "improve-frame-constants": {
       "branch": "repo-assist/improve-frame-constants-2026-06-10-a1417139cb1d7878",
-      "status": "issue_51_branch_ready",
-      "date": "2026-06-10",
-      "description": "Extract frame geometry constants - issue #51 click-to-create"
+      "status": "issue_51_click_to_create",
+      "date": "2026-06-10"
     },
     "improve-all-monitors-color-temp": {
-      "branch": "repo-assist/improve-all-monitors-color-temp-2026-06-11-0d513561036f781f-6ebd69333760fd08",
-      "status": "pr_created_2026-06-15_run27554578116",
-      "date": "2026-06-15",
-      "description": "Fix colour temperature not applied when enabling all-monitors mode - PR created this run (closes #47)"
+      "branch": "repo-assist/improve-all-monitors-color-temp-2026-06-11-0d513561036f781f-6ebd69333760fd08-a83b8d0b5b307bdc",
+      "issue": 57,
+      "status": "issue_57_click_to_create",
+      "date": "2026-06-15"
     },
     "improve-atomic-settings-save": {
-      "branch": "repo-assist/improve-atomic-settings-save-2026-06-11-f7936670a89b86d9-5e499a09b74550f5",
-      "status": "pr_created_2026-06-15_run27554578116",
-      "date": "2026-06-15",
-      "description": "Atomic write (temp+rename) in AppSettings.Save() - PR created this run (closes #46)"
+      "branch": "repo-assist/improve-atomic-settings-save-2026-06-11-f7936670a89b86d9-5e499a09b74550f5-ed2b8e436e76e15c",
+      "issue": 58,
+      "status": "issue_58_click_to_create",
+      "date": "2026-06-15"
     },
     "test-appsettings": {
       "branch": "repo-assist/test-appsettings-2026-06-14-fbdf5f465d9adfb4",
+      "issue": 54,
       "status": "issue_54_click_to_create",
-      "date": "2026-06-14",
-      "description": "xUnit test project, 12 tests for AppSettings - issue #54 click-to-create"
+      "date": "2026-06-14"
     },
     "improve-deduplicate-color-lerp": {
       "branch": "repo-assist/improve-deduplicate-color-lerp-2026-06-14-76b1a0d2d2862438",
+      "issue": 55,
       "status": "issue_55_click_to_create",
-      "date": "2026-06-14",
-      "description": "Deduplicate LerpColor helper + cache JsonSerializerOptions - issue #55 click-to-create"
+      "date": "2026-06-14"
     },
     "eng-ci-check": {
       "branch": "repo-assist/eng-ci-check-2026-06-15-cafb1efab9c2e56a",
-      "status": "blocked_workflow_permissions_issue_56",
-      "date": "2026-06-15",
-      "description": "Add CI check workflow - blocked by GitHub Actions workflow file permissions, manual steps in issue #56"
+      "issue": 56,
+      "status": "issue_56_blocked_workflow_permissions",
+      "date": "2026-06-15"
+    },
+    "fix-hotkey-registration-feedback": {
+      "branch": "repo-assist/fix-hotkey-registration-feedback-2026-06-16",
+      "issue": 59,
+      "status": "issue_59_click_to_create",
+      "date": "2026-06-16",
+      "description": "Show tray balloon when RegisterHotKey() fails due to conflicting shortcut"
     }
   },
   "monthly_summary_issue": 35,
+  "closed_issues": [34],
   "backlog_cursor": 24,
-  "notes": "2026-06-15 run2: Created 2 actual PRs via safeoutputs - colour temp all-monitors fix (closes #47) and atomic settings save (closes #46). PR numbers not yet visible - check next run. CI check workflow (issue #56) still needs manual creation due to workflow file permissions. Many duplicate issues to close: #34, #37-#45, #49, #50, #52. Active PRs: #36 (persist settings), #33 (auth upgrade), #27 (winget). Click-to-create issues: #48, #51, #53, #54, #55."
+  "notes": "2026-06-16 run: Created issue #59 (hotkey registration fix, branch ready). Closed duplicate issue #34. Updated monthly summary #35. Many duplicates still open: #37-45, #46, #47, #49, #50, #52 - ask maintainer to close. Active PRs: #36 (persist settings), #33 (auth upgrade), #27 (winget). Key click-to-create issues: #48, #51, #53, #54, #55, #57, #58, #59."
 }
