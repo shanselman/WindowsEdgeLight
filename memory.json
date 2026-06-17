@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-06-17T01:40:16Z",
-  "last_run_id": "27659935317",
+  "last_run": "2026-06-17T14:03:39Z",
+  "last_run_id": "27694574935",
   "comments_made": {
     "24": "2026-06-08T07:10:00Z",
     "pr27": "2026-06-09T01:27:00Z",
@@ -19,20 +19,19 @@
       "status": "pr_open",
       "date": "2026-06-08"
     },
+    "eng-global-json": {
+      "branch": "repo-assist/eng-global-json-2026-06-16",
+      "status": "pr_created_2026-06-17",
+      "date": "2026-06-17",
+      "description": "Add global.json to pin .NET SDK to 10.0.x (build: 0 errors 0 warnings) - PR created via safeoutputs, closes #60"
+    },
     "improve-deduplicate-color-lerp": {
       "branch": "repo-assist/improve-deduplicate-color-lerp-2026-06-17",
       "status": "pr_created_2026-06-17",
       "date": "2026-06-17",
-      "description": "Extract duplicate LerpColor helper to private static method (build: 0 errors 0 warnings)"
-    },
-    "eng-global-json": {
-      "branch": "repo-assist/eng-global-json-2026-06-16",
-      "status": "pr_created_2026-06-16",
-      "date": "2026-06-16",
-      "description": "Add global.json to pin .NET SDK to 10.0.x (build: 0 errors 0 warnings)"
+      "description": "Extract duplicate LerpColor helper to private static method (build: 0 errors 0 warnings) - PR created via safeoutputs, closes #55, #61"
     },
     "fix-hotkey-registration-feedback": {
-      "branch": "repo-assist/fix-hotkey-registration-feedback-2026-06-16",
       "issue": 59,
       "status": "issue_59_click_to_create",
       "date": "2026-06-16",
@@ -74,5 +73,5 @@
   "monthly_summary_issue": 35,
   "closed_issues": [34],
   "backlog_cursor": 24,
-  "notes": "2026-06-17: Created PR for LerpColor deduplication (branch repo-assist/improve-deduplicate-color-lerp-2026-06-17). No stale PRs (all updated within 9 days). Only real user issue is #24 (HDR, no new activity). Active PRs: #36 (persist settings), #33 (auth upgrade), #27 (winget), plus global.json PR and lerp refactor PR. Key click-to-create issues: #48, #51, #53, #54, #57, #58, #59. Duplicate issues to close: #37-#45, #46, #47, #49, #50, #52, #55."
+  "notes": "2026-06-17 run2: Created PRs via safeoutputs for global.json (branch: repo-assist/eng-global-json-2026-06-16, closes #60) and LerpColor dedup (branch: repo-assist/improve-deduplicate-color-lerp-2026-06-17, closes #55, #61). No real user issues without Repo Assist comment (only #24 with no new activity). Duplicate tracker issues to ask maintainer to close: #37-#52. Active click-to-create issues: #48, #51, #53, #54, #56, #57, #58, #59. Next run: look for new user issues, consider implementing one of the click-to-create improvements as a direct PR."
 }
