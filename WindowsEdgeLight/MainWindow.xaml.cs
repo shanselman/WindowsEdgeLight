@@ -38,6 +38,7 @@ public partial class MainWindow : Window
     private bool isControlWindowVisible = true;
     private ToolStripMenuItem? toggleControlsMenuItem;
     private ToolStripMenuItem? excludeFromCaptureMenuItem;
+    private ToolStripMenuItem? toggleLightMenuItem;
     
     // Application settings
     private AppSettings settings = new AppSettings();
@@ -184,13 +185,14 @@ public partial class MainWindow : Window
             notifyIcon.Icon = System.Drawing.SystemIcons.Application;
         }
         
-        notifyIcon.Text = "Windows Edge Light - Right-click for options";
+        notifyIcon.Text = "Windows Edge Light - Light ON (right-click for options)";
         notifyIcon.Visible = true;
         
     var contextMenu = new ContextMenuStrip();
     contextMenu.Items.Add("📋 Keyboard Shortcuts", null, (s, e) => ShowHelp());
     contextMenu.Items.Add(new ToolStripSeparator());
-    contextMenu.Items.Add("💡 Toggle Light (Ctrl+Shift+L)", null, (s, e) => ToggleLight());
+    toggleLightMenuItem = new ToolStripMenuItem("💡 Turn Light Off (Ctrl+Shift+L)", null, (s, e) => ToggleLight());
+    contextMenu.Items.Add(toggleLightMenuItem);
     contextMenu.Items.Add("🔆 Brightness Up (Ctrl+Shift+↑)", null, (s, e) => IncreaseBrightness());
     contextMenu.Items.Add("🔅 Brightness Down (Ctrl+Shift+↓)", null, (s, e) => DecreaseBrightness());
     contextMenu.Items.Add(new ToolStripSeparator());
@@ -673,6 +675,9 @@ Version {version}";
         
         // Update all additional monitor windows
         UpdateAdditionalMonitorWindows();
+        
+        // Keep tray tooltip and menu in sync with the new state
+        UpdateTrayLightStateText();
     }
 
     public void HandleToggle()
@@ -707,6 +712,22 @@ Version {version}";
         if (toggleControlsMenuItem != null)
         {
             toggleControlsMenuItem.Text = isControlWindowVisible ? "🎛️ Hide Controls" : "🎛️ Show Controls";
+        }
+    }
+
+    private void UpdateTrayLightStateText()
+    {
+        if (notifyIcon != null)
+        {
+            notifyIcon.Text = isLightOn
+                ? "Windows Edge Light - Light ON (right-click for options)"
+                : "Windows Edge Light - Light OFF (right-click for options)";
+        }
+        if (toggleLightMenuItem != null)
+        {
+            toggleLightMenuItem.Text = isLightOn
+                ? "💡 Turn Light Off (Ctrl+Shift+L)"
+                : "💡 Turn Light On (Ctrl+Shift+L)";
         }
     }
 
