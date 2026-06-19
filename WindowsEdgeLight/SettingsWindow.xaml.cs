@@ -13,9 +13,14 @@ public partial class SettingsWindow : Window
         InitializeComponent();
         mainWindow = main;
 
+        var settings = mainWindow.GetSettings();
+
         BrightnessSlider.Value = mainWindow.GetBrightness();
         ColorTempSlider.Value = mainWindow.GetColorTemperature();
         ExcludeFromCaptureCheckBox.IsChecked = mainWindow.IsExcludeFromCaptureEnabled();
+        ShowBrightnessCheckBox.IsChecked = settings.ShowBrightnessButtons;
+        ShowColorTempCheckBox.IsChecked = settings.ShowColorTempButtons;
+        ShowMonitorControlsCheckBox.IsChecked = settings.ShowWindowControlButtons;
 
         UpdateBrightnessLabel();
         UpdateColorTempLabel();
@@ -57,5 +62,37 @@ public partial class SettingsWindow : Window
     {
         if (ColorTempValueText != null)
             ColorTempValueText.Text = $"{(int)(ColorTempSlider.Value * 100)}%";
+    }
+
+    private void ShowBrightness_Click(object sender, RoutedEventArgs e)
+    {
+        var settings = mainWindow.GetSettings();
+        settings.ShowBrightnessButtons = ShowBrightnessCheckBox.IsChecked == true;
+        settings.Save();
+        UpdateOwnerControlWindow();
+    }
+
+    private void ShowColorTemp_Click(object sender, RoutedEventArgs e)
+    {
+        var settings = mainWindow.GetSettings();
+        settings.ShowColorTempButtons = ShowColorTempCheckBox.IsChecked == true;
+        settings.Save();
+        UpdateOwnerControlWindow();
+    }
+
+    private void ShowMonitorControls_Click(object sender, RoutedEventArgs e)
+    {
+        var settings = mainWindow.GetSettings();
+        settings.ShowWindowControlButtons = ShowMonitorControlsCheckBox.IsChecked == true;
+        settings.Save();
+        UpdateOwnerControlWindow();
+    }
+
+    private void UpdateOwnerControlWindow()
+    {
+        if (Owner is ControlWindow controlWindow)
+        {
+            controlWindow.ApplyButtonVisibility();
+        }
     }
 }

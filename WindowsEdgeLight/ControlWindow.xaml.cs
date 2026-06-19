@@ -11,14 +11,29 @@ public partial class ControlWindow : Window
         InitializeComponent();
         mainWindow = main;
         
-        // Disable switch monitor button if only one monitor
         UpdateMonitorButtonState();
+        ApplyButtonVisibility();
     }
 
     private void UpdateMonitorButtonState()
     {
         SwitchMonitorButton.IsEnabled = mainWindow.HasMultipleMonitors() && !mainWindow.IsShowingOnAllMonitors();
         AllMonitorsButton.IsEnabled = mainWindow.HasMultipleMonitors();
+    }
+
+    public void ApplyButtonVisibility()
+    {
+        var settings = mainWindow.GetSettings();
+        var brightVis = settings.ShowBrightnessButtons ? Visibility.Visible : Visibility.Collapsed;
+        var tempVis = settings.ShowColorTempButtons ? Visibility.Visible : Visibility.Collapsed;
+        var windowCtrlVis = settings.ShowWindowControlButtons ? Visibility.Visible : Visibility.Collapsed;
+
+        BrightnessDownButton.Visibility = brightVis;
+        BrightnessUpButton.Visibility = brightVis;
+        ColorWarmerButton.Visibility = tempVis;
+        ColorCoolerButton.Visibility = tempVis;
+        SwitchMonitorButton.Visibility = windowCtrlVis;
+        AllMonitorsButton.Visibility = windowCtrlVis;
     }
 
     public void UpdateAllMonitorsButtonState()
@@ -67,6 +82,7 @@ public partial class ControlWindow : Window
         var settings = new SettingsWindow(mainWindow);
         settings.Owner = this;
         settings.ShowDialog();
+        ApplyButtonVisibility();
     }
 
     private void Close_Click(object sender, RoutedEventArgs e)

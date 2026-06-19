@@ -1237,6 +1237,12 @@ Version {version}";
 
     public double GetColorTemperature() => _colorTemperature;
 
+    public bool GetIsColorTemperatureEnabled() => settings.ShowColorTempButtons;
+
+    public bool GetIsBrightnessEnabled() => settings.ShowBrightnessButtons;
+
+    public AppSettings GetSettings() => settings;
+
     private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
     {
         // Recreate geometry when window size changes (e.g., different monitor resolution)

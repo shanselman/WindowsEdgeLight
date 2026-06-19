@@ -161,6 +161,42 @@
                             Click="ExcludeFromCapture_Click" />
                     </Grid>
                 </Border>
+
+                <!-- Control Window Buttons -->
+                <Border
+                    Margin="0,0,0,12"
+                    Padding="16"
+                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="4">
+                    <StackPanel>
+                        <TextBlock
+                            Margin="0,0,0,8"
+                            FontWeight="SemiBold"
+                            Text="🎛️ Control Bar Buttons" />
+                        <TextBlock
+                            Margin="0,0,0,12"
+                            FontSize="12"
+                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                            TextWrapping="Wrap"
+                            Text="Choose which buttons appear in the floating control bar." />
+                        <CheckBox
+                            x:Name="ShowBrightnessCheckBox"
+                            Margin="0,0,0,8"
+                            Content="Show brightness buttons"
+                            Click="ShowBrightness_Click" />
+                        <CheckBox
+                            x:Name="ShowColorTempCheckBox"
+                            Margin="0,0,0,8"
+                            Content="Show color temperature buttons"
+                            Click="ShowColorTemp_Click" />
+                        <CheckBox
+                            x:Name="ShowMonitorControlsCheckBox"
+                            Content="Show monitor conrol buttons"
+                            Click="ShowMonitorControls_Click" />
+                    </StackPanel>
+                </Border>
             </StackPanel>
         </ScrollViewer>
     </Grid>

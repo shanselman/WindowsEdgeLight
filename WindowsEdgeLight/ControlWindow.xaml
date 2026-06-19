@@ -31,6 +31,7 @@
 
         <StackPanel Orientation="Horizontal">
             <Button
+                x:Name="BrightnessDownButton"
                 Width="40"
                 Height="40"
                 Margin="4,4,0,4"
@@ -41,6 +42,7 @@
                 ToolTip="Decrease brightness (Ctrl+Shift+Down)" />
 
             <Button
+                x:Name="BrightnessUpButton"
                 Width="40"
                 Height="40"
                 Margin="4,4,0,4"
@@ -51,6 +53,7 @@
                 ToolTip="Increase brightness (Ctrl+Shift+Up)" />
 
             <Button
+                x:Name="ColorWarmerButton"
                 Width="40"
                 Height="40"
                 Margin="4,4,0,4"
@@ -60,6 +63,7 @@
                 ToolTip="Make light warmer (K-)" />
 
             <Button
+                x:Name="ColorCoolerButton"
                 Width="40"
                 Height="40"
                 Margin="4,4,0,4"
@@ -69,6 +73,7 @@
                 ToolTip="Make light cooler (K+)" />
 
             <Button
+                x:Name="ToggleLightButton"
                 Width="40"
                 Height="40"
                 Margin="4,4,0,4"
