@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-06-18T13:51:37Z",
-  "last_run_id": "27764171863",
+  "last_run": "2026-06-19T01:44:31Z",
+  "last_run_id": "27800242703",
   "comments_made": {
     "24": "2026-06-08T07:10:00Z",
     "pr27": "2026-06-09T01:27:00Z",
@@ -21,26 +21,26 @@
     },
     "fix-hotkey-feedback": {
       "branch": "repo-assist/fix-hotkey-feedback-2026-06-18",
-      "status": "pr_created_2026-06-18",
+      "status": "issue_65_click_to_create",
       "date": "2026-06-18",
-      "description": "Notify user via tray balloon when global hotkey registration fails (issue #59)"
+      "description": "Notify user via tray balloon when global hotkey registration fails (issue #65)"
     },
     "improve-tray-state-feedback": {
-      "branch": "repo-assist/improve-tray-state-feedback-2026-06-18-13831ecfc5fe22a7",
+      "branch": "repo-assist/improve-tray-state-feedback-2026-06-18",
       "issue": 64,
       "status": "click_to_create",
       "date": "2026-06-18",
       "description": "Tray tooltip and menu item reflect current light on/off state"
     },
     "improve-deduplicate-color-lerp": {
-      "branch": "repo-assist/improve-deduplicate-color-lerp-2026-06-17-bea82b3047bd52a3",
+      "branch": "repo-assist/improve-deduplicate-color-lerp-2026-06-17",
       "issue": 63,
       "status": "click_to_create",
       "date": "2026-06-17",
       "description": "Extract duplicate LerpColor helper - issue #63 has click-to-create PR link"
     },
     "eng-global-json": {
-      "branch": "repo-assist/eng-global-json-2026-06-16-1df299818e47e5ca",
+      "branch": "repo-assist/eng-global-json-2026-06-16",
       "issue": 62,
       "status": "click_to_create",
       "date": "2026-06-17",
@@ -60,10 +60,16 @@
       "issue": 54,
       "status": "click_to_create",
       "date": "2026-06-14"
+    },
+    "improve-display-affinity-helper": {
+      "branch": "repo-assist/improve-display-affinity-helper-2026-06-19",
+      "status": "pr_created_2026-06-19",
+      "date": "2026-06-19",
+      "description": "Extract ApplyDisplayAffinity helper - eliminates 4x repeated HWND/affinity block in ApplyExcludeFromCapture and CreateMonitorWindow"
     }
   },
   "monthly_summary_issue": 35,
   "closed_issues": [34],
   "backlog_cursor": 24,
-  "notes": "2026-06-18 run2: Task 3 - implemented and committed fix for hotkey registration failure feedback (PR created via safeoutputs, branch repo-assist/fix-hotkey-feedback-2026-06-18, build 0 errors 0 warnings). Task 2 - no user issues without RA comment. Issue #59 (old click-to-create for same fix) superseded by this PR. Many click-to-create issues remain (#48,#51,#53,#54,#56,#57,#58,#62,#63,#64). Suggest maintainer close duplicates #37-#52 and #59. Next run: consider different improvement from the click-to-create backlog."
+  "notes": "2026-06-19 run: Task5 - extracted ApplyDisplayAffinity helper (PR created via safeoutputs, branch improve-display-affinity-helper-2026-06-19, build 0 errors 0 warnings). Task2 - no user issues without RA comment, no new human activity on #24 or PR#27. Many click-to-create issues remain (#48,#51,#53,#54,#56,#57,#58,#62,#63,#64,#65). Suggest maintainer close duplicates #37-#52 and #59. Next run: consider turning click-to-create issues into actual PRs."
 }
