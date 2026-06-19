@@ -725,48 +725,23 @@ Version {version}";
         ApplyExcludeFromCapture();
     }
 
+    private void ApplyDisplayAffinity(Window window, uint affinity)
+    {
+        var hwnd = new WindowInteropHelper(window).Handle;
+        if (hwnd == IntPtr.Zero) return;
+        if (!SetWindowDisplayAffinity(hwnd, affinity))
+        {
+            var error = Marshal.GetLastWin32Error();
+            System.Diagnostics.Debug.WriteLine($"Failed to set display affinity. Error: {error}");
+        }
+    }
+
     private void ApplyExcludeFromCapture()
     {
-        var hwnd = new WindowInteropHelper(this).Handle;
-        if (hwnd != IntPtr.Zero)
-        {
-            var result = SetWindowDisplayAffinity(hwnd, settings.ExcludeFromCapture ? WDA_EXCLUDEFROMCAPTURE : WDA_NONE);
-            if (!result)
-            {
-                var error = Marshal.GetLastWin32Error();
-                System.Diagnostics.Debug.WriteLine($"Failed to set display affinity for main window. Error: {error}");
-            }
-        }
-        
-        // Apply to control window
-        if (controlWindow != null)
-        {
-            var controlHwnd = new WindowInteropHelper(controlWindow).Handle;
-            if (controlHwnd != IntPtr.Zero)
-            {
-                var result = SetWindowDisplayAffinity(controlHwnd, settings.ExcludeFromCapture ? WDA_EXCLUDEFROMCAPTURE : WDA_NONE);
-                if (!result)
-                {
-                    var error = Marshal.GetLastWin32Error();
-                    System.Diagnostics.Debug.WriteLine($"Failed to set display affinity for control window. Error: {error}");
-                }
-            }
-        }
-        
-        // Apply to all additional monitor windows
-        foreach (var ctx in additionalMonitorWindows)
-        {
-            var monitorHwnd = new WindowInteropHelper(ctx.Window).Handle;
-            if (monitorHwnd != IntPtr.Zero)
-            {
-                var result = SetWindowDisplayAffinity(monitorHwnd, settings.ExcludeFromCapture ? WDA_EXCLUDEFROMCAPTURE : WDA_NONE);
-                if (!result)
-                {
-                    var error = Marshal.GetLastWin32Error();
-                    System.Diagnostics.Debug.WriteLine($"Failed to set display affinity for monitor window. Error: {error}");
-                }
-            }
-        }
+        uint affinity = settings.ExcludeFromCapture ? WDA_EXCLUDEFROMCAPTURE : WDA_NONE;
+        ApplyDisplayAffinity(this, affinity);
+        if (controlWindow != null) ApplyDisplayAffinity(controlWindow, affinity);
+        foreach (var ctx in additionalMonitorWindows) ApplyDisplayAffinity(ctx.Window, affinity);
     }
 
     public void IncreaseBrightness()
@@ -1107,12 +1082,7 @@ Version {version}";
             SetWindowLong(hwnd, GWL_EXSTYLE, extendedStyle | WS_EX_TRANSPARENT | WS_EX_LAYERED);
 
             // Apply exclude from capture setting
-            var result = SetWindowDisplayAffinity(hwnd, settings.ExcludeFromCapture ? WDA_EXCLUDEFROMCAPTURE : WDA_NONE);
-            if (!result)
-            {
-                var error = Marshal.GetLastWin32Error();
-                System.Diagnostics.Debug.WriteLine($"Failed to set display affinity for monitor window during creation. Error: {error}");
-            }
+            ApplyDisplayAffinity(window, settings.ExcludeFromCapture ? WDA_EXCLUDEFROMCAPTURE : WDA_NONE);
 
             // Verify and update DPI if WPF reports a different value after window is loaded
             var source = PresentationSource.FromVisual(window);
