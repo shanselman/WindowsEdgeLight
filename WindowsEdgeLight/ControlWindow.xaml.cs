@@ -62,6 +62,13 @@ public partial class ControlWindow : Window
         mainWindow.ToggleAllMonitors();
     }
 
+    private void Open_Settings(object sender, RoutedEventArgs e)
+    {
+        var settings = new SettingsWindow(mainWindow);
+        settings.Owner = this;
+        settings.ShowDialog();
+    }
+
     private void Close_Click(object sender, RoutedEventArgs e)
     {
         System.Windows.Application.Current.Shutdown();

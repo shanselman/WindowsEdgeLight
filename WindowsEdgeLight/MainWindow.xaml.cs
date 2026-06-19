@@ -789,22 +789,18 @@ Version {version}";
 
     public void IncreaseBrightness()
     {
-        currentOpacity = Math.Min(MaxOpacity, currentOpacity + OpacityStep);
-        EdgeLightBorder.Opacity = currentOpacity;
-        
-        // Update all additional monitor windows
-        UpdateAdditionalMonitorWindows();
-        
-        settings.Brightness = currentOpacity;
-        settings.Save();
+        SetBrightness(currentOpacity + OpacityStep);
     }
 
     public void DecreaseBrightness()
     {
-        currentOpacity = Math.Max(MinOpacity, currentOpacity - OpacityStep);
+        SetBrightness(currentOpacity - OpacityStep);
+    }
+
+    public void SetBrightness(double value)
+    {
+        currentOpacity = Math.Max(MinOpacity, Math.Min(MaxOpacity, value));
         EdgeLightBorder.Opacity = currentOpacity;
-        
-        // Update all additional monitor windows
         UpdateAdditionalMonitorWindows();
         
         settings.Brightness = currentOpacity;
@@ -908,7 +904,6 @@ Version {version}";
 
         if (availableMonitors.Length <= 1)
         {
-            // Only one monitor, nothing to do
             return;
         }
 
@@ -928,7 +923,7 @@ Version {version}";
                 targetScreen.WorkingArea.X, targetScreen.WorkingArea.Y, 
                 targetScreen.WorkingArea.Width, targetScreen.WorkingArea.Height, 
                 SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
-            
+
             // Force a size update if DPI didn't change (SetWindowPos might not trigger OnDpiChanged)
             // If DPI changed, OnDpiChanged will handle it.
             // But we can't easily know if OnDpiChanged fired yet.
@@ -938,8 +933,8 @@ Version {version}";
             
             // If we are on the same thread, OnDpiChanged (via WM_DPICHANGED) should have fired synchronously during SetWindowPos.
             // So _dpiScaleX/Y should be up to date.
-            
-            double newLeft = targetScreen.WorkingArea.X / _dpiScaleX;
+
+                        double newLeft = targetScreen.WorkingArea.X / _dpiScaleX;
             double newTop = targetScreen.WorkingArea.Y / _dpiScaleY;
             double newWidth = targetScreen.WorkingArea.Width / _dpiScaleX;
             double newHeight = targetScreen.WorkingArea.Height / _dpiScaleY;
@@ -1237,6 +1232,10 @@ Version {version}";
     {
         return settings.ExcludeFromCapture;
     }
+
+    public double GetBrightness() => currentOpacity;
+
+    public double GetColorTemperature() => _colorTemperature;
 
     private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
     {

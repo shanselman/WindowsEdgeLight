@@ -3,7 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     Title="Controls"
-    Width="366"
+    Width="406"
     Height="48"
     AllowsTransparency="True"
     Background="Transparent"
@@ -99,6 +99,17 @@
                 Content="&#xF57D;"
                 FontFamily="Segoe MDL2 Assets"
                 ToolTip="Show on all monitors" />
+
+            <Button
+                x:Name="OpenSettingsWindowButton"
+                Width="40"
+                Height="40"
+                Margin="4,4,0,4"
+                AutomationProperties.Name="Open settings"
+                Click="Open_Settings"
+                Content="&#xE713;"
+                FontFamily="Segoe MDL2 Assets"
+                ToolTip="Open settings" />
 
             <Button
                 Width="40"
