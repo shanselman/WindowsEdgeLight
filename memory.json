@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-06-20T13:16:13Z",
-  "last_run_id": "27872258520",
+  "last_run": "2026-06-21T01:40:36Z",
+  "last_run_id": "27889906149",
   "comments_made": {
     "24": "2026-06-08T07:10:00Z",
     "pr27": "2026-06-09T01:27:00Z",
@@ -28,15 +28,19 @@
       "status": "pr_open",
       "date": "2026-06-08"
     },
-    "improve-all-monitors-color-temp": {
-      "issue": 57,
-      "branch": "repo-assist/fix-all-monitors-color-temp-2026-06-20",
-      "status": "pr_created_2026-06-20",
-      "date": "2026-06-20",
-      "description": "Fix: apply current colour temperature when enabling all-monitors mode (PR created run 27856121834)"
+    "fix-all-monitors-color-temp": {
+      "branch": "repo-assist/fix-all-monitors-color-temp-2026-06-20-248bdd93c99c3902",
+      "status": "pr_created_2026-06-21",
+      "date": "2026-06-21",
+      "description": "Fix: apply current colour temperature when enabling all-monitors mode (PR created via safeoutputs run 27889906149, Closes #57)"
+    },
+    "fix-hotkey-feedback": {
+      "branch": "repo-assist/fix-hotkey-feedback-2026-06-18-9c056fd93a86040d",
+      "status": "pr_created_2026-06-21",
+      "date": "2026-06-21",
+      "description": "Fix: notify user when global hotkey registration fails (PR created via safeoutputs run 27889906149, Closes #59)"
     },
     "improve-atomic-settings-save": {
-      "issue": 58,
       "branch": "repo-assist/improve-atomic-settings-save-2026-06-19-b9ad8346b6daab3e",
       "status": "pr_created_2026-06-19",
       "date": "2026-06-19",
@@ -48,31 +52,21 @@
       "date": "2026-06-19",
       "description": "Extract ApplyDisplayAffinity helper - eliminates 4x repeated HWND/affinity block"
     },
-    "fix-hotkey-feedback": {
-      "branch": "repo-assist/fix-hotkey-feedback-2026-06-18-9c056fd93a86040d",
-      "issue": 65,
-      "status": "pr_created_2026-06-18",
-      "date": "2026-06-18",
-      "description": "Notify user via tray balloon when global hotkey registration fails"
-    },
     "improve-tray-state-feedback": {
       "branch": "repo-assist/improve-tray-state-feedback-2026-06-18-13831ecfc5fe22a7",
-      "issue": 64,
-      "status": "pr_created_2026-06-18",
+      "status": "click_to_create",
       "date": "2026-06-18",
       "description": "Tray tooltip and menu item reflect current light on/off state"
     },
     "improve-deduplicate-color-lerp": {
       "branch": "repo-assist/improve-deduplicate-color-lerp-2026-06-17-bea82b3047bd52a3",
-      "issue": 63,
-      "status": "pr_created_2026-06-17",
+      "status": "click_to_create",
       "date": "2026-06-17",
       "description": "Extract duplicate LerpColor helper - issue #63"
     },
     "eng-global-json": {
       "branch": "repo-assist/eng-global-json-2026-06-16-dec82e9f28564719",
-      "issue": 62,
-      "status": "pr_created_2026-06-17",
+      "status": "click_to_create",
       "date": "2026-06-17",
       "description": "Add global.json to pin .NET SDK to 10.0.x - issue #62"
     },
@@ -100,5 +94,5 @@
   "monthly_summary_issue": 35,
   "closed_issues": [34],
   "backlog_cursor": 24,
-  "notes": "2026-06-20 13:16 run: Task1 - labelled #56,#62-#67,#69 with bug/refactor/enhancement. Task2 - no new user activity on #24, #21 filtered by integrity policy. Many PRs still pending maintainer review/merge. Duplicate RA tracker issues #37-#47,#49,#50,#52,#55,#57-#61 should be closed by maintainer. Next run: try to create actual PRs for click-to-create items (#48 mouse hook, #54 tests, #51 frame constants)."
+  "notes": "2026-06-21 01:40 run: Task3 - created real PRs via safeoutputs for fix-hotkey-feedback and fix-all-monitors-color-temp branches. Task2 - only visible human issue #24 already has RA comment. Next run: create real PRs from remaining click-to-create branches (improve-tray-state, improve-deduplicate-color-lerp, eng-global-json, test-appsettings, perf-mouse-hook, improve-frame-constants, eng-updatum, improve-atomic-settings-save)."
 }
