@@ -9,6 +9,17 @@ namespace WindowsEdgeLight;
 /// </summary>
 public class AppSettings
 {
+    private static readonly JsonSerializerOptions LoadOptions = new()
+    {
+        AllowTrailingCommas = true,
+        ReadCommentHandling = JsonCommentHandling.Skip
+    };
+
+    private static readonly JsonSerializerOptions SaveOptions = new()
+    {
+        WriteIndented = true
+    };
+
     private static readonly string SettingsFilePath = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
         "WindowsEdgeLight",
@@ -21,6 +32,22 @@ public class AppSettings
     public bool ExcludeFromCapture { get; set; } = true;
 
     /// <summary>
+    /// Whether the edge light is on or off (persisted across restarts)
+    /// </summary>
+    public bool IsLightOn { get; set; } = true;
+
+    /// <summary>
+    /// Brightness/opacity of the edge light, in the range [0.2, 1.0]
+    /// </summary>
+    public double Brightness { get; set; } = 1.0;
+
+    /// <summary>
+    /// Color temperature of the edge light, in the range [0.0, 1.0]
+    /// where 0.0 = coolest (blue-white) and 1.0 = warmest (amber)
+    /// </summary>
+    public double ColorTemperature { get; set; } = 0.5;
+
+    /// <summary>
     /// Load settings from disk
     /// </summary>
     public static AppSettings Load()
@@ -30,16 +57,12 @@ public class AppSettings
             if (File.Exists(SettingsFilePath))
             {
                 var json = File.ReadAllText(SettingsFilePath);
-                var options = new JsonSerializerOptions
-                {
-                    AllowTrailingCommas = true,
-                    ReadCommentHandling = JsonCommentHandling.Skip
-                };
-                var settings = JsonSerializer.Deserialize<AppSettings>(json, options);
+                var settings = JsonSerializer.Deserialize<AppSettings>(json, LoadOptions);
                 
                 // Validate deserialized settings
                 if (settings != null)
                 {
+                    settings.Normalize();
                     return settings;
                 }
             }
@@ -65,6 +88,12 @@ public class AppSettings
         return new AppSettings();
     }
 
+    public void Normalize()
+    {
+        Brightness = NormalizeDouble(Brightness, 0.2, 1.0, 1.0);
+        ColorTemperature = NormalizeDouble(ColorTemperature, 0.0, 1.0, 0.5);
+    }
+
     /// <summary>
     /// Save settings to disk
     /// </summary>
@@ -78,15 +107,42 @@ public class AppSettings
                 Directory.CreateDirectory(directory);
             }
 
-            var json = JsonSerializer.Serialize(this, new JsonSerializerOptions 
-            { 
-                WriteIndented = true 
-            });
-            File.WriteAllText(SettingsFilePath, json);
+            Normalize();
+            var json = JsonSerializer.Serialize(this, SaveOptions);
+            var tempFilePath = Path.Combine(
+                directory ?? Path.GetTempPath(),
+                $"{Path.GetFileName(SettingsFilePath)}.{Guid.NewGuid():N}.tmp");
+
+            try
+            {
+                File.WriteAllText(tempFilePath, json);
+                File.Move(tempFilePath, SettingsFilePath, overwrite: true);
+            }
+            finally
+            {
+                if (File.Exists(tempFilePath))
+                {
+                    File.Delete(tempFilePath);
+                }
+            }
         }
-        catch (Exception ex)
+        catch (IOException ex)
         {
             System.Diagnostics.Debug.WriteLine($"Failed to save settings: {ex.Message}");
         }
+        catch (UnauthorizedAccessException ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Failed to save settings: {ex.Message}");
+        }
+    }
+
+    private static double NormalizeDouble(double value, double min, double max, double fallback)
+    {
+        if (double.IsNaN(value) || double.IsInfinity(value))
+        {
+            return fallback;
+        }
+
+        return Math.Clamp(value, min, max);
     }
 }

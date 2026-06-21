@@ -38,6 +38,7 @@ public partial class MainWindow : Window
     private bool isControlWindowVisible = true;
     private ToolStripMenuItem? toggleControlsMenuItem;
     private ToolStripMenuItem? excludeFromCaptureMenuItem;
+    private ToolStripMenuItem? toggleLightMenuItem;
     
     // Application settings
     private AppSettings settings = new AppSettings();
@@ -155,6 +156,9 @@ public partial class MainWindow : Window
         
         // Load settings
         settings = AppSettings.Load();
+        isLightOn = settings.IsLightOn;
+        currentOpacity = settings.Brightness;
+        _colorTemperature = settings.ColorTemperature;
         
         SetupNotifyIcon();
     }
@@ -184,41 +188,70 @@ public partial class MainWindow : Window
             notifyIcon.Icon = System.Drawing.SystemIcons.Application;
         }
         
-        notifyIcon.Text = "Windows Edge Light - Right-click for options";
+        notifyIcon.Text = GetTrayTooltipText();
         notifyIcon.Visible = true;
         
-    var contextMenu = new ContextMenuStrip();
-    contextMenu.Items.Add("📋 Keyboard Shortcuts", null, (s, e) => ShowHelp());
-    contextMenu.Items.Add(new ToolStripSeparator());
-    contextMenu.Items.Add("💡 Toggle Light (Ctrl+Shift+L)", null, (s, e) => ToggleLight());
-    contextMenu.Items.Add("🔆 Brightness Up (Ctrl+Shift+↑)", null, (s, e) => IncreaseBrightness());
-    contextMenu.Items.Add("🔅 Brightness Down (Ctrl+Shift+↓)", null, (s, e) => DecreaseBrightness());
-    contextMenu.Items.Add(new ToolStripSeparator());
-    contextMenu.Items.Add("🔥 K- Warmer Light", null, (s, e) => IncreaseColorTemperature());
-    contextMenu.Items.Add("❄️ K+ Cooler Light", null, (s, e) => DecreaseColorTemperature());
-    contextMenu.Items.Add(new ToolStripSeparator());
-    contextMenu.Items.Add("🖥️ Switch Monitor", null, (s, e) => MoveToNextMonitor());
-    contextMenu.Items.Add("🖥️🖥️ Toggle All Monitors", null, (s, e) => ToggleAllMonitors());
-    contextMenu.Items.Add(new ToolStripSeparator());
-    
-    // Add toggle controls menu item - text will be set by UpdateTrayMenuToggleControlsText
-    toggleControlsMenuItem = new ToolStripMenuItem("🎛️ Hide Controls", null, (s, e) => ToggleControlsVisibility());
-    contextMenu.Items.Add(toggleControlsMenuItem);
-    
-    // Add exclude from capture menu item with checkmark
-    excludeFromCaptureMenuItem = new ToolStripMenuItem("🎥 Exclude from Screen Capture", null, (s, e) => ToggleExcludeFromCapture());
-    excludeFromCaptureMenuItem.CheckOnClick = true;
-    excludeFromCaptureMenuItem.Checked = settings.ExcludeFromCapture;
-    contextMenu.Items.Add(excludeFromCaptureMenuItem);
-    
-    contextMenu.Items.Add(new ToolStripSeparator());
-    contextMenu.Items.Add("✖ Exit", null, (s, e) => System.Windows.Application.Current.Shutdown());
+        var contextMenu = new ContextMenuStrip();
+        contextMenu.Items.Add("📋 Keyboard Shortcuts", null, (s, e) => ShowHelp());
+        contextMenu.Items.Add(new ToolStripSeparator());
+        toggleLightMenuItem = new ToolStripMenuItem(GetToggleLightMenuText(), null, (s, e) => ToggleLight());
+        contextMenu.Items.Add(toggleLightMenuItem);
+        contextMenu.Items.Add("🔆 Brightness Up (Ctrl+Shift+↑)", null, (s, e) => IncreaseBrightness());
+        contextMenu.Items.Add("🔅 Brightness Down (Ctrl+Shift+↓)", null, (s, e) => DecreaseBrightness());
+        contextMenu.Items.Add(new ToolStripSeparator());
+        contextMenu.Items.Add("🔥 K- Warmer Light", null, (s, e) => IncreaseColorTemperature());
+        contextMenu.Items.Add("❄️ K+ Cooler Light", null, (s, e) => DecreaseColorTemperature());
+        contextMenu.Items.Add(new ToolStripSeparator());
+        contextMenu.Items.Add("🖥️ Switch Monitor", null, (s, e) => MoveToNextMonitor());
+        contextMenu.Items.Add("🖥️🖥️ Toggle All Monitors", null, (s, e) => ToggleAllMonitors());
+        contextMenu.Items.Add(new ToolStripSeparator());
+        
+        // Add toggle controls menu item - text will be set by UpdateTrayMenuToggleControlsText
+        toggleControlsMenuItem = new ToolStripMenuItem("🎛️ Hide Controls", null, (s, e) => ToggleControlsVisibility());
+        contextMenu.Items.Add(toggleControlsMenuItem);
+        
+        // Add exclude from capture menu item with checkmark
+        excludeFromCaptureMenuItem = new ToolStripMenuItem("🎥 Exclude from Screen Capture", null, (s, e) => ToggleExcludeFromCapture());
+        excludeFromCaptureMenuItem.CheckOnClick = true;
+        excludeFromCaptureMenuItem.Checked = settings.ExcludeFromCapture;
+        contextMenu.Items.Add(excludeFromCaptureMenuItem);
+        
+        contextMenu.Items.Add(new ToolStripSeparator());
+        contextMenu.Items.Add("✖ Exit", null, (s, e) => System.Windows.Application.Current.Shutdown());
         
         notifyIcon.ContextMenuStrip = contextMenu;
         notifyIcon.DoubleClick += (s, e) => ShowHelp();
         
         // Set initial menu text based on current state
+        UpdateTrayLightStateText();
         UpdateTrayMenuToggleControlsText();
+    }
+
+    private string GetTrayTooltipText()
+    {
+        return isLightOn
+            ? "Windows Edge Light - Light ON (right-click for options)"
+            : "Windows Edge Light - Light OFF (right-click for options)";
+    }
+
+    private string GetToggleLightMenuText()
+    {
+        return isLightOn
+            ? "💡 Turn Light Off (Ctrl+Shift+L)"
+            : "💡 Turn Light On (Ctrl+Shift+L)";
+    }
+
+    private void UpdateTrayLightStateText()
+    {
+        if (notifyIcon != null)
+        {
+            notifyIcon.Text = GetTrayTooltipText();
+        }
+
+        if (toggleLightMenuItem != null)
+        {
+            toggleLightMenuItem.Text = GetToggleLightMenuText();
+        }
     }
 
     private void ShowHelp()
@@ -314,6 +347,14 @@ Version {version}";
         // Apply exclude from capture setting
         ApplyExcludeFromCapture();
 
+        EdgeLightBorder.Opacity = currentOpacity;
+        SetColorTemperature(_colorTemperature, saveSettings: false);
+
+        if (!isLightOn)
+        {
+            EdgeLightBorder.Visibility = Visibility.Collapsed;
+        }
+
         InstallMouseHook();
     }
 
@@ -354,6 +395,27 @@ Version {version}";
         }
 
         return CallNextHookEx(mouseHookHandle, nCode, wParam, lParam);
+    }
+
+    private static System.Windows.Media.Color LerpColor(System.Windows.Media.Color a, System.Windows.Media.Color b, double t)
+    {
+        byte LerpByte(byte x, byte y) => (byte)(x + (y - x) * t);
+
+        return System.Windows.Media.Color.FromArgb(
+            255,
+            LerpByte(a.R, b.R),
+            LerpByte(a.G, b.G),
+            LerpByte(a.B, b.B));
+    }
+
+    private static double ClampFinite(double value, double min, double max, double fallback)
+    {
+        if (double.IsNaN(value) || double.IsInfinity(value))
+        {
+            return fallback;
+        }
+
+        return Math.Clamp(value, min, max);
     }
 
     private void HandleMouseMove(int screenX, int screenY)
@@ -673,6 +735,10 @@ Version {version}";
         
         // Update all additional monitor windows
         UpdateAdditionalMonitorWindows();
+
+        settings.IsLightOn = isLightOn;
+        settings.Save();
+        UpdateTrayLightStateText();
     }
 
     public void HandleToggle()
@@ -771,20 +837,22 @@ Version {version}";
 
     public void IncreaseBrightness()
     {
-        currentOpacity = Math.Min(MaxOpacity, currentOpacity + OpacityStep);
-        EdgeLightBorder.Opacity = currentOpacity;
-        
-        // Update all additional monitor windows
-        UpdateAdditionalMonitorWindows();
+        SetBrightness(currentOpacity + OpacityStep);
     }
 
     public void DecreaseBrightness()
     {
-        currentOpacity = Math.Max(MinOpacity, currentOpacity - OpacityStep);
+        SetBrightness(currentOpacity - OpacityStep);
+    }
+
+    private void SetBrightness(double value)
+    {
+        currentOpacity = ClampFinite(value, MinOpacity, MaxOpacity, MaxOpacity);
         EdgeLightBorder.Opacity = currentOpacity;
-        
-        // Update all additional monitor windows
         UpdateAdditionalMonitorWindows();
+
+        settings.Brightness = currentOpacity;
+        settings.Save();
     }
 
     private void UpdateAdditionalMonitorWindows()
@@ -801,13 +869,7 @@ Version {version}";
                 var cool = System.Windows.Media.Color.FromRgb(220, 235, 255);
                 var warm = System.Windows.Media.Color.FromRgb(255, 220, 180);
                 
-                System.Windows.Media.Color Lerp(System.Windows.Media.Color a, System.Windows.Media.Color b, double t)
-                {
-                    byte LerpByte(byte x, byte y, double tt) => (byte)(x + (y - x) * tt);
-                    return System.Windows.Media.Color.FromArgb(255, LerpByte(a.R, b.R, t), LerpByte(a.G, b.G, t), LerpByte(a.B, b.B, t));
-                }
-                
-                var midColor = Lerp(cool, warm, _colorTemperature);
+                var midColor = LerpColor(cool, warm, _colorTemperature);
                 
                 foreach (var stop in brush.GradientStops)
                 {
@@ -830,31 +892,19 @@ Version {version}";
         SetColorTemperature(_colorTemperature - ColorTempStep);
     }
 
-    public void SetColorTemperature(double value)
+    public void SetColorTemperature(double value, bool saveSettings = true)
     {
-        _colorTemperature = Math.Max(MinColorTemp, Math.Min(MaxColorTemp, value));
+        _colorTemperature = ClampFinite(value, MinColorTemp, MaxColorTemp, 0.5);
 
         // Map 0-1 slider to a simple cool-to-warm gradient.
         // We'll bias the inner gradient stops from blueish-white (cool) to amber (warm).
         // NOTE: This assumes the brush defined in XAML is still a LinearGradientBrush.
         if (EdgeLightBorder.Fill is LinearGradientBrush brush && brush.GradientStops.Count >= 3)
         {
-            // Cool: RGB ~ (220, 235, 255), Warm: RGB ~ (255, 220, 180)
-            System.Windows.Media.Color Lerp(System.Windows.Media.Color a, System.Windows.Media.Color b, double t)
-            {
-                byte LerpByte(byte x, byte y, double tt) => (byte)(x + (y - x) * tt);
-
-                return System.Windows.Media.Color.FromArgb(
-                    255,
-                    LerpByte(a.R, b.R, t),
-                    LerpByte(a.G, b.G, t),
-                    LerpByte(a.B, b.B, t));
-            }
-
             var cool = System.Windows.Media.Color.FromRgb(220, 235, 255);
             var warm = System.Windows.Media.Color.FromRgb(255, 220, 180);
 
-            var midColor = Lerp(cool, warm, _colorTemperature);
+            var midColor = LerpColor(cool, warm, _colorTemperature);
 
             // Update a couple of inner stops to shift perceived temperature
             // Keep outer rim relatively neutral for consistent edge.
@@ -869,6 +919,12 @@ Version {version}";
         
         // Update all additional monitor windows
         UpdateAdditionalMonitorWindows();
+
+        if (saveSettings)
+        {
+            settings.ColorTemperature = _colorTemperature;
+            settings.Save();
+        }
     }
 
     public void MoveToNextMonitor()
@@ -971,6 +1027,8 @@ Version {version}";
                 monitorCtx.Window.Show();
             }
         }
+
+        UpdateAdditionalMonitorWindows();
     }
 
     private void HideAdditionalMonitorWindows()
