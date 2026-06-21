@@ -134,6 +134,8 @@ public partial class MainWindow : Window
     private IntPtr mouseHookHandle = IntPtr.Zero;
     private LowLevelMouseProc? mouseHookCallback;
 
+    private bool _hotkeyWarningShown = false;
+
     private Rect? frameOuterRect;
     private Rect? frameInnerRect;
     private readonly Ellipse? hoverCursorRing;
@@ -298,10 +300,10 @@ Version {version}";
         int extendedStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
         SetWindowLong(hwnd, GWL_EXSTYLE, extendedStyle | WS_EX_TRANSPARENT | WS_EX_LAYERED);
         
-        // Register global hotkeys
-        RegisterHotKey(hwnd, HOTKEY_TOGGLE, MOD_CONTROL | MOD_SHIFT, VK_L);
-        RegisterHotKey(hwnd, HOTKEY_BRIGHTNESS_UP, MOD_CONTROL | MOD_SHIFT, VK_UP);
-        RegisterHotKey(hwnd, HOTKEY_BRIGHTNESS_DOWN, MOD_CONTROL | MOD_SHIFT, VK_DOWN);
+        // Register global hotkeys; warn the user on first conflict via tray balloon
+        RegisterHotKeyWithFeedback(hwnd, HOTKEY_TOGGLE, MOD_CONTROL | MOD_SHIFT, VK_L, "Ctrl+Shift+L");
+        RegisterHotKeyWithFeedback(hwnd, HOTKEY_BRIGHTNESS_UP, MOD_CONTROL | MOD_SHIFT, VK_UP, "Ctrl+Shift+↑");
+        RegisterHotKeyWithFeedback(hwnd, HOTKEY_BRIGHTNESS_DOWN, MOD_CONTROL | MOD_SHIFT, VK_DOWN, "Ctrl+Shift+↓");
         
         // Hook into Windows message processing
         HwndSource source = HwndSource.FromHwnd(hwnd);
@@ -544,6 +546,23 @@ Version {version}";
         double holeRadius = ringDiameter / 2.0;
         frameOuterRect = new Rect(pathOffsetX - holeRadius, pathOffsetY - holeRadius, width + holeRadius * 2, height + holeRadius * 2);
         frameInnerRect = new Rect(pathOffsetX + frameThickness + holeRadius, pathOffsetY + frameThickness + holeRadius, width - (frameThickness * 2) - holeRadius * 2, height - (frameThickness * 2) - holeRadius * 2);
+    }
+
+    private void RegisterHotKeyWithFeedback(IntPtr hwnd, int id, uint fsModifiers, uint vk, string friendlyName)
+    {
+        if (!RegisterHotKey(hwnd, id, fsModifiers, vk) && !_hotkeyWarningShown)
+        {
+            _hotkeyWarningShown = true;
+            if (notifyIcon != null)
+            {
+                notifyIcon.BalloonTipTitle = "Windows Edge Light — Hotkey conflict";
+                notifyIcon.BalloonTipText =
+                    $"The shortcut {friendlyName} could not be registered — another app is using it. " +
+                    "Other shortcuts may still work.";
+                notifyIcon.BalloonTipIcon = ToolTipIcon.Warning;
+                notifyIcon.ShowBalloonTip(6000);
+            }
+        }
     }
 
     private IntPtr HwndHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
