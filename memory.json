@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-06-21T01:40:36Z",
-  "last_run_id": "27889906149",
+  "last_run": "2026-06-21T13:24:07Z",
+  "last_run_id": "27905704977",
   "comments_made": {
     "24": "2026-06-08T07:10:00Z",
     "pr27": "2026-06-09T01:27:00Z",
@@ -28,71 +28,36 @@
       "status": "pr_open",
       "date": "2026-06-08"
     },
+    "eng-global-json-2026-06-21": {
+      "branch": "repo-assist/eng-global-json-2026-06-21",
+      "status": "pr_created_2026-06-21",
+      "date": "2026-06-21",
+      "description": "Add global.json to pin .NET SDK to 10.0.x (Closes #62)"
+    },
+    "improve-cache-json-options-2026-06-21": {
+      "branch": "repo-assist/improve-cache-json-options-2026-06-21",
+      "status": "pr_created_2026-06-21",
+      "date": "2026-06-21",
+      "description": "Cache JsonSerializerOptions as static readonly fields in AppSettings"
+    },
     "fix-all-monitors-color-temp": {
       "branch": "repo-assist/fix-all-monitors-color-temp-2026-06-20-248bdd93c99c3902",
       "status": "pr_created_2026-06-21",
       "date": "2026-06-21",
-      "description": "Fix: apply current colour temperature when enabling all-monitors mode (PR created via safeoutputs run 27889906149, Closes #57)"
+      "description": "Fix: apply current colour temperature when enabling all-monitors mode (Closes #57)"
     },
     "fix-hotkey-feedback": {
       "branch": "repo-assist/fix-hotkey-feedback-2026-06-18-9c056fd93a86040d",
       "status": "pr_created_2026-06-21",
       "date": "2026-06-21",
-      "description": "Fix: notify user when global hotkey registration fails (PR created via safeoutputs run 27889906149, Closes #59)"
-    },
-    "improve-atomic-settings-save": {
-      "branch": "repo-assist/improve-atomic-settings-save-2026-06-19-b9ad8346b6daab3e",
-      "status": "pr_created_2026-06-19",
-      "date": "2026-06-19",
-      "description": "Atomic write (temp+rename) in AppSettings.Save() - PR submitted via safeoutputs run 27829860158"
-    },
-    "improve-display-affinity-helper": {
-      "branch": "repo-assist/improve-display-affinity-helper-2026-06-19-eda98cfefb8e7083",
-      "status": "pr_created_2026-06-19",
-      "date": "2026-06-19",
-      "description": "Extract ApplyDisplayAffinity helper - eliminates 4x repeated HWND/affinity block"
-    },
-    "improve-tray-state-feedback": {
-      "branch": "repo-assist/improve-tray-state-feedback-2026-06-18-13831ecfc5fe22a7",
-      "status": "click_to_create",
-      "date": "2026-06-18",
-      "description": "Tray tooltip and menu item reflect current light on/off state"
-    },
-    "improve-deduplicate-color-lerp": {
-      "branch": "repo-assist/improve-deduplicate-color-lerp-2026-06-17-bea82b3047bd52a3",
-      "status": "click_to_create",
-      "date": "2026-06-17",
-      "description": "Extract duplicate LerpColor helper - issue #63"
-    },
-    "eng-global-json": {
-      "branch": "repo-assist/eng-global-json-2026-06-16-dec82e9f28564719",
-      "status": "click_to_create",
-      "date": "2026-06-17",
-      "description": "Add global.json to pin .NET SDK to 10.0.x - issue #62"
-    },
-    "test-appsettings": {
-      "issue": 54,
-      "status": "click_to_create",
-      "date": "2026-06-14"
-    },
-    "perf-mouse-hook": {
-      "issue": 48,
-      "status": "click_to_create",
-      "date": "2026-06-09"
-    },
-    "improve-frame-constants": {
-      "issue": 51,
-      "status": "click_to_create",
-      "date": "2026-06-10"
-    },
-    "eng-updatum": {
-      "issue": 53,
-      "status": "click_to_create",
-      "date": "2026-06-13"
+      "description": "Fix: notify user when global hotkey registration fails (Closes #59)"
     }
   },
-  "monthly_summary_issue": 35,
-  "closed_issues": [34],
+  "monthly_summary_issue": "aw_monthly1",
+  "monthly_summary_note": "Previous issue #35 was closed not_planned by shanselman on 2026-06-21. New issue created this run.",
+  "closed_issues_not_planned": [34, 63, 66],
+  "closed_issues_completed": [56, 64, 67, 69],
+  "maintainer_preferences": "Prefers bug fixes and functional improvements. Closed refactoring PRs (LerpColor, ApplyDisplayAffinity) as not_planned. Does not want pure refactors without user-visible benefit.",
   "backlog_cursor": 24,
-  "notes": "2026-06-21 01:40 run: Task3 - created real PRs via safeoutputs for fix-hotkey-feedback and fix-all-monitors-color-temp branches. Task2 - only visible human issue #24 already has RA comment. Next run: create real PRs from remaining click-to-create branches (improve-tray-state, improve-deduplicate-color-lerp, eng-global-json, test-appsettings, perf-mouse-hook, improve-frame-constants, eng-updatum, improve-atomic-settings-save)."
+  "notes": "2026-06-21 13:24 run: Task4 - created PR for global.json (Closes #62). Task5 - created PR for caching JsonSerializerOptions in AppSettings. Monthly summary #35 was closed by maintainer; created new monthly summary issue. Open PRs: #36 (persist settings), #33 (agentic workflows auth), #27 (winget), plus this run's new PRs. Note: refactoring PRs not wanted by maintainer."
 }
