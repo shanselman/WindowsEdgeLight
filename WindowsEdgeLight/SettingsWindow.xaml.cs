@@ -19,6 +19,7 @@ public partial class SettingsWindow : Window
         ShowBrightnessCheckBox.IsChecked = mainWindow.GetIsBrightnessButtonsVisible();
         ShowColorTempCheckBox.IsChecked = mainWindow.GetIsColorTempButtonsVisible();
         ShowMonitorControlsCheckBox.IsChecked = mainWindow.GetIsControlMonitorsButtonVisible();
+        ShowToggleCheckBox.IsChecked = mainWindow.GetIsToggleButtonVisible();
 
         UpdateBrightnessLabel();
         UpdateColorTempLabel();
