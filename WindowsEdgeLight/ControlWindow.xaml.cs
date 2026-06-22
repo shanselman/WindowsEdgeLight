@@ -23,17 +23,18 @@ public partial class ControlWindow : Window
 
     public void ApplyButtonVisibility()
     {
-        var settings = mainWindow.GetSettings();
-        var brightVis = settings.ShowBrightnessButtons ? Visibility.Visible : Visibility.Collapsed;
-        var tempVis = settings.ShowColorTempButtons ? Visibility.Visible : Visibility.Collapsed;
-        var windowCtrlVis = settings.ShowWindowControlButtons ? Visibility.Visible : Visibility.Collapsed;
+        var toggleButtonVis = mainWindow.GetIsToggleButtonVisible() ? Visibility.Visible : Visibility.Collapsed;
+        var brightVis = mainWindow.GetIsBrightnessButtonsVisible() ? Visibility.Visible : Visibility.Collapsed;
+        var tempVis = mainWindow.GetIsColorTempButtonsVisible() ? Visibility.Visible : Visibility.Collapsed;
+        var monitorCtrlVis = mainWindow.GetIsControlMonitorsButtonVisible() ? Visibility.Visible : Visibility.Collapsed;
 
+        ToggleLightButton.Visibility = toggleButtonVis;
         BrightnessDownButton.Visibility = brightVis;
         BrightnessUpButton.Visibility = brightVis;
         ColorWarmerButton.Visibility = tempVis;
         ColorCoolerButton.Visibility = tempVis;
-        SwitchMonitorButton.Visibility = windowCtrlVis;
-        AllMonitorsButton.Visibility = windowCtrlVis;
+        SwitchMonitorButton.Visibility = monitorCtrlVis;
+        AllMonitorsButton.Visibility = monitorCtrlVis;
     }
 
     public void UpdateAllMonitorsButtonState()

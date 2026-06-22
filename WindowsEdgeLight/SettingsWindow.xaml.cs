@@ -13,14 +13,12 @@ public partial class SettingsWindow : Window
         InitializeComponent();
         mainWindow = main;
 
-        var settings = mainWindow.GetSettings();
-
         BrightnessSlider.Value = mainWindow.GetBrightness();
         ColorTempSlider.Value = mainWindow.GetColorTemperature();
         ExcludeFromCaptureCheckBox.IsChecked = mainWindow.IsExcludeFromCaptureEnabled();
-        ShowBrightnessCheckBox.IsChecked = settings.ShowBrightnessButtons;
-        ShowColorTempCheckBox.IsChecked = settings.ShowColorTempButtons;
-        ShowMonitorControlsCheckBox.IsChecked = settings.ShowWindowControlButtons;
+        ShowBrightnessCheckBox.IsChecked = mainWindow.GetIsBrightnessButtonsVisible();
+        ShowColorTempCheckBox.IsChecked = mainWindow.GetIsColorTempButtonsVisible();
+        ShowMonitorControlsCheckBox.IsChecked = mainWindow.GetIsControlMonitorsButtonVisible();
 
         UpdateBrightnessLabel();
         UpdateColorTempLabel();
@@ -64,27 +62,27 @@ public partial class SettingsWindow : Window
             ColorTempValueText.Text = $"{(int)(ColorTempSlider.Value * 100)}%";
     }
 
+    private void ShowToggle_Click(object sender, RoutedEventArgs e)
+    {
+        mainWindow.SetIsToggleVisible(ShowToggleCheckBox.IsChecked == true);
+        UpdateOwnerControlWindow();
+    }
+
     private void ShowBrightness_Click(object sender, RoutedEventArgs e)
     {
-        var settings = mainWindow.GetSettings();
-        settings.ShowBrightnessButtons = ShowBrightnessCheckBox.IsChecked == true;
-        settings.Save();
+        mainWindow.SetIsBrightnessButtonsVisible(ShowBrightnessCheckBox.IsChecked == true);
         UpdateOwnerControlWindow();
     }
 
     private void ShowColorTemp_Click(object sender, RoutedEventArgs e)
     {
-        var settings = mainWindow.GetSettings();
-        settings.ShowColorTempButtons = ShowColorTempCheckBox.IsChecked == true;
-        settings.Save();
+        mainWindow.SetIsColorTempButtonsVisible(ShowColorTempCheckBox.IsChecked == true);
         UpdateOwnerControlWindow();
     }
 
     private void ShowMonitorControls_Click(object sender, RoutedEventArgs e)
     {
-        var settings = mainWindow.GetSettings();
-        settings.ShowWindowControlButtons = ShowMonitorControlsCheckBox.IsChecked == true;
-        settings.Save();
+        mainWindow.SetIsControlMonitorsButtonVisible(ShowMonitorControlsCheckBox.IsChecked == true);
         UpdateOwnerControlWindow();
     }
 

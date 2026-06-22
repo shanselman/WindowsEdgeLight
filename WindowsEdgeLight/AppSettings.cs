@@ -37,6 +37,11 @@ public class AppSettings
     public double ColorTemperature { get; set; } = 0.5;
 
     /// <summary>
+    /// Whether to show toggle button in the control window
+    /// </summary>
+    public bool ShowToggleButton { get; set; } = true;
+
+    /// <summary>
     /// Whether to show brightness buttons in the control window
     /// </summary>
     public bool ShowBrightnessButtons { get; set; } = true;
@@ -49,7 +54,7 @@ public class AppSettings
     /// <summary>
     /// Whether to show window control buttons (toggle, switch monitor, all monitors) in the control window
     /// </summary>
-    public bool ShowWindowControlButtons { get; set; } = true;
+    public bool ShowMonitorControlButtons { get; set; } = true;
 
     /// <summary>
     /// Load settings from disk

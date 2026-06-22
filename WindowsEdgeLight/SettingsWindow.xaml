@@ -182,6 +182,11 @@
                             TextWrapping="Wrap"
                             Text="Choose which buttons appear in the floating control bar." />
                         <CheckBox
+                            x:Name="ShowToggleCheckBox"
+                            Margin="0,0,0,8"
+                            Content="Show light toggle button"
+                            Click="ShowToggle_Click" />
+                        <CheckBox
                             x:Name="ShowBrightnessCheckBox"
                             Margin="0,0,0,8"
                             Content="Show brightness buttons"
@@ -193,7 +198,7 @@
                             Click="ShowColorTemp_Click" />
                         <CheckBox
                             x:Name="ShowMonitorControlsCheckBox"
-                            Content="Show monitor conrol buttons"
+                            Content="Show monitor control buttons"
                             Click="ShowMonitorControls_Click" />
                     </StackPanel>
                 </Border>

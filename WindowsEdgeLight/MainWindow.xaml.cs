@@ -934,7 +934,7 @@ Version {version}";
             // If we are on the same thread, OnDpiChanged (via WM_DPICHANGED) should have fired synchronously during SetWindowPos.
             // So _dpiScaleX/Y should be up to date.
 
-                        double newLeft = targetScreen.WorkingArea.X / _dpiScaleX;
+            double newLeft = targetScreen.WorkingArea.X / _dpiScaleX;
             double newTop = targetScreen.WorkingArea.Y / _dpiScaleY;
             double newWidth = targetScreen.WorkingArea.Width / _dpiScaleX;
             double newHeight = targetScreen.WorkingArea.Height / _dpiScaleY;
@@ -1237,11 +1237,37 @@ Version {version}";
 
     public double GetColorTemperature() => _colorTemperature;
 
-    public bool GetIsColorTemperatureEnabled() => settings.ShowColorTempButtons;
+    public bool GetIsToggleButtonVisible() => settings.ShowToggleButton;
 
-    public bool GetIsBrightnessEnabled() => settings.ShowBrightnessButtons;
+    public bool GetIsBrightnessButtonsVisible() => settings.ShowBrightnessButtons;
 
-    public AppSettings GetSettings() => settings;
+    public bool GetIsColorTempButtonsVisible() => settings.ShowColorTempButtons;
+
+    public bool GetIsControlMonitorsButtonVisible() => settings.ShowMonitorControlButtons;
+
+    public void SetIsToggleVisible(bool isVisible)
+    {
+        settings.ShowToggleButton = isVisible;
+        settings.Save();
+    }
+
+    public void SetIsBrightnessButtonsVisible(bool isVisible)
+    {
+        settings.ShowBrightnessButtons = isVisible;
+        settings.Save();
+    }
+
+    public void SetIsColorTempButtonsVisible(bool isVisible)
+    {
+        settings.ShowColorTempButtons = isVisible;
+        settings.Save();
+    }
+
+    public void SetIsControlMonitorsButtonVisible(bool isVisible)
+    {
+        settings.ShowMonitorControlButtons = isVisible;
+        settings.Save();
+    }
 
     private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
     {
