@@ -971,6 +971,9 @@ Version {version}";
                 monitorCtx.Window.Show();
             }
         }
+
+        // Apply current colour temperature and brightness to the newly created windows
+        UpdateAdditionalMonitorWindows();
     }
 
     private void HideAdditionalMonitorWindows()
