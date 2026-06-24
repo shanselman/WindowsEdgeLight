@@ -816,6 +816,12 @@ Version {version}";
                         stop.Color = midColor;
                     }
                 }
+
+                // Tint the glow shadow to match colour temperature
+                if (path.Effect is System.Windows.Media.Effects.DropShadowEffect shadowEffect)
+                {
+                    shadowEffect.Color = midColor;
+                }
             }
         }
     }
@@ -834,28 +840,22 @@ Version {version}";
     {
         _colorTemperature = Math.Max(MinColorTemp, Math.Min(MaxColorTemp, value));
 
+        // Cool: RGB ~ (220, 235, 255), Warm: RGB ~ (255, 220, 180)
+        static System.Windows.Media.Color Lerp(System.Windows.Media.Color a, System.Windows.Media.Color b, double t)
+        {
+            byte LerpByte(byte x, byte y, double tt) => (byte)(x + (y - x) * tt);
+            return System.Windows.Media.Color.FromArgb(255, LerpByte(a.R, b.R, t), LerpByte(a.G, b.G, t), LerpByte(a.B, b.B, t));
+        }
+
+        var cool = System.Windows.Media.Color.FromRgb(220, 235, 255);
+        var warm = System.Windows.Media.Color.FromRgb(255, 220, 180);
+        var midColor = Lerp(cool, warm, _colorTemperature);
+
         // Map 0-1 slider to a simple cool-to-warm gradient.
         // We'll bias the inner gradient stops from blueish-white (cool) to amber (warm).
         // NOTE: This assumes the brush defined in XAML is still a LinearGradientBrush.
         if (EdgeLightBorder.Fill is LinearGradientBrush brush && brush.GradientStops.Count >= 3)
         {
-            // Cool: RGB ~ (220, 235, 255), Warm: RGB ~ (255, 220, 180)
-            System.Windows.Media.Color Lerp(System.Windows.Media.Color a, System.Windows.Media.Color b, double t)
-            {
-                byte LerpByte(byte x, byte y, double tt) => (byte)(x + (y - x) * tt);
-
-                return System.Windows.Media.Color.FromArgb(
-                    255,
-                    LerpByte(a.R, b.R, t),
-                    LerpByte(a.G, b.G, t),
-                    LerpByte(a.B, b.B, t));
-            }
-
-            var cool = System.Windows.Media.Color.FromRgb(220, 235, 255);
-            var warm = System.Windows.Media.Color.FromRgb(255, 220, 180);
-
-            var midColor = Lerp(cool, warm, _colorTemperature);
-
             // Update a couple of inner stops to shift perceived temperature
             // Keep outer rim relatively neutral for consistent edge.
             foreach (var stop in brush.GradientStops)
@@ -866,7 +866,14 @@ Version {version}";
                 }
             }
         }
-        
+
+        // Tint the glow shadow to match the colour temperature so the bloom
+        // shifts from cool blue-white to warm amber as the slider moves.
+        if (EdgeLightBorder.Effect is System.Windows.Media.Effects.DropShadowEffect shadowEffect)
+        {
+            shadowEffect.Color = midColor;
+        }
+
         // Update all additional monitor windows
         UpdateAdditionalMonitorWindows();
     }
