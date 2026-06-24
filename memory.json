@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-06-24T01:25:44Z",
-  "last_run_id": "28068660887",
+  "last_run": "2026-06-24T13:31:08Z",
+  "last_run_id": "28102076961",
   "comments_made": {
     "24": "2026-06-08T07:10:00Z",
     "pr27": "2026-06-09T01:27:00Z",
@@ -25,8 +25,9 @@
     "eng-persist-user-settings": {
       "branch": "repo-assist/eng-persist-user-settings-2026-06-08-194569ab690925ae",
       "pr": 36,
-      "status": "pr_open",
-      "date": "2026-06-08"
+      "status": "closed",
+      "date": "2026-06-08",
+      "description": "Old attempt to persist settings - PR #36 was closed by maintainer, superseded by fix-persist-brightness-colortemp-2026-06-24"
     },
     "eng-global-json-2026-06-21": {
       "status": "tracking_issue_73",
@@ -76,12 +77,18 @@
       "status": "pr_pending",
       "date": "2026-06-24",
       "description": "Improve: tint glow shadow to match colour temperature"
+    },
+    "fix-persist-brightness-colortemp-2026-06-24": {
+      "branch": "repo-assist/fix-persist-brightness-colortemp-2026-06-24",
+      "status": "pr_pending",
+      "date": "2026-06-24",
+      "description": "Fix: persist brightness and colour temperature across restarts - adds AppSettings.Brightness and AppSettings.ColorTemperature, loads and applies on startup, saves on change"
     }
   },
   "monthly_summary_issue": 74,
   "closed_issues_not_planned": [34, 63, 66, 58],
   "closed_issues_completed": [56, 64, 67, 69],
-  "maintainer_preferences": "Prefers bug fixes and functional improvements. Closed refactoring PRs (LerpColor, ApplyDisplayAffinity) as not_planned. Closed atomic-settings-save PR as not_planned. Does not want pure refactors without user-visible benefit.",
+  "maintainer_preferences": "Prefers bug fixes and functional improvements. Closed refactoring PRs (LerpColor, ApplyDisplayAffinity) as not_planned. Closed atomic-settings-save PR as not_planned. Does not want pure refactors without user-visible benefit. PR #36 (persist settings) was also closed - new attempt (fix-persist-brightness-colortemp-2026-06-24) is more focused: only brightness and color temp, not on/off state.",
   "backlog_cursor": 24,
-  "notes": "2026-06-24 run: Task3 - fix all-monitors colour temp (PR created). Task5 - tint glow shadow to match colour temp (PR created). Monthly summary #74 updated."
+  "notes": "2026-06-24 run 2: Task2 - no new user issues to comment on (only #24, already commented, no new activity). Task3 - fix persist brightness/color temp across restarts (PR created). Monthly summary #74 updated. Note: PR #36 (old persist-settings attempt) is closed. The 2 filtered PRs visible in GitHub are #68 and #26; #26 is old Copilot winget PR, #68 is unknown (likely one of the recent color-temp-related PRs from 06-23 or 06-24 run 1)."
 }
