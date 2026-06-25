@@ -23,13 +23,15 @@ public class AppSettings
     /// <summary>
     /// Load settings from disk
     /// </summary>
-    public static AppSettings Load()
+    /// <param name="settingsFilePath">Optional override path; defaults to the standard AppData location.</param>
+    public static AppSettings Load(string? settingsFilePath = null)
     {
+        var path = settingsFilePath ?? SettingsFilePath;
         try
         {
-            if (File.Exists(SettingsFilePath))
+            if (File.Exists(path))
             {
-                var json = File.ReadAllText(SettingsFilePath);
+                var json = File.ReadAllText(path);
                 var options = new JsonSerializerOptions
                 {
                     AllowTrailingCommas = true,
@@ -50,9 +52,9 @@ public class AppSettings
             // Delete corrupted settings file
             try
             {
-                if (File.Exists(SettingsFilePath))
+                if (File.Exists(path))
                 {
-                    File.Delete(SettingsFilePath);
+                    File.Delete(path);
                 }
             }
             catch { /* Ignore deletion errors */ }
@@ -68,11 +70,13 @@ public class AppSettings
     /// <summary>
     /// Save settings to disk
     /// </summary>
-    public void Save()
+    /// <param name="settingsFilePath">Optional override path; defaults to the standard AppData location.</param>
+    public void Save(string? settingsFilePath = null)
     {
+        var path = settingsFilePath ?? SettingsFilePath;
         try
         {
-            var directory = Path.GetDirectoryName(SettingsFilePath);
+            var directory = Path.GetDirectoryName(path);
             if (directory != null && !Directory.Exists(directory))
             {
                 Directory.CreateDirectory(directory);
@@ -82,7 +86,7 @@ public class AppSettings
             { 
                 WriteIndented = true 
             });
-            File.WriteAllText(SettingsFilePath, json);
+            File.WriteAllText(path, json);
         }
         catch (Exception ex)
         {
