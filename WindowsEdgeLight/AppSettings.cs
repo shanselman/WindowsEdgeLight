@@ -21,6 +21,16 @@ public class AppSettings
     public bool ExcludeFromCapture { get; set; } = true;
 
     /// <summary>
+    /// Brightness of the edge light (0.2–1.0). Persisted across sessions.
+    /// </summary>
+    public double Brightness { get; set; } = 1.0;
+
+    /// <summary>
+    /// Colour temperature of the edge light (0.0 = coolest, 1.0 = warmest). Persisted across sessions.
+    /// </summary>
+    public double ColorTemperature { get; set; } = 0.5;
+
+    /// <summary>
     /// Load settings from disk
     /// </summary>
     public static AppSettings Load()
