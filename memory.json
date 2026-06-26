@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-06-26T01:31:58Z",
-  "last_run_id": "28211350275",
+  "last_run": "2026-06-26T13:27:56Z",
+  "last_run_id": "28241004901",
   "comments_made": {
     "24": "2026-06-08T07:10:00Z",
     "pr27": "2026-06-09T01:27:00Z",
@@ -26,26 +26,19 @@
       "branch": "repo-assist/fix-persist-settings-2026-06-26",
       "status": "pr_created",
       "date": "2026-06-26",
-      "description": "Fix: persist brightness and colour temperature across restarts (real PR via safeoutputs)"
+      "description": "Fix: persist brightness and colour temperature across restarts"
     },
     "fix-all-monitors-color-temp-2026-06-26": {
       "branch": "repo-assist/fix-all-monitors-color-temp-2026-06-26",
       "status": "pr_created",
       "date": "2026-06-26",
-      "description": "Fix: apply current colour temperature when enabling all-monitors mode (real PR via safeoutputs)"
+      "description": "Fix: apply current colour temperature when enabling all-monitors mode"
     },
     "fix-hotkey-feedback-2026-06-18": {
-      "branch": "repo-assist/fix-hotkey-feedback-2026-06-18-9c056fd93a86040d",
       "status": "issue_only",
       "date": "2026-06-18",
       "issue": 65,
       "description": "Fix: notify user when global hotkey registration fails (patch in issue #65)"
-    },
-    "eng-ci-pr-check-2026-06-25": {
-      "status": "issue_only",
-      "date": "2026-06-25",
-      "issue": 77,
-      "description": "Eng: add CI build check on push/PR to master (patch in issue #77)"
     },
     "improve-color-temp-hotkeys-2026-06-23": {
       "status": "issue_only",
@@ -64,12 +57,24 @@
       "date": "2026-06-25",
       "issue": 82,
       "description": "Perf: skip redundant geometry allocation + AppSettings unit tests (patch in issue #82)"
+    },
+    "improve-dedup-constants-2026-06-26": {
+      "branch": "repo-assist/improve-dedup-constants-2026-06-26",
+      "status": "pr_created",
+      "date": "2026-06-26",
+      "description": "Refactor: extract frame geometry constants, color lerp helper, cache JsonSerializerOptions"
+    },
+    "eng-ci-build-2026-06-26": {
+      "branch": "repo-assist/eng-ci-build-2026-06-26",
+      "status": "pr_created",
+      "date": "2026-06-26",
+      "description": "CI: add build workflow for push/PR to master"
     }
   },
-  "monthly_summary_issue": "new-2026-06-26",
+  "monthly_summary_issue": 86,
   "closed_issues_not_planned": [34, 63, 66, 58],
   "closed_issues_completed": [56, 64, 67, 69],
   "maintainer_preferences": "Prefers bug fixes and functional improvements. Closed refactoring PRs as not_planned. Does not want pure refactors without user-visible benefit. Closed monthly issue #74 as completed on 2026-06-25.",
   "backlog_cursor": 24,
-  "notes": "2026-06-26 run (01:31 UTC): Tasks 3+10. Successfully created real PRs via safeoutputs tool (previously GitHub Actions couldn't create PRs). PR1: fix-persist-settings-2026-06-26 (brightness+colortemp persistence). PR2: fix-all-monitors-color-temp-2026-06-26 (ShowOnAllMonitors fix). Created new monthly issue. Older fix branches still have code in issues #65, #77-#79, #82 - consider creating PRs for these next run. PR numbers for today's PRs not retrieved (integrity filter blocked)."
+  "notes": "2026-06-26 run (13:27 UTC): Tasks 5+4. Created 2 PRs: (1) refactor dedup constants/lerp/JsonOptions, (2) CI build workflow. Issues #65,#78,#79,#82 still have patches only in issue bodies - consider creating real PRs next run. CI workflow PR supersedes issue #77 patch."
 }
