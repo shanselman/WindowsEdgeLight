@@ -156,6 +156,10 @@ public partial class MainWindow : Window
         // Load settings
         settings = AppSettings.Load();
         
+        // Restore persisted brightness and colour temperature
+        currentOpacity = Math.Max(MinOpacity, Math.Min(MaxOpacity, settings.Brightness));
+        _colorTemperature = Math.Max(MinColorTemp, Math.Min(MaxColorTemp, settings.ColorTemperature));
+        
         SetupNotifyIcon();
     }
 
@@ -313,6 +317,10 @@ Version {version}";
 
         // Apply exclude from capture setting
         ApplyExcludeFromCapture();
+
+        // Apply persisted brightness and colour temperature now that the UI is ready
+        EdgeLightBorder.Opacity = currentOpacity;
+        SetColorTemperature(_colorTemperature);
 
         InstallMouseHook();
     }
@@ -773,6 +781,8 @@ Version {version}";
     {
         currentOpacity = Math.Min(MaxOpacity, currentOpacity + OpacityStep);
         EdgeLightBorder.Opacity = currentOpacity;
+        settings.Brightness = currentOpacity;
+        settings.Save();
         
         // Update all additional monitor windows
         UpdateAdditionalMonitorWindows();
@@ -782,6 +792,8 @@ Version {version}";
     {
         currentOpacity = Math.Max(MinOpacity, currentOpacity - OpacityStep);
         EdgeLightBorder.Opacity = currentOpacity;
+        settings.Brightness = currentOpacity;
+        settings.Save();
         
         // Update all additional monitor windows
         UpdateAdditionalMonitorWindows();
@@ -866,6 +878,10 @@ Version {version}";
                 }
             }
         }
+        
+        // Persist the new colour temperature
+        settings.ColorTemperature = _colorTemperature;
+        settings.Save();
         
         // Update all additional monitor windows
         UpdateAdditionalMonitorWindows();
