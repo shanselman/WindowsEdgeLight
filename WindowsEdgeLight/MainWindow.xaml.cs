@@ -67,6 +67,8 @@ public partial class MainWindow : Window
     private const int HOTKEY_TOGGLE = 1;
     private const int HOTKEY_BRIGHTNESS_UP = 2;
     private const int HOTKEY_BRIGHTNESS_DOWN = 3;
+    private const int HOTKEY_COLOR_TEMP_WARMER = 4;
+    private const int HOTKEY_COLOR_TEMP_COOLER = 5;
 
     [DllImport("user32.dll")]
     private static extern int GetSystemMetrics(int nIndex);
@@ -147,6 +149,8 @@ public partial class MainWindow : Window
     private const uint VK_L = 0x4C;
     private const uint VK_UP = 0x26;
     private const uint VK_DOWN = 0x28;
+    private const uint VK_LEFT = 0x25;
+    private const uint VK_RIGHT = 0x27;
 
     public MainWindow()
     {
@@ -194,8 +198,8 @@ public partial class MainWindow : Window
     contextMenu.Items.Add("🔆 Brightness Up (Ctrl+Shift+↑)", null, (s, e) => IncreaseBrightness());
     contextMenu.Items.Add("🔅 Brightness Down (Ctrl+Shift+↓)", null, (s, e) => DecreaseBrightness());
     contextMenu.Items.Add(new ToolStripSeparator());
-    contextMenu.Items.Add("🔥 K- Warmer Light", null, (s, e) => IncreaseColorTemperature());
-    contextMenu.Items.Add("❄️ K+ Cooler Light", null, (s, e) => DecreaseColorTemperature());
+    contextMenu.Items.Add("🔥 K- Warmer Light (Ctrl+Shift+→)", null, (s, e) => IncreaseColorTemperature());
+    contextMenu.Items.Add("❄️ K+ Cooler Light (Ctrl+Shift+←)", null, (s, e) => DecreaseColorTemperature());
     contextMenu.Items.Add(new ToolStripSeparator());
     contextMenu.Items.Add("🖥️ Switch Monitor", null, (s, e) => MoveToNextMonitor());
     contextMenu.Items.Add("🖥️🖥️ Toggle All Monitors", null, (s, e) => ToggleAllMonitors());
@@ -231,6 +235,8 @@ public partial class MainWindow : Window
 💡 Toggle Light:  Ctrl + Shift + L
 🔆 Brightness Up:  Ctrl + Shift + ↑
 🔅 Brightness Down:  Ctrl + Shift + ↓
+🔥 Color Warmer:  Ctrl + Shift + →
+❄️ Color Cooler:  Ctrl + Shift + ←
 
 💡 Features:
 • Click-through overlay - won't interfere with your work
@@ -302,6 +308,8 @@ Version {version}";
         RegisterHotKey(hwnd, HOTKEY_TOGGLE, MOD_CONTROL | MOD_SHIFT, VK_L);
         RegisterHotKey(hwnd, HOTKEY_BRIGHTNESS_UP, MOD_CONTROL | MOD_SHIFT, VK_UP);
         RegisterHotKey(hwnd, HOTKEY_BRIGHTNESS_DOWN, MOD_CONTROL | MOD_SHIFT, VK_DOWN);
+        RegisterHotKey(hwnd, HOTKEY_COLOR_TEMP_WARMER, MOD_CONTROL | MOD_SHIFT, VK_RIGHT);
+        RegisterHotKey(hwnd, HOTKEY_COLOR_TEMP_COOLER, MOD_CONTROL | MOD_SHIFT, VK_LEFT);
         
         // Hook into Windows message processing
         HwndSource source = HwndSource.FromHwnd(hwnd);
@@ -568,6 +576,14 @@ Version {version}";
                     DecreaseBrightness();
                     handled = true;
                     break;
+                case HOTKEY_COLOR_TEMP_WARMER:
+                    IncreaseColorTemperature();
+                    handled = true;
+                    break;
+                case HOTKEY_COLOR_TEMP_COOLER:
+                    DecreaseColorTemperature();
+                    handled = true;
+                    break;
             }
         }
         
@@ -618,6 +634,8 @@ Version {version}";
         UnregisterHotKey(hwnd, HOTKEY_TOGGLE);
         UnregisterHotKey(hwnd, HOTKEY_BRIGHTNESS_UP);
         UnregisterHotKey(hwnd, HOTKEY_BRIGHTNESS_DOWN);
+        UnregisterHotKey(hwnd, HOTKEY_COLOR_TEMP_WARMER);
+        UnregisterHotKey(hwnd, HOTKEY_COLOR_TEMP_COOLER);
         
         if (notifyIcon != null)
         {
