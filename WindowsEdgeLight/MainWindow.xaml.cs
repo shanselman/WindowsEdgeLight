@@ -1,6 +1,7 @@
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows;
+using Microsoft.Win32;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
@@ -38,6 +39,7 @@ public partial class MainWindow : Window
     private bool isControlWindowVisible = true;
     private ToolStripMenuItem? toggleControlsMenuItem;
     private ToolStripMenuItem? excludeFromCaptureMenuItem;
+    private ToolStripMenuItem? startWithWindowsMenuItem;
     
     // Application settings
     private AppSettings settings = new AppSettings();
@@ -210,6 +212,12 @@ public partial class MainWindow : Window
     excludeFromCaptureMenuItem.CheckOnClick = true;
     excludeFromCaptureMenuItem.Checked = settings.ExcludeFromCapture;
     contextMenu.Items.Add(excludeFromCaptureMenuItem);
+
+    // Add start with Windows menu item with checkmark
+    startWithWindowsMenuItem = new ToolStripMenuItem("🚀 Start with Windows", null, (s, e) => ToggleStartWithWindows());
+    startWithWindowsMenuItem.CheckOnClick = true;
+    startWithWindowsMenuItem.Checked = GetStartsWithWindows();
+    contextMenu.Items.Add(startWithWindowsMenuItem);
     
     contextMenu.Items.Add(new ToolStripSeparator());
     contextMenu.Items.Add("✖ Exit", null, (s, e) => System.Windows.Application.Current.Shutdown());
@@ -723,6 +731,57 @@ Version {version}";
         
         // Apply the setting to all windows
         ApplyExcludeFromCapture();
+    }
+
+    private const string StartupRegistryKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
+    private const string StartupRegistryValueName = "WindowsEdgeLight";
+
+    private static bool GetStartsWithWindows()
+    {
+        try
+        {
+            using var key = Registry.CurrentUser.OpenSubKey(StartupRegistryKey, writable: false);
+            return key?.GetValue(StartupRegistryValueName) != null;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static void SetStartsWithWindows(bool enable)
+    {
+        try
+        {
+            using var key = Registry.CurrentUser.OpenSubKey(StartupRegistryKey, writable: true);
+            if (key == null) return;
+
+            if (enable)
+            {
+                var exePath = Environment.ProcessPath
+                    ?? System.Reflection.Assembly.GetExecutingAssembly().Location;
+                key.SetValue(StartupRegistryValueName, $"\"{exePath}\"");
+            }
+            else
+            {
+                key.DeleteValue(StartupRegistryValueName, throwOnMissingValue: false);
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Failed to update startup registry entry: {ex.Message}");
+        }
+    }
+
+    public void ToggleStartWithWindows()
+    {
+        var newValue = !GetStartsWithWindows();
+        SetStartsWithWindows(newValue);
+
+        if (startWithWindowsMenuItem != null)
+        {
+            startWithWindowsMenuItem.Checked = newValue;
+        }
     }
 
     private void ApplyExcludeFromCapture()
