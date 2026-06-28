@@ -479,8 +479,23 @@ Version {version}";
             // Punch a transparent hole under the ring by excluding a circle geometry from the frame
             // Convert window coordinates to geometry local coordinates by subtracting stored offsets
             var localCenter = new System.Windows.Point(windowPt.X - pathOffsetX, windowPt.Y - pathOffsetY);
-            var hole = new EllipseGeometry(localCenter, holeRadius, holeRadius);
-            borderPath.Data = new CombinedGeometry(GeometryCombineMode.Exclude, baseGeometry, hole);
+
+            // Only recreate geometry when the cursor has moved more than ~1.5 DIPs from the last
+            // known hole position.  On a 60 Hz display the hook fires ~hundreds of times per second
+            // near the frame; skipping redundant allocations reduces GC pressure and avoids
+            // triggering a WPF geometry re-render on every pixel of movement.
+            const double GeometryUpdateThreshold = 1.5;
+            var prevCenter = borderPath.Tag as System.Windows.Point?;
+            bool needsUpdate = !prevCenter.HasValue
+                || Math.Abs(localCenter.X - prevCenter.Value.X) > GeometryUpdateThreshold
+                || Math.Abs(localCenter.Y - prevCenter.Value.Y) > GeometryUpdateThreshold;
+
+            if (needsUpdate)
+            {
+                var hole = new EllipseGeometry(localCenter, holeRadius, holeRadius);
+                borderPath.Data = new CombinedGeometry(GeometryCombineMode.Exclude, baseGeometry, hole);
+                borderPath.Tag = localCenter;
+            }
         }
         else
         {
@@ -493,10 +508,11 @@ Version {version}";
             {
                 borderPath.Visibility = Visibility.Visible;
             }
-            // Restore original geometry (remove hole)
+            // Restore original geometry (remove hole) and clear cached hole centre
             if (baseGeometry != null && borderPath.Data != baseGeometry)
             {
                 borderPath.Data = baseGeometry;
+                borderPath.Tag = null;
             }
         }
     }
