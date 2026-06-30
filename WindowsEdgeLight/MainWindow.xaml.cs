@@ -153,8 +153,11 @@ public partial class MainWindow : Window
         InitializeComponent();
         hoverCursorRing = FindName("HoverCursorRing") as Ellipse;
         
-        // Load settings
+        // Load settings and restore persisted state
         settings = AppSettings.Load();
+        isLightOn = settings.IsLightOn;
+        currentOpacity = settings.Brightness;
+        _colorTemperature = settings.ColorTemperature;
         
         SetupNotifyIcon();
     }
@@ -310,6 +313,11 @@ Version {version}";
         // Listen for window size/location changes (docking/undocking)
         this.SizeChanged += Window_SizeChanged;
         this.LocationChanged += Window_LocationChanged;
+
+        // Apply persisted brightness, colour temperature, and on/off state
+        EdgeLightBorder.Opacity = currentOpacity;
+        EdgeLightBorder.Visibility = isLightOn ? Visibility.Visible : Visibility.Collapsed;
+        SetColorTemperature(_colorTemperature);
 
         // Apply exclude from capture setting
         ApplyExcludeFromCapture();
@@ -671,6 +679,9 @@ Version {version}";
             }
         }
         
+        settings.IsLightOn = isLightOn;
+        settings.Save();
+        
         // Update all additional monitor windows
         UpdateAdditionalMonitorWindows();
     }
@@ -774,6 +785,9 @@ Version {version}";
         currentOpacity = Math.Min(MaxOpacity, currentOpacity + OpacityStep);
         EdgeLightBorder.Opacity = currentOpacity;
         
+        settings.Brightness = currentOpacity;
+        settings.Save();
+        
         // Update all additional monitor windows
         UpdateAdditionalMonitorWindows();
     }
@@ -782,6 +796,9 @@ Version {version}";
     {
         currentOpacity = Math.Max(MinOpacity, currentOpacity - OpacityStep);
         EdgeLightBorder.Opacity = currentOpacity;
+        
+        settings.Brightness = currentOpacity;
+        settings.Save();
         
         // Update all additional monitor windows
         UpdateAdditionalMonitorWindows();
@@ -866,6 +883,9 @@ Version {version}";
                 }
             }
         }
+        
+        settings.ColorTemperature = _colorTemperature;
+        settings.Save();
         
         // Update all additional monitor windows
         UpdateAdditionalMonitorWindows();
@@ -1018,16 +1038,25 @@ Version {version}";
             Visibility = isLightOn ? Visibility.Visible : Visibility.Collapsed
         };
 
-        // Create gradient brush
+        // Create gradient brush applying the current colour temperature
+        var cool = System.Windows.Media.Color.FromRgb(220, 235, 255);
+        var warm = System.Windows.Media.Color.FromRgb(255, 220, 180);
+        byte LerpByte(byte x, byte y, double t) => (byte)(x + (y - x) * t);
+        var midColor = System.Windows.Media.Color.FromArgb(
+            255,
+            LerpByte(cool.R, warm.R, _colorTemperature),
+            LerpByte(cool.G, warm.G, _colorTemperature),
+            LerpByte(cool.B, warm.B, _colorTemperature));
+
         var gradient = new LinearGradientBrush
         {
             StartPoint = new System.Windows.Point(0, 0),
             EndPoint = new System.Windows.Point(1, 1)
         };
         gradient.GradientStops.Add(new GradientStop(System.Windows.Media.Color.FromRgb(255, 255, 255), 0.0));
-        gradient.GradientStops.Add(new GradientStop(System.Windows.Media.Color.FromRgb(240, 240, 240), 0.3));
-        gradient.GradientStops.Add(new GradientStop(System.Windows.Media.Color.FromRgb(255, 255, 255), 0.5));
-        gradient.GradientStops.Add(new GradientStop(System.Windows.Media.Color.FromRgb(240, 240, 240), 0.7));
+        gradient.GradientStops.Add(new GradientStop(midColor, 0.3));
+        gradient.GradientStops.Add(new GradientStop(midColor, 0.5));
+        gradient.GradientStops.Add(new GradientStop(midColor, 0.7));
         gradient.GradientStops.Add(new GradientStop(System.Windows.Media.Color.FromRgb(255, 255, 255), 1.0));
         path.Fill = gradient;
 

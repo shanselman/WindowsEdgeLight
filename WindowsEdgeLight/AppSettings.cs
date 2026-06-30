@@ -14,11 +14,32 @@ public class AppSettings
         "WindowsEdgeLight",
         "settings.json");
 
+    // Cached serializer options — allocated once, reused on every Load/Save
+    private static readonly JsonSerializerOptions ReadOptions = new JsonSerializerOptions
+    {
+        AllowTrailingCommas = true,
+        ReadCommentHandling = JsonCommentHandling.Skip
+    };
+
+    private static readonly JsonSerializerOptions WriteOptions = new JsonSerializerOptions
+    {
+        WriteIndented = true
+    };
+
     /// <summary>
     /// When enabled, excludes the edge light from screen capture (Teams, screenshots, etc.)
     /// Note: When enabled, screenshots won't capture the edge light effect
     /// </summary>
     public bool ExcludeFromCapture { get; set; } = true;
+
+    /// <summary>Light on/off state (true = on).</summary>
+    public bool IsLightOn { get; set; } = true;
+
+    /// <summary>Edge-light opacity/brightness in the range [0.2, 1.0].</summary>
+    public double Brightness { get; set; } = 1.0;
+
+    /// <summary>Colour temperature in the range [0.0 (cool/blue) – 1.0 (warm/amber)].</summary>
+    public double ColorTemperature { get; set; } = 0.5;
 
     /// <summary>
     /// Load settings from disk
@@ -30,16 +51,12 @@ public class AppSettings
             if (File.Exists(SettingsFilePath))
             {
                 var json = File.ReadAllText(SettingsFilePath);
-                var options = new JsonSerializerOptions
-                {
-                    AllowTrailingCommas = true,
-                    ReadCommentHandling = JsonCommentHandling.Skip
-                };
-                var settings = JsonSerializer.Deserialize<AppSettings>(json, options);
-                
-                // Validate deserialized settings
+                var settings = JsonSerializer.Deserialize<AppSettings>(json, ReadOptions);
                 if (settings != null)
                 {
+                    // Clamp persisted values to valid ranges
+                    settings.Brightness = Math.Clamp(settings.Brightness, 0.2, 1.0);
+                    settings.ColorTemperature = Math.Clamp(settings.ColorTemperature, 0.0, 1.0);
                     return settings;
                 }
             }
@@ -47,13 +64,10 @@ public class AppSettings
         catch (JsonException ex)
         {
             System.Diagnostics.Debug.WriteLine($"Failed to parse settings file: {ex.Message}");
-            // Delete corrupted settings file
             try
             {
                 if (File.Exists(SettingsFilePath))
-                {
                     File.Delete(SettingsFilePath);
-                }
             }
             catch { /* Ignore deletion errors */ }
         }
@@ -74,14 +88,9 @@ public class AppSettings
         {
             var directory = Path.GetDirectoryName(SettingsFilePath);
             if (directory != null && !Directory.Exists(directory))
-            {
                 Directory.CreateDirectory(directory);
-            }
 
-            var json = JsonSerializer.Serialize(this, new JsonSerializerOptions 
-            { 
-                WriteIndented = true 
-            });
+            var json = JsonSerializer.Serialize(this, WriteOptions);
             File.WriteAllText(SettingsFilePath, json);
         }
         catch (Exception ex)
