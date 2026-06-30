@@ -37,6 +37,7 @@ public partial class MainWindow : Window
     // Tracks whether the control window should be visible (controls initial visibility and toggle state)
     private bool isControlWindowVisible = true;
     private ToolStripMenuItem? toggleControlsMenuItem;
+    private ToolStripMenuItem? allMonitorsMenuItem;
     private ToolStripMenuItem? excludeFromCaptureMenuItem;
     
     // Application settings
@@ -198,7 +199,8 @@ public partial class MainWindow : Window
     contextMenu.Items.Add("❄️ K+ Cooler Light", null, (s, e) => DecreaseColorTemperature());
     contextMenu.Items.Add(new ToolStripSeparator());
     contextMenu.Items.Add("🖥️ Switch Monitor", null, (s, e) => MoveToNextMonitor());
-    contextMenu.Items.Add("🖥️🖥️ Toggle All Monitors", null, (s, e) => ToggleAllMonitors());
+    allMonitorsMenuItem = new ToolStripMenuItem("🖥️🖥️ Show on All Monitors", null, (s, e) => ToggleAllMonitors());
+    contextMenu.Items.Add(allMonitorsMenuItem);
     contextMenu.Items.Add(new ToolStripSeparator());
     
     // Add toggle controls menu item - text will be set by UpdateTrayMenuToggleControlsText
@@ -673,6 +675,7 @@ Version {version}";
         
         // Update all additional monitor windows
         UpdateAdditionalMonitorWindows();
+        UpdateTrayIconText();
     }
 
     public void HandleToggle()
@@ -707,6 +710,24 @@ Version {version}";
         if (toggleControlsMenuItem != null)
         {
             toggleControlsMenuItem.Text = isControlWindowVisible ? "🎛️ Hide Controls" : "🎛️ Show Controls";
+        }
+    }
+
+    private void UpdateTrayMenuAllMonitorsText()
+    {
+        if (allMonitorsMenuItem != null)
+        {
+            allMonitorsMenuItem.Text = showOnAllMonitors ? "🖥️🖥️ Hide from All Monitors" : "🖥️🖥️ Show on All Monitors";
+        }
+    }
+
+    private void UpdateTrayIconText()
+    {
+        if (notifyIcon != null)
+        {
+            notifyIcon.Text = isLightOn
+                ? "Windows Edge Light - Right-click for options"
+                : "Windows Edge Light (OFF) - Right-click for options";
         }
     }
 
@@ -951,6 +972,7 @@ Version {version}";
         }
 
         controlWindow?.UpdateAllMonitorsButtonState();
+        UpdateTrayMenuAllMonitorsText();
     }
 
     private void ShowOnAllMonitors()
