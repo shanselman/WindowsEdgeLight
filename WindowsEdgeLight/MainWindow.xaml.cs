@@ -26,6 +26,12 @@ public partial class MainWindow : Window
     private const double MinColorTemp = 0.0;
     private const double MaxColorTemp = 1.0;
 
+    // Frame geometry constants shared by the primary window and all additional monitor windows
+    private const double FrameThickness = 80;
+    private const double FrameOuterRadius = 100;
+    private const double FrameInnerRadius = 60;
+    private const double FrameMargin = 40; // total margin removed from each dimension (20 px each side)
+
     // DPI Scale
     private double _dpiScaleX = 1.0;
     private double _dpiScaleY = 1.0;
@@ -516,22 +522,18 @@ Version {version}";
     private void CreateFrameGeometry()
     {
         // Get actual dimensions (accounting for margin)
-        double width = this.ActualWidth - 40;  // 20px margin on each side
-        double height = this.ActualHeight - 40;
-        
-        const double frameThickness = 80;
-        const double outerRadius = 100;  // Extra rounded like macOS
-        const double innerRadius = 60;   // Keep proportional
+        double width = this.ActualWidth - FrameMargin;
+        double height = this.ActualHeight - FrameMargin;
         
         // Outer rounded rectangle
-        var outerRect = new RectangleGeometry(new Rect(0, 0, width, height), outerRadius, outerRadius);
+        var outerRect = new RectangleGeometry(new Rect(0, 0, width, height), FrameOuterRadius, FrameOuterRadius);
         
         // Inner rounded rectangle
         var innerRect = new RectangleGeometry(
-            new Rect(frameThickness, frameThickness, 
-                    width - (frameThickness * 2), 
-                    height - (frameThickness * 2)), 
-            innerRadius, innerRadius);
+            new Rect(FrameThickness, FrameThickness, 
+                    width - (FrameThickness * 2), 
+                    height - (FrameThickness * 2)), 
+            FrameInnerRadius, FrameInnerRadius);
         
         // Combine: outer minus inner = frame
         var frameGeometry = new CombinedGeometry(GeometryCombineMode.Exclude, outerRect, innerRect);
@@ -543,7 +545,7 @@ Version {version}";
         double ringDiameter = hoverCursorRing?.Width ?? 0;
         double holeRadius = ringDiameter / 2.0;
         frameOuterRect = new Rect(pathOffsetX - holeRadius, pathOffsetY - holeRadius, width + holeRadius * 2, height + holeRadius * 2);
-        frameInnerRect = new Rect(pathOffsetX + frameThickness + holeRadius, pathOffsetY + frameThickness + holeRadius, width - (frameThickness * 2) - holeRadius * 2, height - (frameThickness * 2) - holeRadius * 2);
+        frameInnerRect = new Rect(pathOffsetX + FrameThickness + holeRadius, pathOffsetY + FrameThickness + holeRadius, width - (FrameThickness * 2) - holeRadius * 2, height - (FrameThickness * 2) - holeRadius * 2);
     }
 
     private IntPtr HwndHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
@@ -800,14 +802,7 @@ Version {version}";
             {
                 var cool = System.Windows.Media.Color.FromRgb(220, 235, 255);
                 var warm = System.Windows.Media.Color.FromRgb(255, 220, 180);
-                
-                System.Windows.Media.Color Lerp(System.Windows.Media.Color a, System.Windows.Media.Color b, double t)
-                {
-                    byte LerpByte(byte x, byte y, double tt) => (byte)(x + (y - x) * tt);
-                    return System.Windows.Media.Color.FromArgb(255, LerpByte(a.R, b.R, t), LerpByte(a.G, b.G, t), LerpByte(a.B, b.B, t));
-                }
-                
-                var midColor = Lerp(cool, warm, _colorTemperature);
+                var midColor = LerpColor(cool, warm, _colorTemperature);
                 
                 foreach (var stop in brush.GradientStops)
                 {
@@ -839,24 +834,11 @@ Version {version}";
         // NOTE: This assumes the brush defined in XAML is still a LinearGradientBrush.
         if (EdgeLightBorder.Fill is LinearGradientBrush brush && brush.GradientStops.Count >= 3)
         {
-            // Cool: RGB ~ (220, 235, 255), Warm: RGB ~ (255, 220, 180)
-            System.Windows.Media.Color Lerp(System.Windows.Media.Color a, System.Windows.Media.Color b, double t)
-            {
-                byte LerpByte(byte x, byte y, double tt) => (byte)(x + (y - x) * tt);
-
-                return System.Windows.Media.Color.FromArgb(
-                    255,
-                    LerpByte(a.R, b.R, t),
-                    LerpByte(a.G, b.G, t),
-                    LerpByte(a.B, b.B, t));
-            }
-
             var cool = System.Windows.Media.Color.FromRgb(220, 235, 255);
             var warm = System.Windows.Media.Color.FromRgb(255, 220, 180);
+            var midColor = LerpColor(cool, warm, _colorTemperature);
 
-            var midColor = Lerp(cool, warm, _colorTemperature);
-
-            // Update a couple of inner stops to shift perceived temperature
+            // Update a couple of inner stops to shift perceived temperature.
             // Keep outer rim relatively neutral for consistent edge.
             foreach (var stop in brush.GradientStops)
             {
@@ -1055,18 +1037,15 @@ Version {version}";
         // So removing effect to match.
         
         // Create frame geometry
-        double width = window.Width - 40;
-        double height = window.Height - 40;
-        const double frameThickness = 80;
-        const double outerRadius = 100;
-        const double innerRadius = 60;
+        double width = window.Width - FrameMargin;
+        double height = window.Height - FrameMargin;
         
-        var outerRect = new RectangleGeometry(new Rect(0, 0, width, height), outerRadius, outerRadius);
+        var outerRect = new RectangleGeometry(new Rect(0, 0, width, height), FrameOuterRadius, FrameOuterRadius);
         var innerRect = new RectangleGeometry(
-            new Rect(frameThickness, frameThickness, 
-                    width - (frameThickness * 2), 
-                    height - (frameThickness * 2)), 
-            innerRadius, innerRadius);
+            new Rect(FrameThickness, FrameThickness, 
+                    width - (FrameThickness * 2), 
+                    height - (FrameThickness * 2)), 
+            FrameInnerRadius, FrameInnerRadius);
         
         var frameGeometry = new CombinedGeometry(GeometryCombineMode.Exclude, outerRect, innerRect);
         path.Data = frameGeometry;
@@ -1082,7 +1061,7 @@ Version {version}";
         double ringDiameter = hoverRing.Width;
         double holeRadius = ringDiameter / 2.0;
         var frameOuterRect = new Rect(pathOffsetX - holeRadius, pathOffsetY - holeRadius, width + holeRadius * 2, height + holeRadius * 2);
-        var frameInnerRect = new Rect(pathOffsetX + frameThickness + holeRadius, pathOffsetY + frameThickness + holeRadius, width - (frameThickness * 2) - holeRadius * 2, height - (frameThickness * 2) - holeRadius * 2);
+        var frameInnerRect = new Rect(pathOffsetX + FrameThickness + holeRadius, pathOffsetY + FrameThickness + holeRadius, width - (FrameThickness * 2) - holeRadius * 2, height - (FrameThickness * 2) - holeRadius * 2);
 
         var ctx = new MonitorWindowContext
         {
@@ -1157,18 +1136,15 @@ Version {version}";
 
     private void UpdateMonitorGeometry(MonitorWindowContext ctx)
     {
-        double width = ctx.Window.Width - 40;
-        double height = ctx.Window.Height - 40;
-        const double frameThickness = 80;
-        const double outerRadius = 100;
-        const double innerRadius = 60;
+        double width = ctx.Window.Width - FrameMargin;
+        double height = ctx.Window.Height - FrameMargin;
         
-        var outerRect = new RectangleGeometry(new Rect(0, 0, width, height), outerRadius, outerRadius);
+        var outerRect = new RectangleGeometry(new Rect(0, 0, width, height), FrameOuterRadius, FrameOuterRadius);
         var innerRect = new RectangleGeometry(
-            new Rect(frameThickness, frameThickness, 
-                    width - (frameThickness * 2), 
-                    height - (frameThickness * 2)), 
-            innerRadius, innerRadius);
+            new Rect(FrameThickness, FrameThickness, 
+                    width - (FrameThickness * 2), 
+                    height - (FrameThickness * 2)), 
+            FrameInnerRadius, FrameInnerRadius);
         
         var frameGeometry = new CombinedGeometry(GeometryCombineMode.Exclude, outerRect, innerRect);
         
@@ -1182,12 +1158,21 @@ Version {version}";
         double holeRadius = ringDiameter / 2.0;
         
         ctx.FrameOuterRect = new Rect(ctx.PathOffsetX - holeRadius, ctx.PathOffsetY - holeRadius, width + holeRadius * 2, height + holeRadius * 2);
-        ctx.FrameInnerRect = new Rect(ctx.PathOffsetX + frameThickness + holeRadius, ctx.PathOffsetY + frameThickness + holeRadius, width - (frameThickness * 2) - holeRadius * 2, height - (frameThickness * 2) - holeRadius * 2);
+        ctx.FrameInnerRect = new Rect(ctx.PathOffsetX + FrameThickness + holeRadius, ctx.PathOffsetY + FrameThickness + holeRadius, width - (FrameThickness * 2) - holeRadius * 2, height - (FrameThickness * 2) - holeRadius * 2);
     }
 
     public bool IsShowingOnAllMonitors()
     {
         return showOnAllMonitors;
+    }
+
+    /// <summary>
+    /// Linearly interpolates between two colours by component. Alpha is always 255.
+    /// </summary>
+    private static System.Windows.Media.Color LerpColor(System.Windows.Media.Color a, System.Windows.Media.Color b, double t)
+    {
+        static byte LerpByte(byte x, byte y, double tt) => (byte)(x + (y - x) * tt);
+        return System.Windows.Media.Color.FromArgb(255, LerpByte(a.R, b.R, t), LerpByte(a.G, b.G, t), LerpByte(a.B, b.B, t));
     }
 
     private void RepositionControlWindow()
