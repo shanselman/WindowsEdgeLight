@@ -20,6 +20,17 @@ public class AppSettings
     /// </summary>
     public bool ExcludeFromCapture { get; set; } = true;
 
+    private static readonly JsonSerializerOptions s_loadOptions = new JsonSerializerOptions
+    {
+        AllowTrailingCommas = true,
+        ReadCommentHandling = JsonCommentHandling.Skip
+    };
+
+    private static readonly JsonSerializerOptions s_saveOptions = new JsonSerializerOptions
+    {
+        WriteIndented = true
+    };
+
     /// <summary>
     /// Load settings from disk
     /// </summary>
@@ -30,12 +41,7 @@ public class AppSettings
             if (File.Exists(SettingsFilePath))
             {
                 var json = File.ReadAllText(SettingsFilePath);
-                var options = new JsonSerializerOptions
-                {
-                    AllowTrailingCommas = true,
-                    ReadCommentHandling = JsonCommentHandling.Skip
-                };
-                var settings = JsonSerializer.Deserialize<AppSettings>(json, options);
+                var settings = JsonSerializer.Deserialize<AppSettings>(json, s_loadOptions);
                 
                 // Validate deserialized settings
                 if (settings != null)
@@ -78,10 +84,7 @@ public class AppSettings
                 Directory.CreateDirectory(directory);
             }
 
-            var json = JsonSerializer.Serialize(this, new JsonSerializerOptions 
-            { 
-                WriteIndented = true 
-            });
+            var json = JsonSerializer.Serialize(this, s_saveOptions);
             File.WriteAllText(SettingsFilePath, json);
         }
         catch (Exception ex)

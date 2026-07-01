@@ -133,6 +133,9 @@ public partial class MainWindow : Window
     // Mouse hook management
     private IntPtr mouseHookHandle = IntPtr.Zero;
     private LowLevelMouseProc? mouseHookCallback;
+    // Last dispatched mouse position — used to skip redundant BeginInvoke calls
+    private int _lastHookMouseX = int.MinValue;
+    private int _lastHookMouseY = int.MinValue;
 
     private Rect? frameOuterRect;
     private Rect? frameInnerRect;
@@ -345,12 +348,20 @@ Version {version}";
         if (nCode >= 0 && wParam == (IntPtr)WM_MOUSEMOVE)
         {
             var hookStruct = Marshal.PtrToStructure<MSLLHOOKSTRUCT>(lParam);
-            
-            // Dispatch to UI thread for WPF operations
-            Dispatcher.BeginInvoke(new Action(() => 
+            int x = hookStruct.pt.x;
+            int y = hookStruct.pt.y;
+
+            // Skip dispatch when the position hasn't changed — avoids allocating a new Action
+            // and posting a UI-thread work item for duplicate events, which occur frequently.
+            if (x != _lastHookMouseX || y != _lastHookMouseY)
             {
-                HandleMouseMove(hookStruct.pt.x, hookStruct.pt.y);
-            }), System.Windows.Threading.DispatcherPriority.Input);
+                _lastHookMouseX = x;
+                _lastHookMouseY = y;
+                Dispatcher.BeginInvoke(new Action(() => 
+                {
+                    HandleMouseMove(x, y);
+                }), System.Windows.Threading.DispatcherPriority.Input);
+            }
         }
 
         return CallNextHookEx(mouseHookHandle, nCode, wParam, lParam);
