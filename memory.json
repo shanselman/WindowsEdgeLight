@@ -1,8 +1,8 @@
 {
-  "last_run": "2026-07-01T01:34:19Z",
-  "last_run_id": "28487312932",
+  "last_run": "2026-07-01T13:38:49Z",
+  "last_run_id": "28521677232",
   "comments_made": {
-    "24": "2026-06-08T07:10:00Z",
+    "24": "2026-07-01T13:38:49Z",
     "pr27": "2026-06-09T01:27:00Z",
     "34": "2026-06-10T13:55:00Z",
     "58": "2026-06-19T13:55:00Z"
@@ -22,22 +22,15 @@
     "69": ["bug"]
   },
   "fix_attempts": {
-    "perf-json-mouse-2026-07-01": {
-      "branch": "repo-assist/perf-json-mouse-2026-07-01",
-      "status": "pr_created",
+    "fix-persist-brightness-colortemp-2026-07-01": {
+      "branch": "repo-assist/fix-persist-brightness-colortemp-2026-07-01",
+      "status": "pr_attempted",
       "date": "2026-07-01",
-      "closes": [],
-      "description": "Perf: cache JsonSerializerOptions (AppSettings) + deduplicate mouse hook dispatch"
-    },
-    "improve-lerp-constants-2026-07-01": {
-      "branch": "repo-assist/improve-lerp-constants-2026-07-01",
-      "status": "pr_created",
-      "date": "2026-07-01",
-      "closes": [],
-      "description": "Improve: extract LerpColor static helper; promote frame geometry magic numbers to named class constants"
+      "closes": [80, 81, 84, 85, 95, 99],
+      "description": "Fix: persist brightness, colour temperature, and on/off state across restarts. Build passed. PR attempted via safeoutputs."
     }
   },
-  "monthly_summary_issue": null,
+  "monthly_summary_issue": 103,
   "monthly_summary_july": "created_2026-07-01",
   "closed_monthly_summary_june": 86,
   "closed_issues_not_planned": [34, 63, 66, 58],
@@ -49,5 +42,6 @@
     "workflow_files": "GitHub Actions cannot push .github/workflows/ files - needs 'workflows' permission.",
     "build": "Project targets net10.0-windows; build requires -p:EnableWindowsTargeting=true on Linux CI"
   },
-  "notes": "2026-07-01 run (01:34 UTC): Tasks 5+8. Task 8: Perf PR - cache JsonSerializerOptions in AppSettings; skip mouse hook BeginInvoke on duplicate coords. Task 5: Improve PR - extract LerpColor static method (was duplicated in SetColorTemperature + UpdateAdditionalMonitorWindows); promote FrameThickness/OuterRadius/InnerRadius/Margin to named class constants (was duplicated in 3 methods). Both builds passed. June monthly summary #86 closed; July summary issue created. Note: all previous branches (from June runs) no longer exist remotely - fresh checkout each run. safeoutputs PR creation does work (used for both PRs this run)."
+  "notes": "2026-07-01 run (13:38 UTC): Tasks 4+3. Task 3: (a) Commented on #24 with HDR investigation - explained AllowsTransparency blocks HDR, recommended Option A (WinUI Composition). (b) Implemented brightness/colortemp/isLightOn persistence fix - added 3 new AppSettings properties, load in constructor, apply visually in Window_Loaded, save on each change. Build passed. Branch: repo-assist/fix-persist-brightness-colortemp-2026-07-01. safeoutputs create_pull_request returned patch file (PR may or may not have been created on GitHub - check for new item after #103). Task 4: Skipped (Updatum bump already documented in #97, all other engineering items already have open issues).",
+  "stale_ra_issues_to_close": [48, 53, 54, 62, 65, 72, 77, 78, 79, 80, 81, 82, 84, 85, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 101, 102]
 }
