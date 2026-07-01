@@ -30,15 +30,25 @@ public partial class SettingsWindow : Window
     private void BrightnessSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
     {
         if (isInitializing) return;
-        mainWindow.SetBrightness(e.NewValue);
+        mainWindow.SetBrightness(e.NewValue, save: false);
         UpdateBrightnessLabel();
+    }
+
+    private void BrightnessSlider_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
+    {
+        mainWindow.SetBrightness(BrightnessSlider.Value, save: true);
     }
 
     private void ColorTempSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
     {
         if (isInitializing) return;
-        mainWindow.SetColorTemperature(e.NewValue);
+        mainWindow.SetColorTemperature(e.NewValue, save: false);
         UpdateColorTempLabel();
+    }
+
+    private void ColorTempSlider_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
+    {
+        mainWindow.SetColorTemperature(ColorTempSlider.Value, save: true);
     }
 
     private void ExcludeFromCapture_Click(object sender, RoutedEventArgs e)

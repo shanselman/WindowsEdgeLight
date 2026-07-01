@@ -805,14 +805,17 @@ Version {version}";
         SetBrightness(currentOpacity - OpacityStep);
     }
 
-    public void SetBrightness(double value)
+    public void SetBrightness(double value, bool save = true)
     {
         currentOpacity = Math.Max(MinOpacity, Math.Min(MaxOpacity, value));
         EdgeLightBorder.Opacity = currentOpacity;
         UpdateAdditionalMonitorWindows();
         
-        settings.Brightness = currentOpacity;
-        settings.Save();
+        if (save)
+        {
+            settings.Brightness = currentOpacity;
+            settings.Save();
+        }
     }
 
     private void UpdateAdditionalMonitorWindows()
@@ -858,7 +861,7 @@ Version {version}";
         SetColorTemperature(_colorTemperature - ColorTempStep);
     }
 
-    public void SetColorTemperature(double value)
+    public void SetColorTemperature(double value, bool save = true)
     {
         _colorTemperature = Math.Max(MinColorTemp, Math.Min(MaxColorTemp, value));
 
@@ -898,8 +901,11 @@ Version {version}";
         // Update all additional monitor windows
         UpdateAdditionalMonitorWindows();
         
-        settings.ColorTemperature = _colorTemperature;
-        settings.Save();
+        if (save)
+        {
+            settings.ColorTemperature = _colorTemperature;
+            settings.Save();
+        }
     }
 
     public void MoveToNextMonitor()

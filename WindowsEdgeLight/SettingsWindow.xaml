@@ -57,7 +57,8 @@
                             SmallChange="0.05"
                             LargeChange="0.15"
                             TickFrequency="0.05"
-                            ValueChanged="BrightnessSlider_ValueChanged" />
+                            ValueChanged="BrightnessSlider_ValueChanged"
+                            Thumb.DragCompleted="BrightnessSlider_DragCompleted" />
                         <TextBlock
                             x:Name="BrightnessValueText"
                             Grid.Row="1"
@@ -105,7 +106,8 @@
                                 SmallChange="0.05"
                                 LargeChange="0.1"
                                 TickFrequency="0.05"
-                                ValueChanged="ColorTempSlider_ValueChanged" />
+                                ValueChanged="ColorTempSlider_ValueChanged"
+                                Thumb.DragCompleted="ColorTempSlider_DragCompleted" />
                             <Grid Grid.Row="1" Margin="0,2,0,0">
                                 <TextBlock
                                     HorizontalAlignment="Left"
