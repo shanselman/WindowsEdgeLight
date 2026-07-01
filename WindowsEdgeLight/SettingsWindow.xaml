@@ -6,7 +6,7 @@
     Width="420"
     Height="340"
     ResizeMode="CanResize"
-    WindowStartupLocation="CenterScreen"
+    WindowStartupLocation="CenterOwner"
     ThemeMode="System">
     <Grid Margin="16">
         <Grid.RowDefinitions>
