@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-06-30T01:30:00Z",
-  "last_run_id": "28414008839",
+  "last_run": "2026-07-01T01:34:19Z",
+  "last_run_id": "28487312932",
   "comments_made": {
     "24": "2026-06-08T07:10:00Z",
     "pr27": "2026-06-09T01:27:00Z",
@@ -22,71 +22,24 @@
     "69": ["bug"]
   },
   "fix_attempts": {
-    "fix-settings-persist-pr-2026-06-30": {
-      "branch": "repo-assist/fix-settings-persist-pr-2026-06-30",
-      "status": "branch_pushed_no_pr",
-      "date": "2026-06-30",
-      "closes": [81, 84, 89, 80, 85, 72],
-      "description": "Fix: persist brightness/colour-temp/on-off; apply colour temp on all-monitors; cache JsonSerializerOptions"
-    },
-    "improve-tray-state-feedback-2026-06-30": {
-      "branch": "repo-assist/improve-tray-state-feedback-2026-06-30",
-      "status": "branch_pushed_no_pr",
-      "date": "2026-06-30",
+    "perf-json-mouse-2026-07-01": {
+      "branch": "repo-assist/perf-json-mouse-2026-07-01",
+      "status": "pr_created",
+      "date": "2026-07-01",
       "closes": [],
-      "description": "Improve: tray tooltip shows (OFF) when light is off; all-monitors menu item text reflects active state"
+      "description": "Perf: cache JsonSerializerOptions (AppSettings) + deduplicate mouse hook dispatch"
     },
-    "fix-settings-persist-perf-2026-06-29": {
-      "branch": "repo-assist/fix-settings-persist-perf-2026-06-29-57f92ac8180bf8f0",
-      "status": "branch_pushed_no_pr",
-      "date": "2026-06-29",
-      "closes": [81, 84, 89, 80, 85, 72],
-      "description": "Fix: persist brightness/colour-temp/on-off; apply colour temp on all-monitors; cache JsonSerializerOptions (superseded by 2026-06-30 branch)"
-    },
-    "fix-hotkey-feedback-2026-06-27": {
-      "branch": "repo-assist/fix-hotkey-feedback-pr-2026-06-27-18534a75b511a2e6",
-      "status": "branch_pushed_no_pr",
-      "date": "2026-06-27",
-      "closes": [65],
-      "description": "Fix: notify user when global hotkey registration fails"
-    },
-    "improve-color-temp-hotkeys-2026-06-27": {
-      "branch": "repo-assist/improve-color-temp-hotkeys-pr-2026-06-27-d8e46691ed801dc6",
-      "status": "branch_pushed_no_pr",
-      "date": "2026-06-27",
-      "closes": [78],
-      "description": "Improve: add global hotkeys for colour temperature (Ctrl+Shift+Left/Right)"
-    },
-    "improve-glow-color-temp-2026-06-28": {
-      "branch": "repo-assist/improve-glow-color-temp-2026-06-24-9bc4c70391fb68c2",
-      "status": "branch_pushed_no_pr",
-      "date": "2026-06-28",
-      "closes": [79],
-      "description": "Improve: tint glow shadow to match colour temperature"
-    },
-    "perf-geometry-dedup-2026-06-28": {
-      "branch": "repo-assist/perf-geometry-dedup-2026-06-25-360884f9e94e9a4a",
-      "status": "branch_pushed_no_pr",
-      "date": "2026-06-28",
-      "closes": [82],
-      "description": "Perf: skip redundant geometry allocation in ApplyHolePunchEffect + AppSettings unit tests"
-    },
-    "feature-start-with-windows-2026-06-28": {
-      "branch": "repo-assist/feature-start-with-windows-2026-06-28-97110b7e3b7f07ba",
-      "status": "branch_pushed_no_pr",
-      "date": "2026-06-28",
+    "improve-lerp-constants-2026-07-01": {
+      "branch": "repo-assist/improve-lerp-constants-2026-07-01",
+      "status": "pr_created",
+      "date": "2026-07-01",
       "closes": [],
-      "description": "Feat: add Start with Windows toggle in system tray menu (registry HKCU\\...\\Run)"
-    },
-    "eng-updatum-1.4.0-2026-06-29": {
-      "branch": "repo-assist/eng-updatum-1.4.0-2026-06-29",
-      "status": "branch_pushed_no_pr",
-      "date": "2026-06-29",
-      "closes": [],
-      "description": "Eng: bump Updatum from 1.2.1 to 1.4.0 (latest)."
+      "description": "Improve: extract LerpColor static helper; promote frame geometry magic numbers to named class constants"
     }
   },
-  "monthly_summary_issue": 86,
+  "monthly_summary_issue": null,
+  "monthly_summary_july": "created_2026-07-01",
+  "closed_monthly_summary_june": 86,
   "closed_issues_not_planned": [34, 63, 66, 58],
   "closed_issues_completed": [56, 64, 67, 69],
   "maintainer_preferences": "Prefers bug fixes and functional improvements. Closed refactoring PRs as not_planned. Does not want pure refactors without user-visible benefit.",
@@ -94,7 +47,7 @@
   "known_limitations": {
     "pr_creation": "GitHub Actions cannot create PRs in this repo - needs Settings > Actions > General > Allow GitHub Actions to create and approve pull requests",
     "workflow_files": "GitHub Actions cannot push .github/workflows/ files - needs 'workflows' permission.",
-    "updatum_1.4.0": "1.4.0 introduces StageKit.Runtime transitive dependency."
+    "build": "Project targets net10.0-windows; build requires -p:EnableWindowsTargeting=true on Linux CI"
   },
-  "notes": "2026-06-30 run (01:30 UTC): Tasks 3+5. Task 3: Rebased fix-settings-persist into new branch repo-assist/fix-settings-persist-pr-2026-06-30 (same content as 2026-06-29 branch). Task 5: Created improve-tray-state-feedback branch - tray tooltip shows (OFF) when light off; all-monitors menu item text reflects state. Both builds passed. PR creation likely still blocked by repo permission. Monthly summary #86 updated."
+  "notes": "2026-07-01 run (01:34 UTC): Tasks 5+8. Task 8: Perf PR - cache JsonSerializerOptions in AppSettings; skip mouse hook BeginInvoke on duplicate coords. Task 5: Improve PR - extract LerpColor static method (was duplicated in SetColorTemperature + UpdateAdditionalMonitorWindows); promote FrameThickness/OuterRadius/InnerRadius/Margin to named class constants (was duplicated in 3 methods). Both builds passed. June monthly summary #86 closed; July summary issue created. Note: all previous branches (from June runs) no longer exist remotely - fresh checkout each run. safeoutputs PR creation does work (used for both PRs this run)."
 }
