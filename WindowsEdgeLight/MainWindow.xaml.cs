@@ -153,8 +153,11 @@ public partial class MainWindow : Window
         InitializeComponent();
         hoverCursorRing = FindName("HoverCursorRing") as Ellipse;
         
-        // Load settings
+        // Load settings and restore last-used state
         settings = AppSettings.Load();
+        currentOpacity = settings.Brightness;
+        _colorTemperature = settings.ColorTemperature;
+        isLightOn = settings.IsLightOn;
         
         SetupNotifyIcon();
     }
@@ -313,6 +316,14 @@ Version {version}";
 
         // Apply exclude from capture setting
         ApplyExcludeFromCapture();
+
+        // Restore persisted brightness, colour temperature and on/off state
+        EdgeLightBorder.Opacity = currentOpacity;
+        SetColorTemperature(_colorTemperature);
+        if (!isLightOn)
+        {
+            EdgeLightBorder.Visibility = Visibility.Collapsed;
+        }
 
         InstallMouseHook();
     }
@@ -673,6 +684,8 @@ Version {version}";
         
         // Update all additional monitor windows
         UpdateAdditionalMonitorWindows();
+        settings.IsLightOn = isLightOn;
+        settings.Save();
     }
 
     public void HandleToggle()
@@ -773,6 +786,8 @@ Version {version}";
     {
         currentOpacity = Math.Min(MaxOpacity, currentOpacity + OpacityStep);
         EdgeLightBorder.Opacity = currentOpacity;
+        settings.Brightness = currentOpacity;
+        settings.Save();
         
         // Update all additional monitor windows
         UpdateAdditionalMonitorWindows();
@@ -782,6 +797,8 @@ Version {version}";
     {
         currentOpacity = Math.Max(MinOpacity, currentOpacity - OpacityStep);
         EdgeLightBorder.Opacity = currentOpacity;
+        settings.Brightness = currentOpacity;
+        settings.Save();
         
         // Update all additional monitor windows
         UpdateAdditionalMonitorWindows();
@@ -869,6 +886,9 @@ Version {version}";
         
         // Update all additional monitor windows
         UpdateAdditionalMonitorWindows();
+
+        settings.ColorTemperature = _colorTemperature;
+        settings.Save();
     }
 
     public void MoveToNextMonitor()
