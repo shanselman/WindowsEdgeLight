@@ -971,6 +971,11 @@ Version {version}";
                 monitorCtx.Window.Show();
             }
         }
+
+        // Sync current brightness, colour temperature, and on/off state to all new windows.
+        // CreateMonitorWindow initialises the gradient with neutral colours; this call
+        // applies whatever the user currently has set so every monitor matches.
+        UpdateAdditionalMonitorWindows();
     }
 
     private void HideAdditionalMonitorWindows()
