@@ -314,6 +314,11 @@ Version {version}";
         // Apply exclude from capture setting
         ApplyExcludeFromCapture();
 
+        // Restore persisted brightness and colour temperature
+        currentOpacity = settings.Brightness;
+        EdgeLightBorder.Opacity = currentOpacity;
+        SetColorTemperature(settings.ColorTemperature);
+
         InstallMouseHook();
     }
 
@@ -773,6 +778,8 @@ Version {version}";
     {
         currentOpacity = Math.Min(MaxOpacity, currentOpacity + OpacityStep);
         EdgeLightBorder.Opacity = currentOpacity;
+        settings.Brightness = currentOpacity;
+        settings.Save();
         
         // Update all additional monitor windows
         UpdateAdditionalMonitorWindows();
@@ -782,6 +789,8 @@ Version {version}";
     {
         currentOpacity = Math.Max(MinOpacity, currentOpacity - OpacityStep);
         EdgeLightBorder.Opacity = currentOpacity;
+        settings.Brightness = currentOpacity;
+        settings.Save();
         
         // Update all additional monitor windows
         UpdateAdditionalMonitorWindows();
@@ -869,6 +878,8 @@ Version {version}";
         
         // Update all additional monitor windows
         UpdateAdditionalMonitorWindows();
+        settings.ColorTemperature = _colorTemperature;
+        settings.Save();
     }
 
     public void MoveToNextMonitor()

@@ -21,6 +21,16 @@ public class AppSettings
     public bool ExcludeFromCapture { get; set; } = true;
 
     /// <summary>
+    /// Brightness (opacity) of the edge light. Range 0.2–1.0; default 1.0.
+    /// </summary>
+    public double Brightness { get; set; } = 1.0;
+
+    /// <summary>
+    /// Colour temperature of the edge light. Range 0.0 (cool) – 1.0 (warm); default 0.5.
+    /// </summary>
+    public double ColorTemperature { get; set; } = 0.5;
+
+    /// <summary>
     /// Load settings from disk
     /// </summary>
     public static AppSettings Load()
@@ -40,6 +50,9 @@ public class AppSettings
                 // Validate deserialized settings
                 if (settings != null)
                 {
+                    // Clamp persisted values to valid ranges
+                    settings.Brightness = Math.Clamp(settings.Brightness, 0.2, 1.0);
+                    settings.ColorTemperature = Math.Clamp(settings.ColorTemperature, 0.0, 1.0);
                     return settings;
                 }
             }
