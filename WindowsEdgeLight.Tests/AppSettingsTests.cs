@@ -158,6 +158,95 @@ public class AppSettingsTests : IDisposable
         Assert.False(settings.ExcludeFromCapture);
     }
 
+    // ── Overwrite behaviour ─────────────────────────────────────────
+
+    [Fact]
+    public void Save_Overwrite_KeepsLatestValue()
+    {
+        var first = new AppSettings { ExcludeFromCapture = false };
+        first.Save(_settingsFile);
+
+        var second = new AppSettings { ExcludeFromCapture = true };
+        second.Save(_settingsFile);
+
+        var loaded = AppSettings.Load(_settingsFile);
+        Assert.True(loaded.ExcludeFromCapture);
+    }
+
+    [Fact]
+    public void Load_AfterExternalFileEdit_ReflectsChanges()
+    {
+        var original = new AppSettings { ExcludeFromCapture = false };
+        original.Save(_settingsFile);
+
+        // Simulate another process writing the file
+        File.WriteAllText(_settingsFile, """{"ExcludeFromCapture":true}""");
+
+        var loaded = AppSettings.Load(_settingsFile);
+        Assert.True(loaded.ExcludeFromCapture);
+    }
+
+    // ── Unknown / extra properties ──────────────────────────────────
+
+    [Fact]
+    public void Load_UnknownPropertiesInJson_AreIgnored()
+    {
+        File.WriteAllText(_settingsFile, """
+            {
+              "ExcludeFromCapture": false,
+              "UnknownFutureProperty": 42,
+              "AnotherUnknown": "hello"
+            }
+            """);
+
+        var settings = AppSettings.Load(_settingsFile);
+
+        Assert.NotNull(settings);
+        Assert.False(settings.ExcludeFromCapture);
+    }
+
+    // ── Null values in JSON ─────────────────────────────────────────
+
+    [Fact]
+    public void Load_NullBooleanValue_ReturnsDefaults()
+    {
+        // Null for a non-nullable bool causes a JsonException → defaults returned
+        File.WriteAllText(_settingsFile, """{"ExcludeFromCapture":null}""");
+
+        var settings = AppSettings.Load(_settingsFile);
+
+        Assert.NotNull(settings);
+        Assert.True(settings.ExcludeFromCapture); // falls back to default
+    }
+
+    // ── Output format ───────────────────────────────────────────────
+
+    [Fact]
+    public void Save_WritesIndentedJson_MultipleLines()
+    {
+        var settings = new AppSettings();
+        settings.Save(_settingsFile);
+
+        var json = File.ReadAllText(_settingsFile);
+        var lines = json.Split('\n');
+        Assert.True(lines.Length > 1, "Expected indented JSON with multiple lines");
+    }
+
+    // ── Default path ────────────────────────────────────────────────
+
+    [Fact]
+    public void SettingsFilePath_IsAbsolutePath()
+    {
+        Assert.True(Path.IsPathRooted(AppSettings.SettingsFilePath));
+    }
+
+    [Fact]
+    public void SettingsFilePath_EndsWithSettingsJson()
+    {
+        Assert.EndsWith("settings.json", AppSettings.SettingsFilePath,
+            StringComparison.OrdinalIgnoreCase);
+    }
+
     // ── Serializer options ──────────────────────────────────────────
 
     [Fact]
