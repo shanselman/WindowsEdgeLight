@@ -2,6 +2,8 @@ using System;
 using System.IO;
 using System.Text.Json;
 
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("WindowsEdgeLight.Tests")]
+
 namespace WindowsEdgeLight;
 
 /// <summary>
@@ -9,10 +11,21 @@ namespace WindowsEdgeLight;
 /// </summary>
 public class AppSettings
 {
-    private static readonly string SettingsFilePath = Path.Combine(
+    internal static readonly string SettingsFilePath = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
         "WindowsEdgeLight",
         "settings.json");
+
+    internal static readonly JsonSerializerOptions LoadOptions = new()
+    {
+        AllowTrailingCommas = true,
+        ReadCommentHandling = JsonCommentHandling.Skip
+    };
+
+    internal static readonly JsonSerializerOptions SaveOptions = new()
+    {
+        WriteIndented = true
+    };
 
     /// <summary>
     /// When enabled, excludes the edge light from screen capture (Teams, screenshots, etc.)
@@ -23,37 +36,30 @@ public class AppSettings
     /// <summary>
     /// Load settings from disk
     /// </summary>
-    public static AppSettings Load()
+    public static AppSettings Load() => Load(SettingsFilePath);
+
+    /// <summary>
+    /// Load settings from a specific file path (used for testing)
+    /// </summary>
+    internal static AppSettings Load(string filePath)
     {
         try
         {
-            if (File.Exists(SettingsFilePath))
+            if (File.Exists(filePath))
             {
-                var json = File.ReadAllText(SettingsFilePath);
-                var options = new JsonSerializerOptions
-                {
-                    AllowTrailingCommas = true,
-                    ReadCommentHandling = JsonCommentHandling.Skip
-                };
-                var settings = JsonSerializer.Deserialize<AppSettings>(json, options);
-                
-                // Validate deserialized settings
+                var json = File.ReadAllText(filePath);
+                var settings = JsonSerializer.Deserialize<AppSettings>(json, LoadOptions);
                 if (settings != null)
-                {
                     return settings;
-                }
             }
         }
         catch (JsonException ex)
         {
             System.Diagnostics.Debug.WriteLine($"Failed to parse settings file: {ex.Message}");
-            // Delete corrupted settings file
             try
             {
-                if (File.Exists(SettingsFilePath))
-                {
-                    File.Delete(SettingsFilePath);
-                }
+                if (File.Exists(filePath))
+                    File.Delete(filePath);
             }
             catch { /* Ignore deletion errors */ }
         }
@@ -68,21 +74,21 @@ public class AppSettings
     /// <summary>
     /// Save settings to disk
     /// </summary>
-    public void Save()
+    public void Save() => Save(SettingsFilePath);
+
+    /// <summary>
+    /// Save settings to a specific file path (used for testing)
+    /// </summary>
+    internal void Save(string filePath)
     {
         try
         {
-            var directory = Path.GetDirectoryName(SettingsFilePath);
+            var directory = Path.GetDirectoryName(filePath);
             if (directory != null && !Directory.Exists(directory))
-            {
                 Directory.CreateDirectory(directory);
-            }
 
-            var json = JsonSerializer.Serialize(this, new JsonSerializerOptions 
-            { 
-                WriteIndented = true 
-            });
-            File.WriteAllText(SettingsFilePath, json);
+            var json = JsonSerializer.Serialize(this, SaveOptions);
+            File.WriteAllText(filePath, json);
         }
         catch (Exception ex)
         {
