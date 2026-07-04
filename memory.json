@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-07-04T01:17:34Z",
-  "last_run_id": "28690476673",
+  "last_run": "2026-07-04T13:11:08Z",
+  "last_run_id": "28707244177",
   "comments_made": {
     "24": "2026-07-01T13:51:58Z",
     "pr27": "2026-06-09T01:27:00Z",
@@ -49,14 +49,20 @@
       "branch": "repo-assist/fix-persist-brightness-colortemp-2026-07-03",
       "status": "pr_created",
       "date": "2026-07-03",
-      "description": "Persist Brightness and ColorTemperature in AppSettings. Load on startup, save on each change. Build passes.",
-      "closes": []
+      "description": "Persist Brightness and ColorTemperature in AppSettings. Load on startup, save on each change. Build passes."
     },
     "test-appsettings-extended-2026-07-04": {
       "branch": "repo-assist/test-appsettings-extended-2026-07-04",
       "status": "pr_created",
       "date": "2026-07-04",
       "description": "Extend AppSettings tests from 15 to 22: overwrite, null-bool, unknown-props, path, format tests. All green."
+    },
+    "fix-persist-settings-start-with-windows-2026-07-04": {
+      "branch": "repo-assist/fix-persist-settings-start-with-windows-2026-07-04",
+      "status": "pr_created",
+      "date": "2026-07-04",
+      "description": "Comprehensive fix: persist Brightness, ColorTemperature, IsLightOn, StartWithWindows in AppSettings. Restore all on startup. Add Start with Windows tray menu item with HKCU Run registry entry. Build passes.",
+      "closes": [81, 84, 95, 99, 104, 108]
     }
   },
   "monthly_summary_issue": 103,
@@ -69,6 +75,6 @@
     "workflow_files": "GitHub Actions cannot push .github/workflows/ files - needs 'workflows' permission.",
     "build": "Project targets net10.0-windows; build requires -p:EnableWindowsTargeting=true on Linux CI"
   },
-  "notes": "2026-07-04 run (01:17 UTC): Tasks 2+9. Task 2: #24 already has 2 RA comments (most recent 2026-07-01), no new human activity - skipped. Task 9: Extended existing test branch (test-appsettings-2026-07-03) with 7 new tests (22 total): overwrite, null-bool, unknown-props, path contract, format tests. All 22 pass. PR created via safeoutputs on branch repo-assist/test-appsettings-extended-2026-07-04.",
-  "stale_ra_issues_to_close": [48, 53, 54, 62, 65, 72, 77, 78, 79, 80, 81, 82, 84, 85, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 101, 102, 104, 105, 106, 107, 108]
+  "notes": "2026-07-04 run (13:11 UTC): Tasks 10+3. Created comprehensive fix branch 'fix-persist-settings-start-with-windows-2026-07-04': adds Brightness, ColorTemperature, IsLightOn, StartWithWindows to AppSettings; restores all values on startup; adds 'Start with Windows' tray menu item with registry logic. Build passes. Monthly summary #103 updated.",
+  "stale_ra_issues_to_close": [48, 53, 54, 62, 65, 72, 77, 78, 79, 80, 81, 82, 84, 85, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 101, 102, 104, 105, 106, 107, 108, 109]
 }
