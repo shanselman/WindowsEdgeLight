@@ -7,6 +7,7 @@ using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using System.Windows.Threading;
+using Microsoft.Win32;
 
 namespace WindowsEdgeLight;
 
@@ -38,6 +39,7 @@ public partial class MainWindow : Window
     private bool isControlWindowVisible = true;
     private ToolStripMenuItem? toggleControlsMenuItem;
     private ToolStripMenuItem? excludeFromCaptureMenuItem;
+    private ToolStripMenuItem? startWithWindowsMenuItem;
     
     // Application settings
     private AppSettings settings = new AppSettings();
@@ -211,6 +213,12 @@ public partial class MainWindow : Window
     excludeFromCaptureMenuItem.Checked = settings.ExcludeFromCapture;
     contextMenu.Items.Add(excludeFromCaptureMenuItem);
     
+    // Add start with windows toggle
+    startWithWindowsMenuItem = new ToolStripMenuItem("🚀 Start with Windows", null, (s, e) => ToggleStartWithWindows());
+    startWithWindowsMenuItem.CheckOnClick = true;
+    startWithWindowsMenuItem.Checked = settings.StartWithWindows;
+    contextMenu.Items.Add(startWithWindowsMenuItem);
+    
     contextMenu.Items.Add(new ToolStripSeparator());
     contextMenu.Items.Add("✖ Exit", null, (s, e) => System.Windows.Application.Current.Shutdown());
         
@@ -313,6 +321,20 @@ Version {version}";
 
         // Apply exclude from capture setting
         ApplyExcludeFromCapture();
+
+        // Sync startup registry entry with persisted preference
+        ApplyStartWithWindows();
+
+        // Restore persisted brightness and colour temperature
+        currentOpacity = settings.Brightness;
+        EdgeLightBorder.Opacity = currentOpacity;
+        SetColorTemperature(settings.ColorTemperature);
+
+        // Restore persisted on/off state
+        if (!settings.IsLightOn)
+        {
+            ToggleLight();
+        }
 
         InstallMouseHook();
     }
@@ -673,6 +695,9 @@ Version {version}";
         
         // Update all additional monitor windows
         UpdateAdditionalMonitorWindows();
+
+        settings.IsLightOn = isLightOn;
+        settings.Save();
     }
 
     public void HandleToggle()
@@ -769,10 +794,51 @@ Version {version}";
         }
     }
 
+    private const string StartupRegistryKey = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run";
+    private const string StartupRegistryValue = "WindowsEdgeLight";
+
+    private void ToggleStartWithWindows()
+    {
+        settings.StartWithWindows = !settings.StartWithWindows;
+        settings.Save();
+
+        if (startWithWindowsMenuItem != null)
+            startWithWindowsMenuItem.Checked = settings.StartWithWindows;
+
+        ApplyStartWithWindows();
+    }
+
+    private void ApplyStartWithWindows()
+    {
+        try
+        {
+            using var key = Registry.CurrentUser.OpenSubKey(StartupRegistryKey, writable: true);
+            if (key == null) return;
+
+            if (settings.StartWithWindows)
+            {
+                var exePath = Environment.ProcessPath
+                    ?? System.Reflection.Assembly.GetExecutingAssembly().Location;
+                key.SetValue(StartupRegistryValue, $"\"{exePath}\"");
+            }
+            else
+            {
+                if (key.GetValue(StartupRegistryValue) != null)
+                    key.DeleteValue(StartupRegistryValue, throwOnMissingValue: false);
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Failed to update startup registry entry: {ex.Message}");
+        }
+    }
+
     public void IncreaseBrightness()
     {
         currentOpacity = Math.Min(MaxOpacity, currentOpacity + OpacityStep);
         EdgeLightBorder.Opacity = currentOpacity;
+        settings.Brightness = currentOpacity;
+        settings.Save();
         
         // Update all additional monitor windows
         UpdateAdditionalMonitorWindows();
@@ -782,6 +848,8 @@ Version {version}";
     {
         currentOpacity = Math.Max(MinOpacity, currentOpacity - OpacityStep);
         EdgeLightBorder.Opacity = currentOpacity;
+        settings.Brightness = currentOpacity;
+        settings.Save();
         
         // Update all additional monitor windows
         UpdateAdditionalMonitorWindows();
@@ -869,6 +937,10 @@ Version {version}";
         
         // Update all additional monitor windows
         UpdateAdditionalMonitorWindows();
+
+        // Persist the new value
+        settings.ColorTemperature = _colorTemperature;
+        settings.Save();
     }
 
     public void MoveToNextMonitor()

@@ -20,6 +20,18 @@ public class AppSettings
     /// </summary>
     public bool ExcludeFromCapture { get; set; } = true;
 
+    /// <summary>Brightness level (0.2–1.0). Default is full brightness.</summary>
+    public double Brightness { get; set; } = 1.0;
+
+    /// <summary>Colour temperature (0.0 = coolest, 1.0 = warmest). Default is neutral.</summary>
+    public double ColorTemperature { get; set; } = 0.5;
+
+    /// <summary>Whether the edge light is currently switched on.</summary>
+    public bool IsLightOn { get; set; } = true;
+
+    /// <summary>When true, the app registers itself to launch at Windows startup via the Run registry key.</summary>
+    public bool StartWithWindows { get; set; } = false;
+
     /// <summary>
     /// Load settings from disk
     /// </summary>
