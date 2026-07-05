@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-07-05T01:21:07Z",
-  "last_run_id": "28725492980",
+  "last_run": "2026-07-05T13:11:14Z",
+  "last_run_id": "28741879648",
   "comments_made": {
     "24": "2026-07-01T13:51:58Z",
     "pr27": "2026-06-09T01:27:00Z",
@@ -22,52 +22,23 @@
     "69": ["bug"]
   },
   "fix_attempts": {
-    "fix-persist-brightness-colortemp-2026-07-01": {
-      "branch": "repo-assist/fix-persist-brightness-colortemp-2026-07-01-c25604a7544cb0d8",
-      "status": "branch_only",
-      "date": "2026-07-01",
-      "closes": [80, 81, 84, 85, 95, 99]
-    },
-    "fix-all-monitors-colortemp-init-2026-07-02": {
-      "branch": "repo-assist/fix-all-monitors-colortemp-init-2026-07-02",
-      "status": "branch_only",
-      "date": "2026-07-02",
-      "closes": [85]
-    },
-    "eng-updatum-startupwith-2026-07-02": {
-      "branch": "repo-assist/eng-updatum-startupwith-2026-07-02",
-      "status": "branch_only",
-      "date": "2026-07-02"
-    },
-    "test-appsettings-2026-07-03": {
-      "branch": "repo-assist/test-appsettings-2026-07-03-e178e39c52b9ddbc",
-      "status": "branch_only",
-      "date": "2026-07-03",
-      "description": "xUnit test project for AppSettings: 15 tests all green."
-    },
-    "fix-persist-brightness-colortemp-2026-07-03": {
-      "branch": "repo-assist/fix-persist-brightness-colortemp-2026-07-03",
-      "status": "branch_only",
-      "date": "2026-07-03",
-      "description": "Persist Brightness and ColorTemperature in AppSettings."
-    },
-    "test-appsettings-extended-2026-07-04": {
-      "branch": "repo-assist/test-appsettings-extended-2026-07-04",
-      "status": "branch_only",
-      "date": "2026-07-04",
-      "description": "Extend AppSettings tests from 15 to 22."
-    },
-    "fix-persist-settings-start-with-windows-2026-07-04": {
-      "branch": "repo-assist/fix-persist-settings-start-with-windows-2026-07-04",
-      "status": "branch_only",
-      "date": "2026-07-04",
-      "description": "Comprehensive fix: persist Brightness, ColorTemperature, IsLightOn, StartWithWindows. Build passes."
-    },
     "fix-persist-settings-2026-07-05": {
       "branch": "repo-assist/fix-persist-settings-2026-07-05",
       "status": "pr_submitted",
       "date": "2026-07-05",
-      "description": "Minimal fix: persist Brightness, ColorTemperature, IsLightOn in AppSettings. Restore in constructor + Window_Loaded. Save on each change. Build passes."
+      "description": "Minimal fix: persist Brightness, ColorTemperature, IsLightOn in AppSettings."
+    },
+    "test-appsettings-comprehensive-2026-07-05": {
+      "branch": "repo-assist/test-appsettings-comprehensive-2026-07-05",
+      "status": "pr_submitted",
+      "date": "2026-07-05",
+      "description": "xUnit test project for AppSettings: 19 tests all green. Includes InternalsVisibleTo + path override for test isolation."
+    },
+    "eng-updatum-1.4.0-2026-07-05": {
+      "branch": "repo-assist/eng-updatum-1.4.0-2026-07-05",
+      "status": "pr_submitted",
+      "date": "2026-07-05",
+      "description": "Bump Updatum 1.2.1 to 1.4.0. Build passes."
     }
   },
   "monthly_summary_issue": 103,
@@ -80,6 +51,6 @@
     "workflow_files": "GitHub Actions cannot push .github/workflows/ files - needs 'workflows' permission.",
     "build": "Project targets net10.0-windows; build requires -p:EnableWindowsTargeting=true on Linux CI"
   },
-  "notes": "2026-07-05 run (01:21 UTC): Tasks 3+2. Created branch 'fix-persist-settings-2026-07-05': minimal settings persistence fix (Brightness, ColorTemperature, IsLightOn). Build passes. PR submitted via safeoutputs. Monthly summary #103 updated. Note: many prior runs also created similar branches but PRs failed to create (became fallback issues). The settings persistence fix is the most requested improvement - needs maintainer to enable 'Allow GitHub Actions to create PRs' setting or manually create PR from branch.",
+  "notes": "2026-07-05 run (13:11 UTC): Tasks 9+4. Created test project (19 tests, all green) + Updatum bump branch. Both PRs submitted via safeoutputs. Monthly summary #103 updated.",
   "stale_ra_issues_to_close": [48, 53, 54, 62, 65, 72, 77, 78, 79, 80, 81, 82, 84, 85, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 101, 102, 104, 105, 106, 107, 108, 109, 110]
 }
