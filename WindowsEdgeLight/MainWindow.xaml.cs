@@ -156,6 +156,11 @@ public partial class MainWindow : Window
         // Load settings
         settings = AppSettings.Load();
         
+        // Restore persisted state
+        currentOpacity = settings.Brightness;
+        _colorTemperature = settings.ColorTemperature;
+        isLightOn = settings.IsLightOn;
+        
         SetupNotifyIcon();
     }
 
@@ -293,6 +298,15 @@ Version {version}";
         SetupWindow();
         CreateFrameGeometry();
         CreateControlWindow();
+        
+        // Apply persisted brightness and on/off state to visual elements
+        EdgeLightBorder.Opacity = currentOpacity;
+        if (!isLightOn)
+        {
+            EdgeLightBorder.Visibility = Visibility.Collapsed;
+        }
+        // Apply persisted colour temperature
+        SetColorTemperature(_colorTemperature);
         
         var hwnd = new WindowInteropHelper(this).Handle;
         int extendedStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
@@ -673,6 +687,8 @@ Version {version}";
         
         // Update all additional monitor windows
         UpdateAdditionalMonitorWindows();
+        settings.IsLightOn = isLightOn;
+        settings.Save();
     }
 
     public void HandleToggle()
@@ -773,6 +789,8 @@ Version {version}";
     {
         currentOpacity = Math.Min(MaxOpacity, currentOpacity + OpacityStep);
         EdgeLightBorder.Opacity = currentOpacity;
+        settings.Brightness = currentOpacity;
+        settings.Save();
         
         // Update all additional monitor windows
         UpdateAdditionalMonitorWindows();
@@ -782,6 +800,8 @@ Version {version}";
     {
         currentOpacity = Math.Max(MinOpacity, currentOpacity - OpacityStep);
         EdgeLightBorder.Opacity = currentOpacity;
+        settings.Brightness = currentOpacity;
+        settings.Save();
         
         // Update all additional monitor windows
         UpdateAdditionalMonitorWindows();
@@ -869,6 +889,8 @@ Version {version}";
         
         // Update all additional monitor windows
         UpdateAdditionalMonitorWindows();
+        settings.ColorTemperature = _colorTemperature;
+        settings.Save();
     }
 
     public void MoveToNextMonitor()
