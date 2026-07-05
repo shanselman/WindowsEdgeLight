@@ -1,6 +1,9 @@
 using System;
 using System.IO;
 using System.Text.Json;
+using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("WindowsEdgeLight.Tests")]
 
 namespace WindowsEdgeLight;
 
@@ -9,10 +12,13 @@ namespace WindowsEdgeLight;
 /// </summary>
 public class AppSettings
 {
-    private static readonly string SettingsFilePath = Path.Combine(
+    internal static readonly string DefaultSettingsFilePath = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
         "WindowsEdgeLight",
         "settings.json");
+
+    // Mutable so tests can redirect to a temp path (kept internal to avoid public API noise)
+    internal static string SettingsFilePath = DefaultSettingsFilePath;
 
     /// <summary>
     /// When enabled, excludes the edge light from screen capture (Teams, screenshots, etc.)
