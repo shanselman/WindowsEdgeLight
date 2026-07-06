@@ -1,5 +1,6 @@
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -133,6 +134,13 @@ public partial class MainWindow : Window
     // Mouse hook management
     private IntPtr mouseHookHandle = IntPtr.Zero;
     private LowLevelMouseProc? mouseHookCallback;
+
+    // Coalescing state: at most one BeginInvoke queued at a time.
+    // _mouseDispatchQueued is 0 (none pending) or 1 (one already queued).
+    // _pendingMouse* always hold the latest position seen by the hook thread.
+    private int _mouseDispatchQueued;
+    private int _pendingMouseX;
+    private int _pendingMouseY;
 
     private Rect? frameOuterRect;
     private Rect? frameInnerRect;
@@ -345,12 +353,25 @@ Version {version}";
         if (nCode >= 0 && wParam == (IntPtr)WM_MOUSEMOVE)
         {
             var hookStruct = Marshal.PtrToStructure<MSLLHOOKSTRUCT>(lParam);
-            
-            // Dispatch to UI thread for WPF operations
-            Dispatcher.BeginInvoke(new Action(() => 
+
+            // Always record the latest position so the dispatch handler uses it.
+            Volatile.Write(ref _pendingMouseX, hookStruct.pt.x);
+            Volatile.Write(ref _pendingMouseY, hookStruct.pt.y);
+
+            // Only queue a new work item if none is already pending (coalescing).
+            // This prevents the Dispatcher queue from filling up during fast mouse
+            // movement (the hook can fire 200+ times/sec; WPF renders at ~60 fps).
+            if (Interlocked.CompareExchange(ref _mouseDispatchQueued, 1, 0) == 0)
             {
-                HandleMouseMove(hookStruct.pt.x, hookStruct.pt.y);
-            }), System.Windows.Threading.DispatcherPriority.Input);
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    // Read the latest position — may be newer than when queued.
+                    int x = Volatile.Read(ref _pendingMouseX);
+                    int y = Volatile.Read(ref _pendingMouseY);
+                    Interlocked.Exchange(ref _mouseDispatchQueued, 0);
+                    HandleMouseMove(x, y);
+                }), System.Windows.Threading.DispatcherPriority.Input);
+            }
         }
 
         return CallNextHookEx(mouseHookHandle, nCode, wParam, lParam);
