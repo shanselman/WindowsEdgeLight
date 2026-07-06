@@ -392,7 +392,7 @@ Version {version}";
         // --- Main Window Logic ---
         if (frameOuterRect != null && frameInnerRect != null && hoverCursorRing != null && baseFrameGeometry != null)
         {
-            var screen = availableMonitors.Length > 0 ? availableMonitors[currentMonitorIndex] : Screen.PrimaryScreen;
+            var screen = availableMonitors.Length > 0 ? availableMonitors[Math.Min(currentMonitorIndex, availableMonitors.Length - 1)] : Screen.PrimaryScreen;
             if (screen != null)
             {
                 ApplyHolePunchEffect(
@@ -1203,6 +1203,9 @@ Version {version}";
     {
         // Refresh monitor count to handle hot-plug scenarios
         availableMonitors = Screen.AllScreens;
+        // Clamp index in case the previously active monitor was unplugged
+        if (availableMonitors.Length > 0 && currentMonitorIndex >= availableMonitors.Length)
+            currentMonitorIndex = 0;
         return availableMonitors.Length > 1;
     }
 
@@ -1244,6 +1247,10 @@ Version {version}";
         availableMonitors = Screen.AllScreens;
         
         if (availableMonitors.Length == 0) return;
+
+        // Guard against a previously-valid index going out of range after a monitor is unplugged
+        if (currentMonitorIndex >= availableMonitors.Length)
+            currentMonitorIndex = 0;
 
         try 
         {
