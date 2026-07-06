@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-07-06T01:20:25Z",
-  "last_run_id": "28761793011",
+  "last_run": "2026-07-06T14:03:01Z",
+  "last_run_id": "28797269674",
   "comments_made": {
     "24": "2026-07-01T13:51:58Z",
     "pr27": "2026-06-09T01:27:00Z",
@@ -22,6 +22,18 @@
     "69": ["bug"]
   },
   "fix_attempts": {
+    "fix-monitor-index-2026-07-06": {
+      "branch": "repo-assist/fix-monitor-index-2026-07-06",
+      "status": "pr_submitted",
+      "date": "2026-07-06",
+      "description": "Fix IndexOutOfRangeException when monitors are unplugged (currentMonitorIndex out-of-bounds). Build passes."
+    },
+    "perf-mouse-coalesce-2026-07-06": {
+      "branch": "repo-assist/perf-mouse-coalesce-2026-07-06",
+      "status": "pr_submitted",
+      "date": "2026-07-06",
+      "description": "Coalesce mouse hook dispatches using Interlocked.CompareExchange. At most 1 work item queued at a time. Build passes."
+    },
     "fix-hotkey-notification-2026-07-06": {
       "branch": "repo-assist/fix-hotkey-notification-2026-07-06",
       "status": "pr_submitted",
@@ -57,6 +69,6 @@
     "workflow_files": "GitHub Actions cannot push .github/workflows/ files - needs 'workflows' permission.",
     "build": "Project targets net10.0-windows; build requires -p:EnableWindowsTargeting=true on Linux CI"
   },
-  "notes": "2026-07-06 run (01:20 UTC): Tasks 2+3. Task 2: no new human comments on #24, no other unaddressed issues. Task 3: fixed hotkey notification bug (RegisterHotKey return value was silently discarded). Branch repo-assist/fix-hotkey-notification-2026-07-06, build passes, PR submitted. Monthly summary #103 updated.",
-  "stale_ra_issues_to_close": [48, 53, 54, 62, 65, 72, 77, 78, 79, 80, 81, 82, 84, 85, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 101, 102, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113]
+  "notes": "2026-07-06 run (14:03 UTC): Tasks 3+8. Task 3: found new bug - IndexOutOfRangeException when monitors unplugged (currentMonitorIndex not clamped after HasMultipleMonitors refreshes Screen.AllScreens). Fix submitted as branch repo-assist/fix-monitor-index-2026-07-06. Task 8: implemented mouse hook dispatch coalescing using Interlocked.CompareExchange - at most 1 pending work item on Dispatcher at any time (vs flooding at 200+ Hz). Branch repo-assist/perf-mouse-coalesce-2026-07-06. Monthly summary #103 updated.",
+  "stale_ra_issues_to_close": [48, 53, 54, 62, 65, 72, 77, 78, 79, 80, 81, 82, 84, 85, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 101, 102, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114]
 }
