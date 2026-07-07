@@ -1,6 +1,9 @@
 using System;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
+
+[assembly: InternalsVisibleTo("WindowsEdgeLight.Tests")]
 
 namespace WindowsEdgeLight;
 
@@ -9,7 +12,8 @@ namespace WindowsEdgeLight;
 /// </summary>
 public class AppSettings
 {
-    private static readonly string SettingsFilePath = Path.Combine(
+    // Internal and non-readonly so tests can redirect to a temp path.
+    internal static string SettingsFilePath = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
         "WindowsEdgeLight",
         "settings.json");
