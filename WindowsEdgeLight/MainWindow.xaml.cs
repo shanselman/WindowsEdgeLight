@@ -155,6 +155,9 @@ public partial class MainWindow : Window
         
         // Load settings
         settings = AppSettings.Load();
+        currentOpacity = Math.Max(MinOpacity, Math.Min(MaxOpacity, settings.Brightness));
+        _colorTemperature = Math.Max(MinColorTemp, Math.Min(MaxColorTemp, settings.ColorTemperature));
+        isLightOn = settings.IsLightOn;
         
         SetupNotifyIcon();
     }
@@ -292,6 +295,7 @@ Version {version}";
     {
         SetupWindow();
         CreateFrameGeometry();
+        ApplyPersistedVisualSettings();
         CreateControlWindow();
         
         var hwnd = new WindowInteropHelper(this).Handle;
@@ -299,9 +303,7 @@ Version {version}";
         SetWindowLong(hwnd, GWL_EXSTYLE, extendedStyle | WS_EX_TRANSPARENT | WS_EX_LAYERED);
         
         // Register global hotkeys
-        RegisterHotKey(hwnd, HOTKEY_TOGGLE, MOD_CONTROL | MOD_SHIFT, VK_L);
-        RegisterHotKey(hwnd, HOTKEY_BRIGHTNESS_UP, MOD_CONTROL | MOD_SHIFT, VK_UP);
-        RegisterHotKey(hwnd, HOTKEY_BRIGHTNESS_DOWN, MOD_CONTROL | MOD_SHIFT, VK_DOWN);
+        RegisterGlobalHotKeys(hwnd);
         
         // Hook into Windows message processing
         HwndSource source = HwndSource.FromHwnd(hwnd);
@@ -315,6 +317,44 @@ Version {version}";
         ApplyExcludeFromCapture();
 
         InstallMouseHook();
+    }
+
+    private void RegisterGlobalHotKeys(IntPtr hwnd)
+    {
+        var failedHotKeys = new List<string>();
+
+        if (!RegisterHotKey(hwnd, HOTKEY_TOGGLE, MOD_CONTROL | MOD_SHIFT, VK_L))
+        {
+            failedHotKeys.Add("Toggle Light (Ctrl+Shift+L)");
+        }
+
+        if (!RegisterHotKey(hwnd, HOTKEY_BRIGHTNESS_UP, MOD_CONTROL | MOD_SHIFT, VK_UP))
+        {
+            failedHotKeys.Add("Brightness Up (Ctrl+Shift+Up)");
+        }
+
+        if (!RegisterHotKey(hwnd, HOTKEY_BRIGHTNESS_DOWN, MOD_CONTROL | MOD_SHIFT, VK_DOWN))
+        {
+            failedHotKeys.Add("Brightness Down (Ctrl+Shift+Down)");
+        }
+
+        if (failedHotKeys.Count > 0)
+        {
+            notifyIcon?.ShowBalloonTip(
+                5000,
+                "Windows Edge Light hotkey conflict",
+                "Some keyboard shortcuts could not be registered because another app is using them:\n\n" +
+                string.Join("\n", failedHotKeys) +
+                "\n\nUse the tray menu controls instead.",
+                ToolTipIcon.Warning);
+        }
+    }
+
+    private void ApplyPersistedVisualSettings()
+    {
+        EdgeLightBorder.Opacity = currentOpacity;
+        EdgeLightBorder.Visibility = isLightOn ? Visibility.Visible : Visibility.Collapsed;
+        ApplyColorTemperature();
     }
 
     private void InstallMouseHook()
@@ -673,6 +713,8 @@ Version {version}";
         
         // Update all additional monitor windows
         UpdateAdditionalMonitorWindows();
+        settings.IsLightOn = isLightOn;
+        settings.Save();
     }
 
     public void HandleToggle()
@@ -776,6 +818,8 @@ Version {version}";
         
         // Update all additional monitor windows
         UpdateAdditionalMonitorWindows();
+        settings.Brightness = currentOpacity;
+        settings.Save();
     }
 
     public void DecreaseBrightness()
@@ -785,6 +829,8 @@ Version {version}";
         
         // Update all additional monitor windows
         UpdateAdditionalMonitorWindows();
+        settings.Brightness = currentOpacity;
+        settings.Save();
     }
 
     private void UpdateAdditionalMonitorWindows()
@@ -833,7 +879,13 @@ Version {version}";
     public void SetColorTemperature(double value)
     {
         _colorTemperature = Math.Max(MinColorTemp, Math.Min(MaxColorTemp, value));
+        ApplyColorTemperature();
+        settings.ColorTemperature = _colorTemperature;
+        settings.Save();
+    }
 
+    private void ApplyColorTemperature()
+    {
         // Map 0-1 slider to a simple cool-to-warm gradient.
         // We'll bias the inner gradient stops from blueish-white (cool) to amber (warm).
         // NOTE: This assumes the brush defined in XAML is still a LinearGradientBrush.
