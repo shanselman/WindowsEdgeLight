@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-07-07T13:29:30Z",
-  "last_run_id": "28869895425",
+  "last_run": "2026-07-08T01:14:48Z",
+  "last_run_id": "28910220265",
   "comments_made": {
     "24": "2026-07-01T13:51:58Z",
     "pr27": "2026-06-09T01:27:00Z",
@@ -22,14 +22,20 @@
     "69": ["bug"]
   },
   "fix_attempts": {
+    "fix-persist-settings-2026-07-08": {
+      "branch": "repo-assist/fix-persist-settings-2026-07-08",
+      "status": "pr_submitted",
+      "date": "2026-07-08",
+      "description": "Persist Brightness, ColorTemperature, IsLightOn + hotkey conflict balloon tip. Build: 0 errors, 0 warnings."
+    },
     "fix-persist-settings-2026-07-07": {
-      "branch": "repo-assist/fix-persist-settings-2026-07-07",
+      "branch": "repo-assist/fix-persist-settings-2026-07-07-aec275bbf608ab4d",
       "status": "pr_submitted",
       "date": "2026-07-07",
-      "description": "Persist Brightness, ColorTemperature, IsLightOn in AppSettings + hotkey conflict balloon tip. Build: 0 errors, 0 warnings."
+      "description": "Persist Brightness, ColorTemperature, IsLightOn + hotkey conflict balloon tip. Build: 0 errors, 0 warnings."
     },
     "test-appsettings-2026-07-07": {
-      "branch": "repo-assist/test-appsettings-2026-07-07",
+      "branch": "repo-assist/test-appsettings-2026-07-07-b7dc8c8abe1a3051",
       "status": "pr_submitted",
       "date": "2026-07-07",
       "description": "xUnit test project for AppSettings: 18 tests all green (net8.0). Makes SettingsFilePath internal for test isolation."
@@ -41,22 +47,10 @@
       "description": "Fix IndexOutOfRangeException when monitors are unplugged. Build passes."
     },
     "perf-mouse-coalesce-2026-07-06": {
-      "branch": "repo-assist/perf-mouse-coalesce-2026-07-06",
+      "branch": "repo-assist/perf-mouse-coalesce-2026-07-06-fcb2397c56cb65e8",
       "status": "pr_submitted",
       "date": "2026-07-06",
       "description": "Coalesce mouse hook dispatches using Interlocked.CompareExchange. Build passes."
-    },
-    "fix-hotkey-notification-2026-07-06": {
-      "branch": "repo-assist/fix-hotkey-notification-2026-07-06-f77e74c1e95c027c",
-      "status": "pr_submitted",
-      "date": "2026-07-06",
-      "description": "Show tray balloon tip when RegisterHotKey fails. Build passes. Closes #65."
-    },
-    "fix-persist-settings-2026-07-05": {
-      "branch": "repo-assist/fix-persist-settings-2026-07-05-c305fb737056bd75",
-      "status": "pr_submitted",
-      "date": "2026-07-05",
-      "description": "Persist Brightness, ColorTemperature, IsLightOn in AppSettings."
     },
     "eng-updatum-1.4.0-2026-07-05": {
       "branch": "repo-assist/eng-updatum-1.4.0-2026-07-05-5b7aca266df3d5e6",
@@ -71,10 +65,16 @@
   "maintainer_preferences": "Prefers bug fixes and functional improvements. Closed refactoring PRs as not_planned. Does not want pure refactors without user-visible benefit.",
   "backlog_cursor": 24,
   "known_limitations": {
-    "pr_creation": "safeoutputs create_pull_request returns success+patch but no PR number; branches exist but PRs may not be created as actual GitHub PRs",
+    "pr_creation": "safeoutputs create_pull_request returns success+patch but no PR number; branches exist in remote but actual GitHub PRs are NOT created. Root cause: Settings > Actions > General > Allow GitHub Actions to create and approve pull requests is disabled.",
     "workflow_files": "GitHub Actions cannot push .github/workflows/ files - needs 'workflows' permission.",
     "build": "Project targets net10.0-windows; build requires -p:EnableWindowsTargeting=true on Linux CI. Test project targets net8.0 to avoid this."
   },
-  "notes": "2026-07-07 run (13:29 UTC): Tasks 3+2. Task 3: Combined fix — persist Brightness/ColorTemperature/IsLightOn + hotkey conflict balloon tip (build: 0 errors). Task 2: Only real issue #24 already has 2 RA comments with no new human activity. Monthly summary #103 updated.",
-  "stale_ra_issues_to_close": [48, 53, 54, 62, 65, 72, 77, 78, 79, 80, 81, 82, 84, 85, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 101, 102, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114]
+  "notes": "2026-07-08 run (01:14 UTC): Tasks 2+10. Task 2: No actionable issues - only #24 (2 RA comments, no new human activity) and #100 (bot failure issue). Task 10: Re-submitted fix branch repo-assist/fix-persist-settings-2026-07-08 with settings persistence + hotkey notification fix (build: 0 errors). Monthly summary #103 updated. NOTE: Many fix branches exist in remote but NO actual GitHub PRs were created - critical blocker for all repo-assist work.",
+  "key_open_branches": {
+    "fix-persist-settings": "repo-assist/fix-persist-settings-2026-07-08",
+    "fix-monitor-index": "repo-assist/fix-monitor-index-2026-07-06-e7cffeee1eb910dc",
+    "perf-mouse-coalesce": "repo-assist/perf-mouse-coalesce-2026-07-06-fcb2397c56cb65e8",
+    "test-appsettings": "repo-assist/test-appsettings-2026-07-07-b7dc8c8abe1a3051",
+    "eng-updatum": "repo-assist/eng-updatum-1.4.0-2026-07-05-5b7aca266df3d5e6"
+  }
 }
