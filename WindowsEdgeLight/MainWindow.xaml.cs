@@ -156,6 +156,19 @@ public partial class MainWindow : Window
         // Load settings
         settings = AppSettings.Load();
         
+        // Restore persisted state
+        isLightOn = settings.IsLightOn;
+        currentOpacity = Math.Max(MinOpacity, Math.Min(MaxOpacity, settings.Brightness));
+        _colorTemperature = Math.Max(MinColorTemp, Math.Min(MaxColorTemp, settings.ColorTemperature));
+
+        // Save back if values were clamped
+        if (currentOpacity != settings.Brightness || _colorTemperature != settings.ColorTemperature)
+        {
+            settings.Brightness = currentOpacity;
+            settings.ColorTemperature = _colorTemperature;
+            settings.Save();
+        }
+
         SetupNotifyIcon();
     }
 
@@ -298,10 +311,7 @@ Version {version}";
         int extendedStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
         SetWindowLong(hwnd, GWL_EXSTYLE, extendedStyle | WS_EX_TRANSPARENT | WS_EX_LAYERED);
         
-        // Register global hotkeys
-        RegisterHotKey(hwnd, HOTKEY_TOGGLE, MOD_CONTROL | MOD_SHIFT, VK_L);
-        RegisterHotKey(hwnd, HOTKEY_BRIGHTNESS_UP, MOD_CONTROL | MOD_SHIFT, VK_UP);
-        RegisterHotKey(hwnd, HOTKEY_BRIGHTNESS_DOWN, MOD_CONTROL | MOD_SHIFT, VK_DOWN);
+        RegisterGlobalHotKeys(hwnd);
         
         // Hook into Windows message processing
         HwndSource source = HwndSource.FromHwnd(hwnd);
@@ -314,7 +324,48 @@ Version {version}";
         // Apply exclude from capture setting
         ApplyExcludeFromCapture();
 
+        // Apply persisted brightness and color temperature
+        EdgeLightBorder.Opacity = currentOpacity;
+        SetColorTemperature(_colorTemperature);
+
+        // Apply persisted on/off state
+        if (!isLightOn)
+        {
+            EdgeLightBorder.Visibility = Visibility.Collapsed;
+        }
+
         InstallMouseHook();
+    }
+
+    private void RegisterGlobalHotKeys(IntPtr hwnd)
+    {
+        var failedHotKeys = new List<string>();
+
+        if (!RegisterHotKey(hwnd, HOTKEY_TOGGLE, MOD_CONTROL | MOD_SHIFT, VK_L))
+        {
+            failedHotKeys.Add("Toggle Light (Ctrl+Shift+L)");
+        }
+
+        if (!RegisterHotKey(hwnd, HOTKEY_BRIGHTNESS_UP, MOD_CONTROL | MOD_SHIFT, VK_UP))
+        {
+            failedHotKeys.Add("Brightness Up (Ctrl+Shift+Up)");
+        }
+
+        if (!RegisterHotKey(hwnd, HOTKEY_BRIGHTNESS_DOWN, MOD_CONTROL | MOD_SHIFT, VK_DOWN))
+        {
+            failedHotKeys.Add("Brightness Down (Ctrl+Shift+Down)");
+        }
+
+        if (failedHotKeys.Count > 0)
+        {
+            notifyIcon?.ShowBalloonTip(
+                5000,
+                "Windows Edge Light hotkey conflict",
+                "Some keyboard shortcuts could not be registered because another app is using them:\n\n" +
+                string.Join("\n", failedHotKeys) +
+                "\n\nUse the tray menu controls instead.",
+                ToolTipIcon.Warning);
+        }
     }
 
     private void InstallMouseHook()
@@ -673,6 +724,9 @@ Version {version}";
         
         // Update all additional monitor windows
         UpdateAdditionalMonitorWindows();
+        
+        settings.IsLightOn = isLightOn;
+        settings.Save();
     }
 
     public void HandleToggle()
@@ -771,20 +825,25 @@ Version {version}";
 
     public void IncreaseBrightness()
     {
-        currentOpacity = Math.Min(MaxOpacity, currentOpacity + OpacityStep);
-        EdgeLightBorder.Opacity = currentOpacity;
-        
-        // Update all additional monitor windows
-        UpdateAdditionalMonitorWindows();
+        SetBrightness(currentOpacity + OpacityStep);
     }
 
     public void DecreaseBrightness()
     {
-        currentOpacity = Math.Max(MinOpacity, currentOpacity - OpacityStep);
+        SetBrightness(currentOpacity - OpacityStep);
+    }
+
+    public void SetBrightness(double value, bool save = true)
+    {
+        currentOpacity = Math.Max(MinOpacity, Math.Min(MaxOpacity, value));
         EdgeLightBorder.Opacity = currentOpacity;
-        
-        // Update all additional monitor windows
         UpdateAdditionalMonitorWindows();
+        
+        if (save)
+        {
+            settings.Brightness = currentOpacity;
+            settings.Save();
+        }
     }
 
     private void UpdateAdditionalMonitorWindows()
@@ -830,7 +889,7 @@ Version {version}";
         SetColorTemperature(_colorTemperature - ColorTempStep);
     }
 
-    public void SetColorTemperature(double value)
+    public void SetColorTemperature(double value, bool save = true)
     {
         _colorTemperature = Math.Max(MinColorTemp, Math.Min(MaxColorTemp, value));
 
@@ -869,6 +928,12 @@ Version {version}";
         
         // Update all additional monitor windows
         UpdateAdditionalMonitorWindows();
+        
+        if (save)
+        {
+            settings.ColorTemperature = _colorTemperature;
+            settings.Save();
+        }
     }
 
     public void MoveToNextMonitor()
@@ -881,7 +946,6 @@ Version {version}";
 
         if (availableMonitors.Length <= 1)
         {
-            // Only one monitor, nothing to do
             return;
         }
 
@@ -901,7 +965,7 @@ Version {version}";
                 targetScreen.WorkingArea.X, targetScreen.WorkingArea.Y, 
                 targetScreen.WorkingArea.Width, targetScreen.WorkingArea.Height, 
                 SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
-            
+
             // Force a size update if DPI didn't change (SetWindowPos might not trigger OnDpiChanged)
             // If DPI changed, OnDpiChanged will handle it.
             // But we can't easily know if OnDpiChanged fired yet.
@@ -911,7 +975,7 @@ Version {version}";
             
             // If we are on the same thread, OnDpiChanged (via WM_DPICHANGED) should have fired synchronously during SetWindowPos.
             // So _dpiScaleX/Y should be up to date.
-            
+
             double newLeft = targetScreen.WorkingArea.X / _dpiScaleX;
             double newTop = targetScreen.WorkingArea.Y / _dpiScaleY;
             double newWidth = targetScreen.WorkingArea.Width / _dpiScaleX;
@@ -1209,6 +1273,42 @@ Version {version}";
     public bool IsExcludeFromCaptureEnabled()
     {
         return settings.ExcludeFromCapture;
+    }
+
+    public double GetBrightness() => currentOpacity;
+
+    public double GetColorTemperature() => _colorTemperature;
+
+    public bool GetIsToggleButtonVisible() => settings.ShowToggleButton;
+
+    public bool GetIsBrightnessButtonsVisible() => settings.ShowBrightnessButtons;
+
+    public bool GetIsColorTempButtonsVisible() => settings.ShowColorTempButtons;
+
+    public bool GetIsControlMonitorsButtonVisible() => settings.ShowMonitorControlButtons;
+
+    public void SetIsToggleVisible(bool isVisible)
+    {
+        settings.ShowToggleButton = isVisible;
+        settings.Save();
+    }
+
+    public void SetIsBrightnessButtonsVisible(bool isVisible)
+    {
+        settings.ShowBrightnessButtons = isVisible;
+        settings.Save();
+    }
+
+    public void SetIsColorTempButtonsVisible(bool isVisible)
+    {
+        settings.ShowColorTempButtons = isVisible;
+        settings.Save();
+    }
+
+    public void SetIsControlMonitorsButtonVisible(bool isVisible)
+    {
+        settings.ShowMonitorControlButtons = isVisible;
+        settings.Save();
     }
 
     private void Window_SizeChanged(object sender, SizeChangedEventArgs e)

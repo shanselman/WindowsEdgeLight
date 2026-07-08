@@ -21,6 +21,42 @@ public class AppSettings
     public bool ExcludeFromCapture { get; set; } = true;
 
     /// <summary>
+    /// Whether the edge light is on or off (persisted across restarts)
+    /// </summary>
+    public bool IsLightOn { get; set; } = true;
+
+    /// <summary>
+    /// Brightness/opacity of the edge light, in the range [0.2, 1.0]
+    /// </summary>
+    public double Brightness { get; set; } = 1.0;
+
+    /// <summary>
+    /// Color temperature of the edge light, in the range [0.0, 1.0]
+    /// where 0.0 = coolest (blue-white) and 1.0 = warmest (amber)
+    /// </summary>
+    public double ColorTemperature { get; set; } = 0.5;
+
+    /// <summary>
+    /// Whether to show toggle button in the control window
+    /// </summary>
+    public bool ShowToggleButton { get; set; } = true;
+
+    /// <summary>
+    /// Whether to show brightness buttons in the control window
+    /// </summary>
+    public bool ShowBrightnessButtons { get; set; } = true;
+
+    /// <summary>
+    /// Whether to show color temperature buttons in the control window
+    /// </summary>
+    public bool ShowColorTempButtons { get; set; } = true;
+
+    /// <summary>
+    /// Whether to show window control buttons (toggle, switch monitor, all monitors) in the control window
+    /// </summary>
+    public bool ShowMonitorControlButtons { get; set; } = true;
+
+    /// <summary>
     /// Load settings from disk
     /// </summary>
     public static AppSettings Load()

@@ -11,14 +11,30 @@ public partial class ControlWindow : Window
         InitializeComponent();
         mainWindow = main;
         
-        // Disable switch monitor button if only one monitor
         UpdateMonitorButtonState();
+        ApplyButtonVisibility();
     }
 
     private void UpdateMonitorButtonState()
     {
         SwitchMonitorButton.IsEnabled = mainWindow.HasMultipleMonitors() && !mainWindow.IsShowingOnAllMonitors();
         AllMonitorsButton.IsEnabled = mainWindow.HasMultipleMonitors();
+    }
+
+    public void ApplyButtonVisibility()
+    {
+        var toggleButtonVis = mainWindow.GetIsToggleButtonVisible() ? Visibility.Visible : Visibility.Collapsed;
+        var brightVis = mainWindow.GetIsBrightnessButtonsVisible() ? Visibility.Visible : Visibility.Collapsed;
+        var tempVis = mainWindow.GetIsColorTempButtonsVisible() ? Visibility.Visible : Visibility.Collapsed;
+        var monitorCtrlVis = mainWindow.GetIsControlMonitorsButtonVisible() ? Visibility.Visible : Visibility.Collapsed;
+
+        ToggleLightButton.Visibility = toggleButtonVis;
+        BrightnessDownButton.Visibility = brightVis;
+        BrightnessUpButton.Visibility = brightVis;
+        ColorWarmerButton.Visibility = tempVis;
+        ColorCoolerButton.Visibility = tempVis;
+        SwitchMonitorButton.Visibility = monitorCtrlVis;
+        AllMonitorsButton.Visibility = monitorCtrlVis;
     }
 
     public void UpdateAllMonitorsButtonState()
@@ -60,6 +76,14 @@ public partial class ControlWindow : Window
     private void AllMonitors_Click(object sender, RoutedEventArgs e)
     {
         mainWindow.ToggleAllMonitors();
+    }
+
+    private void Open_Settings(object sender, RoutedEventArgs e)
+    {
+        var settings = new SettingsWindow(mainWindow);
+        settings.Owner = this;
+        settings.ShowDialog();
+        ApplyButtonVisibility();
     }
 
     private void Close_Click(object sender, RoutedEventArgs e)
