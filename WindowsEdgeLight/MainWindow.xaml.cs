@@ -311,10 +311,7 @@ Version {version}";
         int extendedStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
         SetWindowLong(hwnd, GWL_EXSTYLE, extendedStyle | WS_EX_TRANSPARENT | WS_EX_LAYERED);
         
-        // Register global hotkeys
-        RegisterHotKey(hwnd, HOTKEY_TOGGLE, MOD_CONTROL | MOD_SHIFT, VK_L);
-        RegisterHotKey(hwnd, HOTKEY_BRIGHTNESS_UP, MOD_CONTROL | MOD_SHIFT, VK_UP);
-        RegisterHotKey(hwnd, HOTKEY_BRIGHTNESS_DOWN, MOD_CONTROL | MOD_SHIFT, VK_DOWN);
+        RegisterGlobalHotKeys(hwnd);
         
         // Hook into Windows message processing
         HwndSource source = HwndSource.FromHwnd(hwnd);
@@ -338,6 +335,37 @@ Version {version}";
         }
 
         InstallMouseHook();
+    }
+
+    private void RegisterGlobalHotKeys(IntPtr hwnd)
+    {
+        var failedHotKeys = new List<string>();
+
+        if (!RegisterHotKey(hwnd, HOTKEY_TOGGLE, MOD_CONTROL | MOD_SHIFT, VK_L))
+        {
+            failedHotKeys.Add("Toggle Light (Ctrl+Shift+L)");
+        }
+
+        if (!RegisterHotKey(hwnd, HOTKEY_BRIGHTNESS_UP, MOD_CONTROL | MOD_SHIFT, VK_UP))
+        {
+            failedHotKeys.Add("Brightness Up (Ctrl+Shift+Up)");
+        }
+
+        if (!RegisterHotKey(hwnd, HOTKEY_BRIGHTNESS_DOWN, MOD_CONTROL | MOD_SHIFT, VK_DOWN))
+        {
+            failedHotKeys.Add("Brightness Down (Ctrl+Shift+Down)");
+        }
+
+        if (failedHotKeys.Count > 0)
+        {
+            notifyIcon?.ShowBalloonTip(
+                5000,
+                "Windows Edge Light hotkey conflict",
+                "Some keyboard shortcuts could not be registered because another app is using them:\n\n" +
+                string.Join("\n", failedHotKeys) +
+                "\n\nUse the tray menu controls instead.",
+                ToolTipIcon.Warning);
+        }
     }
 
     private void InstallMouseHook()

@@ -4,8 +4,10 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     Title="Settings"
     Width="420"
-    Height="340"
-    ResizeMode="CanResize"
+    ResizeMode="NoResize"
+    SizeToContent="Height"
+    Closing="SettingsWindow_Closing"
+    Loaded="SettingsWindow_Loaded"
     WindowStartupLocation="CenterOwner"
     ThemeMode="System">
     <Grid Margin="16">

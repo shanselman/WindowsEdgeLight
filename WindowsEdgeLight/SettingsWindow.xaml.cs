@@ -51,6 +51,42 @@ public partial class SettingsWindow : Window
         mainWindow.SetColorTemperature(ColorTempSlider.Value, save: true);
     }
 
+    private void SettingsWindow_Loaded(object sender, RoutedEventArgs e)
+    {
+        if (Owner == null)
+        {
+            return;
+        }
+
+        const double gap = 12;
+        var workArea = SystemParameters.WorkArea;
+        MaxHeight = Math.Max(200, workArea.Height - (gap * 2));
+        var desiredLeft = Owner.Left + ((Owner.ActualWidth - ActualWidth) / 2);
+        Left = Math.Min(Math.Max(desiredLeft, workArea.Left + gap), workArea.Right - ActualWidth - gap);
+
+        var aboveOwnerTop = Owner.Top - ActualHeight - gap;
+        if (aboveOwnerTop >= workArea.Top + gap)
+        {
+            Top = aboveOwnerTop;
+            return;
+        }
+
+        var belowOwnerTop = Owner.Top + Owner.ActualHeight + gap;
+        if (belowOwnerTop + ActualHeight <= workArea.Bottom - gap)
+        {
+            Top = belowOwnerTop;
+            return;
+        }
+
+        Top = workArea.Top + ((workArea.Height - ActualHeight) / 2);
+    }
+
+    private void SettingsWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
+    {
+        mainWindow.SetBrightness(BrightnessSlider.Value, save: true);
+        mainWindow.SetColorTemperature(ColorTempSlider.Value, save: true);
+    }
+
     private void ExcludeFromCapture_Click(object sender, RoutedEventArgs e)
     {
         bool current = mainWindow.IsExcludeFromCaptureEnabled();
