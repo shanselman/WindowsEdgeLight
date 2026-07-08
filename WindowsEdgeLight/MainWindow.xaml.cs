@@ -156,6 +156,11 @@ public partial class MainWindow : Window
         // Load settings
         settings = AppSettings.Load();
         
+        // Restore persisted state
+        currentOpacity = settings.Brightness;
+        _colorTemperature = settings.ColorTemperature;
+        isLightOn = settings.IsLightOn;
+        
         SetupNotifyIcon();
     }
 
@@ -294,14 +299,37 @@ Version {version}";
         CreateFrameGeometry();
         CreateControlWindow();
         
+        // Apply persisted brightness and on/off state to visual elements
+        EdgeLightBorder.Opacity = currentOpacity;
+        if (!isLightOn)
+        {
+            EdgeLightBorder.Visibility = Visibility.Collapsed;
+        }
+        // Apply persisted colour temperature
+        SetColorTemperature(_colorTemperature);
+        
         var hwnd = new WindowInteropHelper(this).Handle;
         int extendedStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
         SetWindowLong(hwnd, GWL_EXSTYLE, extendedStyle | WS_EX_TRANSPARENT | WS_EX_LAYERED);
         
-        // Register global hotkeys
-        RegisterHotKey(hwnd, HOTKEY_TOGGLE, MOD_CONTROL | MOD_SHIFT, VK_L);
-        RegisterHotKey(hwnd, HOTKEY_BRIGHTNESS_UP, MOD_CONTROL | MOD_SHIFT, VK_UP);
-        RegisterHotKey(hwnd, HOTKEY_BRIGHTNESS_DOWN, MOD_CONTROL | MOD_SHIFT, VK_DOWN);
+        // Register global hotkeys; warn the user if any fail (e.g. conflict with another app)
+        bool toggleOk     = RegisterHotKey(hwnd, HOTKEY_TOGGLE,          MOD_CONTROL | MOD_SHIFT, VK_L);
+        bool brightUpOk   = RegisterHotKey(hwnd, HOTKEY_BRIGHTNESS_UP,   MOD_CONTROL | MOD_SHIFT, VK_UP);
+        bool brightDownOk = RegisterHotKey(hwnd, HOTKEY_BRIGHTNESS_DOWN, MOD_CONTROL | MOD_SHIFT, VK_DOWN);
+
+        if (!toggleOk || !brightUpOk || !brightDownOk)
+        {
+            var failed = new System.Text.StringBuilder();
+            if (!toggleOk)     failed.AppendLine("  • Toggle Light  (Ctrl+Shift+L)");
+            if (!brightUpOk)   failed.AppendLine("  • Brightness Up  (Ctrl+Shift+↑)");
+            if (!brightDownOk) failed.AppendLine("  • Brightness Down  (Ctrl+Shift+↓)");
+
+            notifyIcon?.ShowBalloonTip(
+                6000,
+                "Windows Edge Light – Hotkey conflict",
+                $"Some hotkeys couldn't be registered (already in use by another app):\n{failed.ToString().TrimEnd()}\n\nUse the tray icon menu to control the light.",
+                ToolTipIcon.Warning);
+        }
         
         // Hook into Windows message processing
         HwndSource source = HwndSource.FromHwnd(hwnd);
@@ -673,6 +701,8 @@ Version {version}";
         
         // Update all additional monitor windows
         UpdateAdditionalMonitorWindows();
+        settings.IsLightOn = isLightOn;
+        settings.Save();
     }
 
     public void HandleToggle()
@@ -773,6 +803,8 @@ Version {version}";
     {
         currentOpacity = Math.Min(MaxOpacity, currentOpacity + OpacityStep);
         EdgeLightBorder.Opacity = currentOpacity;
+        settings.Brightness = currentOpacity;
+        settings.Save();
         
         // Update all additional monitor windows
         UpdateAdditionalMonitorWindows();
@@ -782,6 +814,8 @@ Version {version}";
     {
         currentOpacity = Math.Max(MinOpacity, currentOpacity - OpacityStep);
         EdgeLightBorder.Opacity = currentOpacity;
+        settings.Brightness = currentOpacity;
+        settings.Save();
         
         // Update all additional monitor windows
         UpdateAdditionalMonitorWindows();
@@ -869,6 +903,8 @@ Version {version}";
         
         // Update all additional monitor windows
         UpdateAdditionalMonitorWindows();
+        settings.ColorTemperature = _colorTemperature;
+        settings.Save();
     }
 
     public void MoveToNextMonitor()
