@@ -279,7 +279,7 @@ Version {version}";
             }
         }
 
-        var targetScreen = availableMonitors.Length > 0 ? availableMonitors[currentMonitorIndex] : Screen.PrimaryScreen;
+        var targetScreen = availableMonitors.Length > 0 ? availableMonitors[Math.Min(currentMonitorIndex, availableMonitors.Length - 1)] : Screen.PrimaryScreen;
         if (targetScreen == null) return;
 
         SetupWindowForScreen(targetScreen);
@@ -443,7 +443,7 @@ Version {version}";
         // --- Main Window Logic ---
         if (frameOuterRect != null && frameInnerRect != null && hoverCursorRing != null && baseFrameGeometry != null)
         {
-            var screen = availableMonitors.Length > 0 ? availableMonitors[currentMonitorIndex] : Screen.PrimaryScreen;
+            var screen = availableMonitors.Length > 0 ? availableMonitors[Math.Min(currentMonitorIndex, availableMonitors.Length - 1)] : Screen.PrimaryScreen;
             if (screen != null)
             {
                 ApplyHolePunchEffect(
@@ -1267,6 +1267,9 @@ Version {version}";
     {
         // Refresh monitor count to handle hot-plug scenarios
         availableMonitors = Screen.AllScreens;
+        // Clamp index in case a monitor was removed since the last refresh
+        if (availableMonitors.Length > 0 && currentMonitorIndex >= availableMonitors.Length)
+            currentMonitorIndex = 0;
         return availableMonitors.Length > 1;
     }
 
@@ -1352,14 +1355,20 @@ Version {version}";
             var centerPoint = this.PointToScreen(new System.Windows.Point(this.ActualWidth / 2, this.ActualHeight / 2));
             var drawingPoint = new System.Drawing.Point((int)centerPoint.X, (int)centerPoint.Y);
             
+            bool found = false;
             for (int i = 0; i < availableMonitors.Length; i++)
             {
                 if (availableMonitors[i].Bounds.Contains(drawingPoint))
                 {
                     currentMonitorIndex = i;
+                    found = true;
                     break;
                 }
             }
+
+            // If the window's current screen was removed, fall back to primary (index 0)
+            if (!found && currentMonitorIndex >= availableMonitors.Length)
+                currentMonitorIndex = 0;
         }
         catch (InvalidOperationException)
         {
