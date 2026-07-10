@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-07-09T13:42:13Z",
-  "last_run_id": "29022280435",
+  "last_run": "2026-07-10T01:16:49Z",
+  "last_run_id": "29061961948",
   "comments_made": {
     "24": "2026-07-01T13:51:58Z",
     "pr27": "2026-06-09T01:27:00Z",
@@ -22,23 +22,11 @@
     "69": ["bug"]
   },
   "fix_attempts": {
-    "fix-persist-settings-2026-07-08": {
-      "branch": "repo-assist/fix-persist-settings-2026-07-08",
+    "fix-monitor-index-2026-07-10": {
+      "branch": "repo-assist/fix-monitor-index-2026-07-10",
       "status": "pr_submitted",
-      "date": "2026-07-08",
-      "description": "Persist Brightness, ColorTemperature, IsLightOn; balloon tip on hotkey conflict."
-    },
-    "improve-color-temp-hotkeys-2026-07-08": {
-      "branch": "repo-assist/improve-color-temp-hotkeys-2026-07-08",
-      "status": "pr_submitted",
-      "date": "2026-07-08",
-      "description": "Add Ctrl+Shift+Left/Right hotkeys for colour temperature."
-    },
-    "feature-start-with-windows-2026-07-08": {
-      "branch": "repo-assist/feature-start-with-windows-2026-07-08",
-      "status": "pr_submitted",
-      "date": "2026-07-08",
-      "description": "Add Start with Windows tray toggle."
+      "date": "2026-07-10",
+      "description": "Prevent IndexOutOfRangeException when monitors are unplugged. Fresh fix on current master (settings-persistence included). Build: 0 errors, 0 warnings."
     },
     "test-appsettings-allprops-2026-07-09": {
       "branch": "repo-assist/test-appsettings-allprops-2026-07-09",
@@ -46,11 +34,29 @@
       "date": "2026-07-09",
       "description": "32 xUnit tests covering all 8 AppSettings properties."
     },
+    "improve-color-temp-hotkeys-2026-07-08": {
+      "branch": "repo-assist/improve-color-temp-hotkeys-2026-07-08-1200ea5f0106ea64",
+      "status": "pr_submitted",
+      "date": "2026-07-08",
+      "description": "Add Ctrl+Shift+Left/Right hotkeys for colour temperature."
+    },
+    "feature-start-with-windows-2026-07-08": {
+      "branch": "repo-assist/feature-start-with-windows-2026-07-08-77845b73e75467fe",
+      "status": "pr_submitted",
+      "date": "2026-07-08",
+      "description": "Add Start with Windows tray toggle."
+    },
+    "fix-persist-settings-2026-07-08": {
+      "branch": "repo-assist/fix-persist-settings-2026-07-08-c9bd401abed59e5d",
+      "status": "pr_submitted",
+      "date": "2026-07-08",
+      "description": "Persist Brightness, ColorTemperature, IsLightOn + hotkey conflict balloon tip."
+    },
     "fix-monitor-index-2026-07-06": {
       "branch": "repo-assist/fix-monitor-index-2026-07-06-e7cffeee1eb910dc",
-      "status": "pr_submitted",
+      "status": "stale_superseded",
       "date": "2026-07-06",
-      "description": "Prevent IndexOutOfRangeException when monitors are unplugged."
+      "description": "STALE: Based on pre-settings-persistence master. Superseded by 2026-07-10 branch."
     },
     "perf-mouse-coalesce-2026-07-06": {
       "branch": "repo-assist/perf-mouse-coalesce-2026-07-06-fcb2397c56cb65e8",
@@ -68,11 +74,10 @@
       "branch": "repo-assist/eng-editorconfig-2026-07-09",
       "status": "pr_submitted",
       "date": "2026-07-09",
-      "description": "Add .editorconfig for consistent code style (4-space, CRLF, UTF-8, C# hints)."
+      "description": "Add .editorconfig for consistent code style."
     }
   },
   "monthly_summary_issue": 123,
-  "monthly_summary_july_2": "created_2026-07-08",
   "maintainer_preferences": "Prefers bug fixes and functional improvements. Closed refactoring PRs as not_planned. Does not want pure refactors without user-visible benefit.",
   "backlog_cursor": 24,
   "known_limitations": {
@@ -80,6 +85,6 @@
     "workflow_files": "GitHub Actions cannot push .github/workflows/ files - needs 'workflows' permission.",
     "build": "Project targets net10.0-windows; build requires -p:EnableWindowsTargeting=true on Linux CI"
   },
-  "notes": "2026-07-09 run (13:42 UTC): Tasks 1+4. Task 1: 0 unlabelled issues, no-op. Task 4: Added .editorconfig (4-space, CRLF, UTF-8, C# style hints). Monthly summary #123 updated. Issue #68 (AddSettingsPage PR) merged to master - settings persistence now in master.",
+  "notes": "2026-07-10 run (01:16 UTC): Tasks 2+3. Task 2: #24 has 2 Repo Assist comments, no new human activity - no action. Task 3: Created fresh fix for IndexOutOfRangeException when monitors unplugged (3 guards: clamp in HasMultipleMonitors, fallback in UpdateCurrentMonitorIndex, Math.Min in HandleMouseMove/SetupWindow). Build: 0 errors, 0 warnings.",
   "stale_ra_issues_to_close": [91, 94, 121, 122]
 }
