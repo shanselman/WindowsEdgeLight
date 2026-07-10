@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-07-10T01:16:49Z",
-  "last_run_id": "29061961948",
+  "last_run": "2026-07-10T13:25:46Z",
+  "last_run_id": "29095926954",
   "comments_made": {
     "24": "2026-07-01T13:51:58Z",
     "pr27": "2026-06-09T01:27:00Z",
@@ -8,18 +8,43 @@
     "58": "2026-06-19T13:55:00Z"
   },
   "labels_applied": {
-    "24": ["enhancement", "needs investigation"],
-    "33": ["enhancement"],
-    "27": ["help wanted"],
-    "36": ["enhancement"],
-    "56": ["enhancement"],
-    "62": ["enhancement"],
-    "63": ["refactor"],
-    "64": ["enhancement"],
-    "65": ["bug"],
-    "66": ["refactor"],
-    "67": ["bug"],
-    "69": ["bug"]
+    "24": [
+      "enhancement",
+      "needs investigation"
+    ],
+    "33": [
+      "enhancement"
+    ],
+    "27": [
+      "help wanted"
+    ],
+    "36": [
+      "enhancement"
+    ],
+    "56": [
+      "enhancement"
+    ],
+    "62": [
+      "enhancement"
+    ],
+    "63": [
+      "refactor"
+    ],
+    "64": [
+      "enhancement"
+    ],
+    "65": [
+      "bug"
+    ],
+    "66": [
+      "refactor"
+    ],
+    "67": [
+      "bug"
+    ],
+    "69": [
+      "bug"
+    ]
   },
   "fix_attempts": {
     "fix-monitor-index-2026-07-10": {
@@ -75,6 +100,18 @@
       "status": "pr_submitted",
       "date": "2026-07-09",
       "description": "Add .editorconfig for consistent code style."
+    },
+    "persist-control-visibility-2026-07-10": {
+      "branch": "repo-assist/persist-control-visibility-2026-07-10",
+      "status": "branch_submitted",
+      "date": "2026-07-10",
+      "description": "Persist isControlWindowVisible in AppSettings. 0 errors, 0 warnings."
+    },
+    "eng-dependabot-2026-07-10": {
+      "branch": "repo-assist/eng-dependabot-2026-07-10",
+      "status": "branch_submitted",
+      "date": "2026-07-10",
+      "description": "Add .github/dependabot.yml for weekly NuGet + Actions updates."
     }
   },
   "monthly_summary_issue": 123,
@@ -85,6 +122,11 @@
     "workflow_files": "GitHub Actions cannot push .github/workflows/ files - needs 'workflows' permission.",
     "build": "Project targets net10.0-windows; build requires -p:EnableWindowsTargeting=true on Linux CI"
   },
-  "notes": "2026-07-10 run (01:16 UTC): Tasks 2+3. Task 2: #24 has 2 Repo Assist comments, no new human activity - no action. Task 3: Created fresh fix for IndexOutOfRangeException when monitors unplugged (3 guards: clamp in HasMultipleMonitors, fallback in UpdateCurrentMonitorIndex, Math.Min in HandleMouseMove/SetupWindow). Build: 0 errors, 0 warnings.",
-  "stale_ra_issues_to_close": [91, 94, 121, 122]
+  "notes": "2026-07-10 run (13:25 UTC): Tasks 10+4. Task 10: Persisted isControlWindowVisible in AppSettings (load + save on toggle). Build: 0 errors, 0 warnings. Task 4: Added .github/dependabot.yml for weekly NuGet and GitHub Actions dependency checks.",
+  "stale_ra_issues_to_close": [
+    91,
+    94,
+    121,
+    122
+  ]
 }
