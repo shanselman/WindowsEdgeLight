@@ -1,21 +1,23 @@
 # Windows Edge Light
 
-A lightweight WPF application that adds a customizable glowing edge light effect around your primary monitor on Windows. Perfect for ambient lighting during video calls, streaming, or just adding a professional touch to your workspace.
+A lightweight WPF application that adds a customizable glowing edge light effect around your monitors on Windows. Perfect for ambient lighting during video calls, streaming, or just adding a professional touch to your workspace.
 
 ## Features
 
 - **Automatic Updates**: Built-in update system checks GitHub Releases for new versions
-- **Primary Monitor Display**: Automatically detects and displays on your primary monitor, even in multi-monitor setups
+- **Multi-Monitor Support**: Display on your primary monitor, switch to any monitor, or show on all monitors simultaneously
 - **DPI Aware**: Properly handles high-DPI displays (4K monitors with scaling)
 - **Fluent Design**: Modern UX that fits in with the Windows look and feel
 - **Click-Through Transparency**: Overlay doesn't interfere with your work - all clicks pass through to applications beneath
 - **Customizable Brightness**: Adjust opacity with easy-to-use controls
- - **Adjustable Color Temperature**: Shift the edge light from cooler (blue-ish) to warmer (amber) tones
+- **Adjustable Color Temperature**: Shift the edge light from cooler (blue-ish) to warmer (amber) tones
 - **Toggle On/Off**: Quickly enable or disable the edge light effect
 - **Hideable Controls**: Hide the control toolbar for a cleaner look, restore via tray menu
 - **Always On Top**: Stays visible above all other windows
+- **Persistent Settings**: Brightness, color temperature, on/off state, and preferences are saved across restarts
+- **Settings Window**: Dedicated settings panel with sliders and control bar customisation
 - **Exclude from Screen Capture**: Optional setting to hide the edge light from screen sharing (Teams, Zoom) and screenshots
-- **Keyboard Shortcuts**: 
+- **Keyboard Shortcuts**:
   - `Ctrl+Shift+L` - Toggle light on/off
   - `Ctrl+Shift+Up` - Increase brightness
   - `Ctrl+Shift+Down` - Decrease brightness
@@ -85,9 +87,9 @@ The executable will be in `bin\Release\net10.0-windows\win-x64\publish\WindowsEd
    - 🌡️ **Cooler Color** - Shifts the glow towards a cooler, blue-ish white
    - 🔥 **Warmer Color** - Shifts the glow towards a warmer, amber tone
    - 💡 **Toggle Light** - Turn the effect on/off
-   - 🖥️ **Switch Monitor** - Move to next monitor (if multiple monitors)
-   - 🖥️🖥️ **All Monitors** - Show on all monitors (if multiple monitors)
-   - 🎥 **Exclude from Capture** - Hide from screen sharing and screenshots
+   - 🖥️ **Switch Monitor** - Move to next monitor (only shown when multiple monitors are connected)
+   - 🖥️🖥️ **All Monitors** - Show on all monitors simultaneously (only shown when multiple monitors are connected)
+   - ⚙️ **Settings** - Open the settings panel (brightness slider, color temperature, exclude from capture, control bar customisation)
    - ✖ **Exit** - Close the application
 4. Hide the control toolbar for a cleaner look using the tray menu (right-click tray icon → "Hide Controls")
 
@@ -124,11 +126,12 @@ When sharing your screen on video conferencing apps (Teams, Zoom, etc.), you may
 
 ## Multi-Monitor Support
 
-The application specifically targets the **primary monitor** in your display setup:
-- Automatically detects primary monitor position and dimensions
-- Correctly handles DPI scaling (e.g., 150%, 200% on 4K displays)
-- Works with any monitor arrangement (horizontal, vertical, mixed)
-- Does not span across multiple monitors
+The application supports flexible multi-monitor configurations:
+- **Primary monitor by default**: On launch, the edge light appears on your primary monitor
+- **Switch monitor**: Use the 🖥️ button in the control toolbar (or right-click tray icon → Switch Monitor) to cycle the edge light to the next monitor
+- **All monitors**: Use the 🖥️🖥️ button to show the edge light on every connected monitor simultaneously
+- **DPI-aware**: Each monitor window correctly accounts for per-monitor DPI scaling
+- **Hot-plug friendly**: Monitor list is refreshed when switching, so newly connected monitors are detected automatically
 
 ## Development
 
@@ -137,10 +140,19 @@ The application specifically targets the **primary monitor** in your display set
 ```
 WindowsEdgeLight/
 ├── WindowsEdgeLight/
-│   ├── App.xaml              # Application entry point
+│   ├── App.xaml                       # Application entry point
 │   ├── App.xaml.cs
-│   ├── MainWindow.xaml       # Main UI layout
-│   ├── MainWindow.xaml.cs    # Application logic
+│   ├── AppSettings.cs                 # Persistent settings (JSON, %APPDATA%)
+│   ├── MainWindow.xaml                # Main overlay window (edge light)
+│   ├── MainWindow.xaml.cs             # Core application logic, hotkeys, multi-monitor
+│   ├── ControlWindow.xaml             # Floating control toolbar
+│   ├── ControlWindow.xaml.cs
+│   ├── SettingsWindow.xaml            # Settings panel (sliders, checkboxes)
+│   ├── SettingsWindow.xaml.cs
+│   ├── UpdateDialog.xaml              # Auto-update UI
+│   ├── UpdateDialog.xaml.cs
+│   ├── DownloadProgressDialog.xaml    # Update download progress
+│   ├── DownloadProgressDialog.xaml.cs
 │   ├── WindowsEdgeLight.csproj
 │   └── AssemblyInfo.cs
 └── README.md
@@ -155,6 +167,19 @@ Requires:
 ## Version History
 
 **Note**: Versions are automatically managed using GitVersion based on Git tags.
+
+### v0.8 - Settings Window and Persistence (PR #68)
+- New dedicated Settings window (⚙️ button in control bar) with sliders and checkboxes
+- Brightness and color temperature persist across restarts
+- On/off state persists across restarts
+- Control bar button visibility preferences persist (show/hide toggle, brightness, color temp, monitor controls)
+- Exclude from Screen Capture setting persists
+
+### v0.7 - Multi-Monitor Improvements
+- Added "Show on All Monitors" mode (🖥️🖥️ button)
+- Improved per-monitor DPI handling
+- Hover proximity ring effect on the edge light
+- Control toolbar with customisable button visibility
 
 ### v0.6 - Automatic Update System
 - Integrated Updatum for automatic updates from GitHub Releases
