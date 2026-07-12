@@ -1082,16 +1082,23 @@ Version {version}";
             Visibility = isLightOn ? Visibility.Visible : Visibility.Collapsed
         };
 
-        // Create gradient brush
+        // Create gradient brush matching the current color temperature
         var gradient = new LinearGradientBrush
         {
             StartPoint = new System.Windows.Point(0, 0),
             EndPoint = new System.Windows.Point(1, 1)
         };
+        var cool = System.Windows.Media.Color.FromRgb(220, 235, 255);
+        var warm = System.Windows.Media.Color.FromRgb(255, 220, 180);
+        byte LerpByte(byte x, byte y, double t) => (byte)(x + (y - x) * t);
+        var midColor = System.Windows.Media.Color.FromArgb(255,
+            LerpByte(cool.R, warm.R, _colorTemperature),
+            LerpByte(cool.G, warm.G, _colorTemperature),
+            LerpByte(cool.B, warm.B, _colorTemperature));
         gradient.GradientStops.Add(new GradientStop(System.Windows.Media.Color.FromRgb(255, 255, 255), 0.0));
-        gradient.GradientStops.Add(new GradientStop(System.Windows.Media.Color.FromRgb(240, 240, 240), 0.3));
-        gradient.GradientStops.Add(new GradientStop(System.Windows.Media.Color.FromRgb(255, 255, 255), 0.5));
-        gradient.GradientStops.Add(new GradientStop(System.Windows.Media.Color.FromRgb(240, 240, 240), 0.7));
+        gradient.GradientStops.Add(new GradientStop(midColor, 0.3));
+        gradient.GradientStops.Add(new GradientStop(midColor, 0.5));
+        gradient.GradientStops.Add(new GradientStop(midColor, 0.7));
         gradient.GradientStops.Add(new GradientStop(System.Windows.Media.Color.FromRgb(255, 255, 255), 1.0));
         path.Fill = gradient;
 
