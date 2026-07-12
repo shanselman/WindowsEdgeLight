@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-07-12T01:14:46Z",
-  "last_run_id": "29174939004",
+  "last_run": "2026-07-12T13:10:53Z",
+  "last_run_id": "29193896636",
   "comments_made": {
     "24": "2026-07-01T13:51:58Z",
     "pr27": "2026-06-09T01:27:00Z",
@@ -8,18 +8,43 @@
     "58": "2026-06-19T13:55:00Z"
   },
   "labels_applied": {
-    "24": ["enhancement", "needs investigation"],
-    "33": ["enhancement"],
-    "27": ["help wanted"],
-    "36": ["enhancement"],
-    "56": ["enhancement"],
-    "62": ["enhancement"],
-    "63": ["refactor"],
-    "64": ["enhancement"],
-    "65": ["bug"],
-    "66": ["refactor"],
-    "67": ["bug"],
-    "69": ["bug"]
+    "24": [
+      "enhancement",
+      "needs investigation"
+    ],
+    "33": [
+      "enhancement"
+    ],
+    "27": [
+      "help wanted"
+    ],
+    "36": [
+      "enhancement"
+    ],
+    "56": [
+      "enhancement"
+    ],
+    "62": [
+      "enhancement"
+    ],
+    "63": [
+      "refactor"
+    ],
+    "64": [
+      "enhancement"
+    ],
+    "65": [
+      "bug"
+    ],
+    "66": [
+      "refactor"
+    ],
+    "67": [
+      "bug"
+    ],
+    "69": [
+      "bug"
+    ]
   },
   "fix_attempts": {
     "fix-persist-all-monitors-2026-07-12": {
@@ -34,11 +59,17 @@
       "date": "2026-07-12",
       "description": "Add global.json to pin .NET SDK to 10.0.x with latestMinor rollForward. 0 errors, 0 warnings."
     },
+    "fix-initial-color-temp-additional-monitors-2026-07-12": {
+      "branch": "repo-assist/fix-initial-color-temp-additional-monitors-2026-07-12",
+      "status": "branch_submitted",
+      "date": "2026-07-12",
+      "description": "Fix CreateMonitorWindow gradient init to use _colorTemperature instead of hardcoded white. 0 errors, 0 warnings."
+    },
     "docs-update-readme-2026-07-11": {
-      "branch": "repo-assist/docs-update-readme-2026-07-11",
+      "branch": "repo-assist/docs-update-readme-2026-07-11-bcd9af10b4bfcf41",
       "status": "branch_submitted",
       "date": "2026-07-11",
-      "description": "Update README: remove stale 'primary monitor only' claim, add Settings/persistence features, correct multi-monitor section, expand project structure."
+      "description": "Update README: remove stale primary monitor only claim, add Settings/persistence features."
     },
     "fix-monitor-index-2026-07-10": {
       "branch": "repo-assist/fix-monitor-index-2026-07-10",
@@ -65,7 +96,7 @@
       "description": "32 xUnit tests covering all 8 AppSettings properties."
     },
     "eng-editorconfig-2026-07-09": {
-      "branch": "repo-assist/eng-editorconfig-2026-07-09",
+      "branch": "repo-assist/eng-editorconfig-2026-07-09-4befd29b03a50d3f",
       "status": "branch_submitted",
       "date": "2026-07-09",
       "description": "Add .editorconfig for consistent code style."
@@ -99,9 +130,9 @@
   "maintainer_preferences": "Prefers bug fixes and functional improvements. Closed refactoring PRs as not_planned. Does not want pure refactors without user-visible benefit.",
   "backlog_cursor": 24,
   "known_limitations": {
-    "pr_creation": "GitHub Actions cannot create PRs in this repo - needs Settings > Actions > General > Allow GitHub Actions to create and approve pull requests",
-    "workflow_files": "GitHub Actions cannot push .github/workflows/ files - needs 'workflows' permission.",
+    "pr_creation": "GitHub Actions cannot create PRs - needs Settings > Actions > General > Allow GitHub Actions to create and approve pull requests",
+    "workflow_files": "GitHub Actions cannot push .github/workflows/ files - needs workflows permission.",
     "build": "Project targets net10.0-windows; build requires -p:EnableWindowsTargeting=true on Linux CI"
   },
-  "notes": "2026-07-12 run (01:14 UTC): Tasks 3+4. Task 3: Added ShowOnAllMonitors persistence in AppSettings - showOnAllMonitors field was never saved, so the all-monitors layout was lost on restart. Task 4: Added global.json to pin .NET SDK to 10.0.x with latestMinor rollForward policy. Both branches submitted; PRs need 'Allow GitHub Actions to create PRs' permission. AppSettings now has 9 properties (was 8)."
+  "notes": "2026-07-12 run (13:10 UTC): Tasks 3+2. Task 3: Fixed CreateMonitorWindow to init gradient stops with current _colorTemperature instead of hardcoded neutral-white. Task 2: No new human issues without Repo Assist comment. Monthly summary updated."
 }
