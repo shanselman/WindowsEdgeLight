@@ -160,6 +160,7 @@ public partial class MainWindow : Window
         isLightOn = settings.IsLightOn;
         currentOpacity = Math.Max(MinOpacity, Math.Min(MaxOpacity, settings.Brightness));
         _colorTemperature = Math.Max(MinColorTemp, Math.Min(MaxColorTemp, settings.ColorTemperature));
+        showOnAllMonitors = settings.ShowOnAllMonitors;
 
         // Save back if values were clamped
         if (currentOpacity != settings.Brightness || _colorTemperature != settings.ColorTemperature)
@@ -332,6 +333,13 @@ Version {version}";
         if (!isLightOn)
         {
             EdgeLightBorder.Visibility = Visibility.Collapsed;
+        }
+
+        // Restore all-monitors mode if it was active when the app was last closed
+        if (showOnAllMonitors)
+        {
+            ShowOnAllMonitors();
+            controlWindow?.UpdateAllMonitorsButtonState();
         }
 
         InstallMouseHook();
@@ -1013,6 +1021,9 @@ Version {version}";
         {
             HideAdditionalMonitorWindows();
         }
+
+        settings.ShowOnAllMonitors = showOnAllMonitors;
+        settings.Save();
 
         controlWindow?.UpdateAllMonitorsButtonState();
     }
