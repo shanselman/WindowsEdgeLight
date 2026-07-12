@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-07-11T01:13:55Z",
-  "last_run_id": "29134202400",
+  "last_run": "2026-07-12T01:14:46Z",
+  "last_run_id": "29174939004",
   "comments_made": {
     "24": "2026-07-01T13:51:58Z",
     "pr27": "2026-06-09T01:27:00Z",
@@ -22,6 +22,18 @@
     "69": ["bug"]
   },
   "fix_attempts": {
+    "fix-persist-all-monitors-2026-07-12": {
+      "branch": "repo-assist/fix-persist-all-monitors-2026-07-12",
+      "status": "branch_submitted",
+      "date": "2026-07-12",
+      "description": "Persist showOnAllMonitors in AppSettings; restore on startup. 0 errors, 0 warnings."
+    },
+    "eng-global-json-2026-07-12": {
+      "branch": "repo-assist/eng-global-json-2026-07-12",
+      "status": "branch_submitted",
+      "date": "2026-07-12",
+      "description": "Add global.json to pin .NET SDK to 10.0.x with latestMinor rollForward. 0 errors, 0 warnings."
+    },
     "docs-update-readme-2026-07-11": {
       "branch": "repo-assist/docs-update-readme-2026-07-11",
       "status": "branch_submitted",
@@ -32,7 +44,7 @@
       "branch": "repo-assist/fix-monitor-index-2026-07-10",
       "status": "branch_submitted",
       "date": "2026-07-10",
-      "description": "Prevent IndexOutOfRangeException when monitors are unplugged. Fresh fix on current master (settings-persistence included). Build: 0 errors, 0 warnings."
+      "description": "Prevent IndexOutOfRangeException when monitors are unplugged. 0 errors, 0 warnings."
     },
     "persist-control-visibility-2026-07-10": {
       "branch": "repo-assist/persist-control-visibility-2026-07-10",
@@ -70,12 +82,6 @@
       "date": "2026-07-08",
       "description": "Add Start with Windows tray toggle."
     },
-    "fix-persist-settings-2026-07-08": {
-      "branch": "repo-assist/fix-persist-settings-2026-07-08-c9bd401abed59e5d",
-      "status": "superseded",
-      "date": "2026-07-08",
-      "description": "SUPERSEDED: Settings persistence was added by PR #68 (garrettcampbell3)."
-    },
     "perf-mouse-coalesce-2026-07-06": {
       "branch": "repo-assist/perf-mouse-coalesce-2026-07-06-fcb2397c56cb65e8",
       "status": "branch_submitted",
@@ -97,5 +103,5 @@
     "workflow_files": "GitHub Actions cannot push .github/workflows/ files - needs 'workflows' permission.",
     "build": "Project targets net10.0-windows; build requires -p:EnableWindowsTargeting=true on Linux CI"
   },
-  "notes": "2026-07-11 run (01:13 UTC): Tasks 2+10. Task 2: no new human activity on any issues (#24 has 2 RA comments, no response). Task 10: Updated README.md to reflect current app state - removed stale 'primary monitor only' language, added Settings window/persistence features, corrected Multi-Monitor section, expanded project structure. PR #68 (garrettcampbell3) added settings persistence - fix-persist-settings branches are now superseded."
+  "notes": "2026-07-12 run (01:14 UTC): Tasks 3+4. Task 3: Added ShowOnAllMonitors persistence in AppSettings - showOnAllMonitors field was never saved, so the all-monitors layout was lost on restart. Task 4: Added global.json to pin .NET SDK to 10.0.x with latestMinor rollForward policy. Both branches submitted; PRs need 'Allow GitHub Actions to create PRs' permission. AppSettings now has 9 properties (was 8)."
 }
