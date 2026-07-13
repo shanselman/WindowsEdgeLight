@@ -875,6 +875,12 @@ Version {version}";
                         stop.Color = midColor;
                     }
                 }
+
+                // Keep the glow in sync with the current temperature
+                if (path.Effect is System.Windows.Media.Effects.DropShadowEffect shadow)
+                {
+                    shadow.Color = midColor;
+                }
             }
         }
     }
@@ -923,6 +929,12 @@ Version {version}";
                 {
                     stop.Color = midColor;
                 }
+            }
+
+            // Keep the glow (drop shadow) in sync with the current temperature
+            if (EdgeLightBorder.Effect is System.Windows.Media.Effects.DropShadowEffect shadow)
+            {
+                shadow.Color = midColor;
             }
         }
         
@@ -1082,26 +1094,35 @@ Version {version}";
             Visibility = isLightOn ? Visibility.Visible : Visibility.Collapsed
         };
 
-        // Create gradient brush
+        // Create gradient brush — initialise with the current colour temperature
+        var monCool = System.Windows.Media.Color.FromRgb(220, 235, 255);
+        var monWarm = System.Windows.Media.Color.FromRgb(255, 220, 180);
+        byte MonLerpByte(byte a, byte b, double t) => (byte)(a + (b - a) * t);
+        var monMidColor = System.Windows.Media.Color.FromArgb(
+            255,
+            MonLerpByte(monCool.R, monWarm.R, _colorTemperature),
+            MonLerpByte(monCool.G, monWarm.G, _colorTemperature),
+            MonLerpByte(monCool.B, monWarm.B, _colorTemperature));
+
         var gradient = new LinearGradientBrush
         {
             StartPoint = new System.Windows.Point(0, 0),
             EndPoint = new System.Windows.Point(1, 1)
         };
         gradient.GradientStops.Add(new GradientStop(System.Windows.Media.Color.FromRgb(255, 255, 255), 0.0));
-        gradient.GradientStops.Add(new GradientStop(System.Windows.Media.Color.FromRgb(240, 240, 240), 0.3));
-        gradient.GradientStops.Add(new GradientStop(System.Windows.Media.Color.FromRgb(255, 255, 255), 0.5));
-        gradient.GradientStops.Add(new GradientStop(System.Windows.Media.Color.FromRgb(240, 240, 240), 0.7));
+        gradient.GradientStops.Add(new GradientStop(monMidColor, 0.3));
+        gradient.GradientStops.Add(new GradientStop(monMidColor, 0.5));
+        gradient.GradientStops.Add(new GradientStop(monMidColor, 0.7));
         gradient.GradientStops.Add(new GradientStop(System.Windows.Media.Color.FromRgb(255, 255, 255), 1.0));
         path.Fill = gradient;
 
-        // Add drop shadow effect
+        // Add drop shadow effect — colour matches current temperature
         path.Effect = new System.Windows.Media.Effects.DropShadowEffect
         {
             BlurRadius = 76,
             Opacity = 1,
             ShadowDepth = 0,
-            Color = System.Windows.Media.Color.FromRgb(255, 255, 255)
+            Color = monMidColor
         };
 
         // Create hover ring (Ellipse)
