@@ -57,26 +57,42 @@ public class AppSettings
     public bool ShowMonitorControlButtons { get; set; } = true;
 
     /// <summary>
+    /// Clamp numeric settings to their valid ranges, returning this instance.
+    /// Called automatically after loading so corrupted/hand-edited files cannot
+    /// put the application into an invalid state.
+    /// </summary>
+    public AppSettings Validate()
+    {
+        Brightness = Math.Max(0.2, Math.Min(1.0, Brightness));
+        ColorTemperature = Math.Max(0.0, Math.Min(1.0, ColorTemperature));
+        return this;
+    }
+
+    /// <summary>
     /// Load settings from disk
     /// </summary>
-    public static AppSettings Load()
+    public static AppSettings Load() => LoadFrom(SettingsFilePath);
+
+    /// <summary>
+    /// Load settings from the specified file path (overload used by tests).
+    /// </summary>
+    internal static AppSettings LoadFrom(string path)
     {
         try
         {
-            if (File.Exists(SettingsFilePath))
+            if (File.Exists(path))
             {
-                var json = File.ReadAllText(SettingsFilePath);
+                var json = File.ReadAllText(path);
                 var options = new JsonSerializerOptions
                 {
                     AllowTrailingCommas = true,
                     ReadCommentHandling = JsonCommentHandling.Skip
                 };
                 var settings = JsonSerializer.Deserialize<AppSettings>(json, options);
-                
-                // Validate deserialized settings
+
                 if (settings != null)
                 {
-                    return settings;
+                    return settings.Validate();
                 }
             }
         }
@@ -86,9 +102,9 @@ public class AppSettings
             // Delete corrupted settings file
             try
             {
-                if (File.Exists(SettingsFilePath))
+                if (File.Exists(path))
                 {
-                    File.Delete(SettingsFilePath);
+                    File.Delete(path);
                 }
             }
             catch { /* Ignore deletion errors */ }
@@ -104,21 +120,26 @@ public class AppSettings
     /// <summary>
     /// Save settings to disk
     /// </summary>
-    public void Save()
+    public void Save() => SaveTo(SettingsFilePath);
+
+    /// <summary>
+    /// Save settings to the specified file path (overload used by tests).
+    /// </summary>
+    internal void SaveTo(string path)
     {
         try
         {
-            var directory = Path.GetDirectoryName(SettingsFilePath);
+            var directory = Path.GetDirectoryName(path);
             if (directory != null && !Directory.Exists(directory))
             {
                 Directory.CreateDirectory(directory);
             }
 
-            var json = JsonSerializer.Serialize(this, new JsonSerializerOptions 
-            { 
-                WriteIndented = true 
+            var json = JsonSerializer.Serialize(this, new JsonSerializerOptions
+            {
+                WriteIndented = true
             });
-            File.WriteAllText(SettingsFilePath, json);
+            File.WriteAllText(path, json);
         }
         catch (Exception ex)
         {
