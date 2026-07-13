@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-07-13T01:15:33Z",
-  "last_run_id": "29217008406",
+  "last_run": "2026-07-13T13:33:00Z",
+  "last_run_id": "29253990568",
   "comments_made": {
     "24": "2026-07-01T13:51:58Z",
     "pr27": "2026-06-09T01:27:00Z",
@@ -8,18 +8,43 @@
     "58": "2026-06-19T13:55:00Z"
   },
   "labels_applied": {
-    "24": ["enhancement", "needs investigation"],
-    "33": ["enhancement"],
-    "27": ["help wanted"],
-    "36": ["enhancement"],
-    "56": ["enhancement"],
-    "62": ["enhancement"],
-    "63": ["refactor"],
-    "64": ["enhancement"],
-    "65": ["bug"],
-    "66": ["refactor"],
-    "67": ["bug"],
-    "69": ["bug"]
+    "24": [
+      "enhancement",
+      "needs investigation"
+    ],
+    "33": [
+      "enhancement"
+    ],
+    "27": [
+      "help wanted"
+    ],
+    "36": [
+      "enhancement"
+    ],
+    "56": [
+      "enhancement"
+    ],
+    "62": [
+      "enhancement"
+    ],
+    "63": [
+      "refactor"
+    ],
+    "64": [
+      "enhancement"
+    ],
+    "65": [
+      "bug"
+    ],
+    "66": [
+      "refactor"
+    ],
+    "67": [
+      "bug"
+    ],
+    "69": [
+      "bug"
+    ]
   },
   "fix_attempts": {
     "test-comprehensive-suite-2026-07-13": {
@@ -99,6 +124,12 @@
       "status": "branch_submitted",
       "date": "2026-07-05",
       "description": "Bump Updatum 1.2.1 to 1.4.0."
+    },
+    "fix-shadow-color-temp-2026-07-13": {
+      "branch": "repo-assist/fix-shadow-color-temp-2026-07-13",
+      "status": "branch_submitted",
+      "date": "2026-07-13",
+      "description": "Sync DropShadowEffect glow colour with colour temperature (main window + additional monitors). 0 errors, 0 warnings."
     }
   },
   "monthly_summary_issue": 123,
@@ -109,5 +140,5 @@
     "workflow_files": "GitHub Actions cannot push .github/workflows/ files - needs workflows permission.",
     "build": "Project targets net10.0-windows; build requires -p:EnableWindowsTargeting=true on Linux CI. Test project targets net8.0 to avoid this."
   },
-  "notes": "2026-07-13 run (01:15 UTC): Tasks 2+9. Task 2: no new human activity on #24, no other user issues. Task 9: Created comprehensive test branch with 64 xUnit tests covering all 8 AppSettings properties + Validate() clamping. Monthly summary updated. Test project includes AppSettings.cs directly via Compile Include to avoid net10.0-windows build requirement."
+  "notes": "2026-07-13 run (13:33 UTC): Tasks 2+3. Task 2: #24 has no new human activity, no other user issues to comment on. Task 3: Fixed drop shadow colour not updating with temperature - new branch fix-shadow-color-temp-2026-07-13."
 }
