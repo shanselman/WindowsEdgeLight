@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-07-14T01:12:00Z",
-  "last_run_id": "29297907775",
+  "last_run": "2026-07-14T13:11:54Z",
+  "last_run_id": "29335371725",
   "comments_made": {
     "24": "2026-07-01T13:51:58Z",
     "pr27": "2026-06-09T01:27:00Z",
@@ -22,6 +22,18 @@
     "69": ["bug"]
   },
   "fix_attempts": {
+    "fix-settings-stale-slider-2026-07-14": {
+      "branch": "repo-assist/fix-settings-stale-slider-2026-07-14",
+      "status": "branch_submitted",
+      "date": "2026-07-14",
+      "description": "Fix SettingsWindow_Closing using stale slider value instead of actual mainWindow brightness/temp. 0 errors, 0 warnings."
+    },
+    "perf-geometry-cache-2026-07-14": {
+      "branch": "repo-assist/perf-geometry-cache-2026-07-14",
+      "status": "branch_submitted",
+      "date": "2026-07-14",
+      "description": "Cache EllipseGeometry+CombinedGeometry per context (eliminates ~250 allocs/sec on mouse move) + static JsonSerializerOptions in AppSettings.Save(). 0 errors, 0 warnings."
+    },
     "improve-dedup-2026-07-14": {
       "branch": "repo-assist/improve-dedup-2026-07-14",
       "status": "branch_submitted",
@@ -70,47 +82,11 @@
       "date": "2026-07-10",
       "description": "Prevent IndexOutOfRangeException when monitors are unplugged. 0 errors, 0 warnings."
     },
-    "persist-control-visibility-2026-07-10": {
-      "branch": "repo-assist/persist-control-visibility-2026-07-10",
-      "status": "branch_submitted",
-      "date": "2026-07-10",
-      "description": "Persist isControlWindowVisible in AppSettings. 0 errors, 0 warnings."
-    },
-    "eng-dependabot-2026-07-10": {
-      "branch": "repo-assist/eng-dependabot-2026-07-10",
-      "status": "branch_submitted",
-      "date": "2026-07-10",
-      "description": "Add .github/dependabot.yml for weekly NuGet + Actions updates."
-    },
-    "eng-editorconfig-2026-07-09": {
-      "branch": "repo-assist/eng-editorconfig-2026-07-09-4befd29b03a50d3f",
-      "status": "branch_submitted",
-      "date": "2026-07-09",
-      "description": "Add .editorconfig for consistent code style."
-    },
-    "improve-color-temp-hotkeys-2026-07-08": {
-      "branch": "repo-assist/improve-color-temp-hotkeys-2026-07-08-1200ea5f0106ea64",
-      "status": "branch_submitted",
-      "date": "2026-07-08",
-      "description": "Add Ctrl+Shift+Left/Right hotkeys for colour temperature."
-    },
-    "feature-start-with-windows-2026-07-08": {
-      "branch": "repo-assist/feature-start-with-windows-2026-07-08-77845b73e75467fe",
-      "status": "branch_submitted",
-      "date": "2026-07-08",
-      "description": "Add Start with Windows tray toggle."
-    },
     "perf-mouse-coalesce-2026-07-06": {
       "branch": "repo-assist/perf-mouse-coalesce-2026-07-06-fcb2397c56cb65e8",
       "status": "branch_submitted",
       "date": "2026-07-06",
       "description": "Coalesce mouse hook dispatches with Interlocked.CompareExchange."
-    },
-    "eng-updatum-1.4.0-2026-07-05": {
-      "branch": "repo-assist/eng-updatum-1.4.0-2026-07-05-5b7aca266df3d5e6",
-      "status": "branch_submitted",
-      "date": "2026-07-05",
-      "description": "Bump Updatum 1.2.1 to 1.4.0."
     }
   },
   "monthly_summary_issue": 123,
@@ -121,5 +97,5 @@
     "workflow_files": "GitHub Actions cannot push .github/workflows/ files - needs workflows permission.",
     "build": "Project targets net10.0-windows; build requires -p:EnableWindowsTargeting=true on Linux CI. Test project targets net8.0 to avoid this."
   },
-  "notes": "2026-07-14 run (01:12 UTC): Tasks 2+5. Task 2: #24 still only has Repo Assist comments, no new human activity. No new user issues. Task 5: Extracted ComputeTemperatureColor/ApplyTemperatureColorToBrush helpers + promoted FrameThickness/FrameOuterRadius/FrameInnerRadius constants - branch repo-assist/improve-dedup-2026-07-14."
+  "notes": "2026-07-14 run (13:11 UTC): Tasks 8+3. Task 8: cached EllipseGeometry+CombinedGeometry in ApplyHolePunchEffect (eliminates ~250 GC allocs/sec on mouse move), cached static JsonSerializerOptions in AppSettings.Save(). Task 3: fixed SettingsWindow_Closing using stale slider value overwriting hotkey/toolbar changes - now uses mainWindow.GetBrightness()/GetColorTemperature() as source of truth."
 }
