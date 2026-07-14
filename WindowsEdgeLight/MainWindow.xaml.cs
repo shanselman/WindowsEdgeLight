@@ -26,6 +26,11 @@ public partial class MainWindow : Window
     private const double MinColorTemp = 0.0;
     private const double MaxColorTemp = 1.0;
 
+    // Frame geometry constants (shared by CreateFrameGeometry, CreateMonitorWindow, UpdateMonitorGeometry)
+    private const double FrameThickness = 80;
+    private const double FrameOuterRadius = 100;
+    private const double FrameInnerRadius = 60;
+
     // DPI Scale
     private double _dpiScaleX = 1.0;
     private double _dpiScaleY = 1.0;
@@ -570,9 +575,9 @@ Version {version}";
         double width = this.ActualWidth - 40;  // 20px margin on each side
         double height = this.ActualHeight - 40;
         
-        const double frameThickness = 80;
-        const double outerRadius = 100;  // Extra rounded like macOS
-        const double innerRadius = 60;   // Keep proportional
+        const double frameThickness = FrameThickness;
+        const double outerRadius = FrameOuterRadius;  // Extra rounded like macOS
+        const double innerRadius = FrameInnerRadius;   // Keep proportional
         
         // Outer rounded rectangle
         var outerRect = new RectangleGeometry(new Rect(0, 0, width, height), outerRadius, outerRadius);
@@ -856,26 +861,7 @@ Version {version}";
             
             // Update color temperature
             if (path.Fill is LinearGradientBrush brush && brush.GradientStops.Count >= 3)
-            {
-                var cool = System.Windows.Media.Color.FromRgb(220, 235, 255);
-                var warm = System.Windows.Media.Color.FromRgb(255, 220, 180);
-                
-                System.Windows.Media.Color Lerp(System.Windows.Media.Color a, System.Windows.Media.Color b, double t)
-                {
-                    byte LerpByte(byte x, byte y, double tt) => (byte)(x + (y - x) * tt);
-                    return System.Windows.Media.Color.FromArgb(255, LerpByte(a.R, b.R, t), LerpByte(a.G, b.G, t), LerpByte(a.B, b.B, t));
-                }
-                
-                var midColor = Lerp(cool, warm, _colorTemperature);
-                
-                foreach (var stop in brush.GradientStops)
-                {
-                    if (stop.Offset is > 0.2 and < 0.8)
-                    {
-                        stop.Color = midColor;
-                    }
-                }
-            }
+                ApplyTemperatureColorToBrush(brush, _colorTemperature);
         }
     }
 
@@ -889,42 +875,37 @@ Version {version}";
         SetColorTemperature(_colorTemperature - ColorTempStep);
     }
 
+    /// <summary>Returns the gradient colour for the given colour temperature (0=cool, 1=warm).</summary>
+    private static System.Windows.Media.Color ComputeTemperatureColor(double temperature)
+    {
+        var cool = System.Windows.Media.Color.FromRgb(220, 235, 255);
+        var warm = System.Windows.Media.Color.FromRgb(255, 220, 180);
+        byte LerpByte(byte x, byte y, double t) => (byte)(x + (y - x) * t);
+        return System.Windows.Media.Color.FromArgb(255,
+            LerpByte(cool.R, warm.R, temperature),
+            LerpByte(cool.G, warm.G, temperature),
+            LerpByte(cool.B, warm.B, temperature));
+    }
+
+    /// <summary>Updates the inner gradient stops of <paramref name="brush"/> to match the given colour temperature.</summary>
+    private static void ApplyTemperatureColorToBrush(LinearGradientBrush brush, double temperature)
+    {
+        var midColor = ComputeTemperatureColor(temperature);
+        foreach (var stop in brush.GradientStops)
+        {
+            if (stop.Offset is > 0.2 and < 0.8)
+                stop.Color = midColor;
+        }
+    }
+
     public void SetColorTemperature(double value, bool save = true)
     {
         _colorTemperature = Math.Max(MinColorTemp, Math.Min(MaxColorTemp, value));
 
         // Map 0-1 slider to a simple cool-to-warm gradient.
-        // We'll bias the inner gradient stops from blueish-white (cool) to amber (warm).
         // NOTE: This assumes the brush defined in XAML is still a LinearGradientBrush.
         if (EdgeLightBorder.Fill is LinearGradientBrush brush && brush.GradientStops.Count >= 3)
-        {
-            // Cool: RGB ~ (220, 235, 255), Warm: RGB ~ (255, 220, 180)
-            System.Windows.Media.Color Lerp(System.Windows.Media.Color a, System.Windows.Media.Color b, double t)
-            {
-                byte LerpByte(byte x, byte y, double tt) => (byte)(x + (y - x) * tt);
-
-                return System.Windows.Media.Color.FromArgb(
-                    255,
-                    LerpByte(a.R, b.R, t),
-                    LerpByte(a.G, b.G, t),
-                    LerpByte(a.B, b.B, t));
-            }
-
-            var cool = System.Windows.Media.Color.FromRgb(220, 235, 255);
-            var warm = System.Windows.Media.Color.FromRgb(255, 220, 180);
-
-            var midColor = Lerp(cool, warm, _colorTemperature);
-
-            // Update a couple of inner stops to shift perceived temperature
-            // Keep outer rim relatively neutral for consistent edge.
-            foreach (var stop in brush.GradientStops)
-            {
-                if (stop.Offset is > 0.2 and < 0.8)
-                {
-                    stop.Color = midColor;
-                }
-            }
-        }
+            ApplyTemperatureColorToBrush(brush, _colorTemperature);
         
         // Update all additional monitor windows
         UpdateAdditionalMonitorWindows();
@@ -1121,9 +1102,9 @@ Version {version}";
         // Create frame geometry
         double width = window.Width - 40;
         double height = window.Height - 40;
-        const double frameThickness = 80;
-        const double outerRadius = 100;
-        const double innerRadius = 60;
+        const double frameThickness = FrameThickness;
+        const double outerRadius = FrameOuterRadius;
+        const double innerRadius = FrameInnerRadius;
         
         var outerRect = new RectangleGeometry(new Rect(0, 0, width, height), outerRadius, outerRadius);
         var innerRect = new RectangleGeometry(
@@ -1223,9 +1204,9 @@ Version {version}";
     {
         double width = ctx.Window.Width - 40;
         double height = ctx.Window.Height - 40;
-        const double frameThickness = 80;
-        const double outerRadius = 100;
-        const double innerRadius = 60;
+        const double frameThickness = FrameThickness;
+        const double outerRadius = FrameOuterRadius;
+        const double innerRadius = FrameInnerRadius;
         
         var outerRect = new RectangleGeometry(new Rect(0, 0, width, height), outerRadius, outerRadius);
         var innerRect = new RectangleGeometry(
