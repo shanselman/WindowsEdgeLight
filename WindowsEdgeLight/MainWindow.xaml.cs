@@ -55,6 +55,9 @@ public partial class MainWindow : Window
         public double PathOffsetY { get; set; }
         public double DpiScaleX { get; set; } = 1.0;
         public double DpiScaleY { get; set; } = 1.0;
+        // Cached geometry objects reused across mouse-move events to reduce GC pressure
+        public EllipseGeometry? HoleGeometry { get; set; }
+        public CombinedGeometry? PunchedGeometry { get; set; }
     }
 
     // Monitor management
@@ -141,6 +144,9 @@ public partial class MainWindow : Window
     private Geometry? baseFrameGeometry; // original frame geometry (outer minus inner)
     private double pathOffsetX; // offset of geometry within window
     private double pathOffsetY;
+    // Cached geometry objects reused across mouse-move events to reduce GC pressure
+    private EllipseGeometry? _mainHoleGeometry;
+    private CombinedGeometry? _mainPunchedGeometry;
 
     private const uint MOD_CONTROL = 0x0002;
     private const uint MOD_SHIFT = 0x0004;
@@ -455,7 +461,9 @@ Version {version}";
                     EdgeLightBorder,
                     baseFrameGeometry,
                     pathOffsetX, pathOffsetY,
-                    (ring, x, y) => { Canvas.SetLeft(ring, x); Canvas.SetTop(ring, y); }
+                    (ring, x, y) => { Canvas.SetLeft(ring, x); Canvas.SetTop(ring, y); },
+                    ref _mainHoleGeometry,
+                    ref _mainPunchedGeometry
                 );
             }
         }
@@ -465,6 +473,10 @@ Version {version}";
         {
             try
             {
+                // Local variables are used because ref cannot target auto-properties directly;
+                // values are written back to the context after the call to persist the cache.
+                var holeGeo = ctx.HoleGeometry;
+                var punchedGeo = ctx.PunchedGeometry;
                 ApplyHolePunchEffect(
                     screenX, screenY,
                     ctx.Screen,
@@ -474,8 +486,12 @@ Version {version}";
                     ctx.BorderPath,
                     ctx.BaseGeometry,
                     ctx.PathOffsetX, ctx.PathOffsetY,
-                    (ring, x, y) => { ring.Margin = new Thickness(x, y, 0, 0); }
+                    (ring, x, y) => { ring.Margin = new Thickness(x, y, 0, 0); },
+                    ref holeGeo,
+                    ref punchedGeo
                 );
+                ctx.HoleGeometry = holeGeo;
+                ctx.PunchedGeometry = punchedGeo;
             }
             catch (InvalidOperationException)
             {
@@ -493,7 +509,9 @@ Version {version}";
         System.Windows.Shapes.Path borderPath,
         Geometry baseGeometry,
         double pathOffsetX, double pathOffsetY,
-        Action<Ellipse, double, double> positionRing)
+        Action<Ellipse, double, double> positionRing,
+        ref EllipseGeometry? holeGeometry,
+        ref CombinedGeometry? punchedGeometry)
     {
         // Manual coordinate calculation to avoid PointFromScreen issues across monitors/DPIs
         // We positioned the window using dpiScaleX/Y relative to the screen WorkingArea.
@@ -527,11 +545,19 @@ Version {version}";
                 hoverRing.Visibility = Visibility.Visible;
             }
 
-            // Punch a transparent hole under the ring by excluding a circle geometry from the frame
-            // Convert window coordinates to geometry local coordinates by subtracting stored offsets
+            // Punch a transparent hole under the ring by excluding a circle geometry from the frame.
+            // Reuse cached geometry objects to avoid allocating on every mouse-move event.
             var localCenter = new System.Windows.Point(windowPt.X - pathOffsetX, windowPt.Y - pathOffsetY);
-            var hole = new EllipseGeometry(localCenter, holeRadius, holeRadius);
-            borderPath.Data = new CombinedGeometry(GeometryCombineMode.Exclude, baseGeometry, hole);
+            if (holeGeometry == null)
+            {
+                holeGeometry = new EllipseGeometry(localCenter, holeRadius, holeRadius);
+                punchedGeometry = new CombinedGeometry(GeometryCombineMode.Exclude, baseGeometry, holeGeometry);
+            }
+            else
+            {
+                holeGeometry.Center = localCenter;
+            }
+            borderPath.Data = punchedGeometry;
         }
         else
         {
@@ -595,6 +621,9 @@ Version {version}";
         double holeRadius = ringDiameter / 2.0;
         frameOuterRect = new Rect(pathOffsetX - holeRadius, pathOffsetY - holeRadius, width + holeRadius * 2, height + holeRadius * 2);
         frameInnerRect = new Rect(pathOffsetX + frameThickness + holeRadius, pathOffsetY + frameThickness + holeRadius, width - (frameThickness * 2) - holeRadius * 2, height - (frameThickness * 2) - holeRadius * 2);
+        // Invalidate cached hole-punch geometries; they'll be recreated on next mouse move
+        _mainHoleGeometry = null;
+        _mainPunchedGeometry = null;
     }
 
     private IntPtr HwndHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)

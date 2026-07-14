@@ -101,6 +101,8 @@ public class AppSettings
         return new AppSettings();
     }
 
+    private static readonly JsonSerializerOptions _writeOptions = new JsonSerializerOptions { WriteIndented = true };
+
     /// <summary>
     /// Save settings to disk
     /// </summary>
@@ -114,10 +116,7 @@ public class AppSettings
                 Directory.CreateDirectory(directory);
             }
 
-            var json = JsonSerializer.Serialize(this, new JsonSerializerOptions 
-            { 
-                WriteIndented = true 
-            });
+            var json = JsonSerializer.Serialize(this, _writeOptions);
             File.WriteAllText(SettingsFilePath, json);
         }
         catch (Exception ex)
