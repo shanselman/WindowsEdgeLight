@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-07-14T13:11:54Z",
-  "last_run_id": "29335371725",
+  "last_run": "2026-07-15T01:12:20Z",
+  "last_run_id": "29380988881",
   "comments_made": {
     "24": "2026-07-01T13:51:58Z",
     "pr27": "2026-06-09T01:27:00Z",
@@ -22,6 +22,12 @@
     "69": ["bug"]
   },
   "fix_attempts": {
+    "fix-settings-monitor-workarea-2026-07-15": {
+      "branch": "repo-assist/fix-settings-monitor-workarea-2026-07-15",
+      "status": "branch_submitted",
+      "date": "2026-07-15",
+      "description": "SettingsWindow used SystemParameters.WorkArea (primary monitor only). Now uses Screen.FromHandle+VisualTreeHelper.GetDpi to get correct monitor bounds. 0 errors, 0 warnings."
+    },
     "fix-settings-stale-slider-2026-07-14": {
       "branch": "repo-assist/fix-settings-stale-slider-2026-07-14",
       "status": "branch_submitted",
@@ -32,7 +38,7 @@
       "branch": "repo-assist/perf-geometry-cache-2026-07-14",
       "status": "branch_submitted",
       "date": "2026-07-14",
-      "description": "Cache EllipseGeometry+CombinedGeometry per context (eliminates ~250 allocs/sec on mouse move) + static JsonSerializerOptions in AppSettings.Save(). 0 errors, 0 warnings."
+      "description": "Cache EllipseGeometry+CombinedGeometry per context (~250 allocs/sec on mouse move) + static JsonSerializerOptions in AppSettings.Save(). 0 errors, 0 warnings."
     },
     "improve-dedup-2026-07-14": {
       "branch": "repo-assist/improve-dedup-2026-07-14",
@@ -97,5 +103,5 @@
     "workflow_files": "GitHub Actions cannot push .github/workflows/ files - needs workflows permission.",
     "build": "Project targets net10.0-windows; build requires -p:EnableWindowsTargeting=true on Linux CI. Test project targets net8.0 to avoid this."
   },
-  "notes": "2026-07-14 run (13:11 UTC): Tasks 8+3. Task 8: cached EllipseGeometry+CombinedGeometry in ApplyHolePunchEffect (eliminates ~250 GC allocs/sec on mouse move), cached static JsonSerializerOptions in AppSettings.Save(). Task 3: fixed SettingsWindow_Closing using stale slider value overwriting hotkey/toolbar changes - now uses mainWindow.GetBrightness()/GetColorTemperature() as source of truth."
+  "notes": "2026-07-15 run (01:12 UTC): Tasks 2+3. Task 2: #24 has no new human activity (2 Repo Assist comments already). Task 3: fixed SettingsWindow_Loaded using SystemParameters.WorkArea (always primary monitor) - now uses Screen.FromHandle+VisualTreeHelper.GetDpi to get correct monitor work area when app is on secondary monitor."
 }
