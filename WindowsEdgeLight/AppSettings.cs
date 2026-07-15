@@ -56,24 +56,34 @@ public class AppSettings
     /// </summary>
     public bool ShowMonitorControlButtons { get; set; } = true;
 
+    private static readonly JsonSerializerOptions _readOptions = new JsonSerializerOptions
+    {
+        AllowTrailingCommas = true,
+        ReadCommentHandling = JsonCommentHandling.Skip
+    };
+
+    private static readonly JsonSerializerOptions _writeOptions = new JsonSerializerOptions
+    {
+        WriteIndented = true
+    };
+
     /// <summary>
     /// Load settings from disk
     /// </summary>
-    public static AppSettings Load()
+    public static AppSettings Load() => LoadFrom(SettingsFilePath);
+
+    /// <summary>
+    /// Load settings from the specified path (exposed for testing).
+    /// Returns a new default AppSettings instance if the file is missing or invalid.
+    /// </summary>
+    internal static AppSettings LoadFrom(string path)
     {
         try
         {
-            if (File.Exists(SettingsFilePath))
+            if (File.Exists(path))
             {
-                var json = File.ReadAllText(SettingsFilePath);
-                var options = new JsonSerializerOptions
-                {
-                    AllowTrailingCommas = true,
-                    ReadCommentHandling = JsonCommentHandling.Skip
-                };
-                var settings = JsonSerializer.Deserialize<AppSettings>(json, options);
-                
-                // Validate deserialized settings
+                var json = File.ReadAllText(path);
+                var settings = JsonSerializer.Deserialize<AppSettings>(json, _readOptions);
                 if (settings != null)
                 {
                     return settings;
@@ -83,13 +93,10 @@ public class AppSettings
         catch (JsonException ex)
         {
             System.Diagnostics.Debug.WriteLine($"Failed to parse settings file: {ex.Message}");
-            // Delete corrupted settings file
             try
             {
-                if (File.Exists(SettingsFilePath))
-                {
-                    File.Delete(SettingsFilePath);
-                }
+                if (File.Exists(path))
+                    File.Delete(path);
             }
             catch { /* Ignore deletion errors */ }
         }
@@ -104,21 +111,23 @@ public class AppSettings
     /// <summary>
     /// Save settings to disk
     /// </summary>
-    public void Save()
+    public void Save() => SaveTo(SettingsFilePath);
+
+    /// <summary>
+    /// Save settings to the specified path (exposed for testing).
+    /// </summary>
+    internal void SaveTo(string path)
     {
         try
         {
-            var directory = Path.GetDirectoryName(SettingsFilePath);
+            var directory = Path.GetDirectoryName(path);
             if (directory != null && !Directory.Exists(directory))
             {
                 Directory.CreateDirectory(directory);
             }
 
-            var json = JsonSerializer.Serialize(this, new JsonSerializerOptions 
-            { 
-                WriteIndented = true 
-            });
-            File.WriteAllText(SettingsFilePath, json);
+            var json = JsonSerializer.Serialize(this, _writeOptions);
+            File.WriteAllText(path, json);
         }
         catch (Exception ex)
         {
