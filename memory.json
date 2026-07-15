@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-07-15T01:12:20Z",
-  "last_run_id": "29380988881",
+  "last_run": "2026-07-15T13:12:00Z",
+  "last_run_id": "29418094925",
   "comments_made": {
     "24": "2026-07-01T13:51:58Z",
     "pr27": "2026-06-09T01:27:00Z",
@@ -22,6 +22,12 @@
     "69": ["bug"]
   },
   "fix_attempts": {
+    "test-appsettings-v2-2026-07-15": {
+      "branch": "repo-assist/test-appsettings-v2-2026-07-15",
+      "status": "branch_submitted",
+      "date": "2026-07-15",
+      "description": "37 xUnit tests for AppSettings (default values, round-trip, corrupted JSON, partial JSON, trailing comma/comments, SaveTo directory creation). LoadFrom/SaveTo internal overloads added. All 37 pass."
+    },
     "fix-settings-monitor-workarea-2026-07-15": {
       "branch": "repo-assist/fix-settings-monitor-workarea-2026-07-15",
       "status": "branch_submitted",
@@ -46,12 +52,6 @@
       "date": "2026-07-14",
       "description": "Extract ComputeTemperatureColor/ApplyTemperatureColorToBrush helpers; promote FrameThickness/FrameOuterRadius/FrameInnerRadius to class constants. 0 errors, 0 warnings."
     },
-    "test-comprehensive-suite-2026-07-13": {
-      "branch": "repo-assist/test-comprehensive-suite-2026-07-13-e7d2abf06f8dcef3",
-      "status": "branch_submitted",
-      "date": "2026-07-13",
-      "description": "64 xUnit tests for all 8 AppSettings properties + Validate() clamping fix. All tests pass."
-    },
     "fix-shadow-color-temp-2026-07-13": {
       "branch": "repo-assist/fix-shadow-color-temp-2026-07-13",
       "status": "branch_submitted",
@@ -61,38 +61,27 @@
     "fix-initial-color-temp-additional-monitors-2026-07-12": {
       "branch": "repo-assist/fix-initial-color-temp-additional-monitors-2026-07-12-80400a09ec2f1674",
       "status": "branch_submitted",
-      "date": "2026-07-12",
-      "description": "Fix CreateMonitorWindow gradient init to use _colorTemperature instead of hardcoded white. 0 errors, 0 warnings."
+      "date": "2026-07-12"
     },
     "fix-persist-all-monitors-2026-07-12": {
       "branch": "repo-assist/fix-persist-all-monitors-2026-07-12-6d8c3760a1500609",
       "status": "branch_submitted",
-      "date": "2026-07-12",
-      "description": "Persist showOnAllMonitors in AppSettings; restore on startup. 0 errors, 0 warnings."
+      "date": "2026-07-12"
     },
     "eng-global-json-2026-07-12": {
       "branch": "repo-assist/eng-global-json-2026-07-12-65a791f4b3817c37",
       "status": "branch_submitted",
-      "date": "2026-07-12",
-      "description": "Add global.json to pin .NET SDK to 10.0.x with latestMinor rollForward. 0 errors, 0 warnings."
-    },
-    "docs-update-readme-2026-07-11": {
-      "branch": "repo-assist/docs-update-readme-2026-07-11-bcd9af10b4bfcf41",
-      "status": "branch_submitted",
-      "date": "2026-07-11",
-      "description": "Update README: remove stale primary monitor only claim, add Settings/persistence features."
+      "date": "2026-07-12"
     },
     "fix-monitor-index-2026-07-10": {
       "branch": "repo-assist/fix-monitor-index-2026-07-10-ffe2d04b757bbc88",
       "status": "branch_submitted",
-      "date": "2026-07-10",
-      "description": "Prevent IndexOutOfRangeException when monitors are unplugged. 0 errors, 0 warnings."
+      "date": "2026-07-10"
     },
     "perf-mouse-coalesce-2026-07-06": {
       "branch": "repo-assist/perf-mouse-coalesce-2026-07-06-fcb2397c56cb65e8",
       "status": "branch_submitted",
-      "date": "2026-07-06",
-      "description": "Coalesce mouse hook dispatches with Interlocked.CompareExchange."
+      "date": "2026-07-06"
     }
   },
   "monthly_summary_issue": 123,
@@ -103,5 +92,5 @@
     "workflow_files": "GitHub Actions cannot push .github/workflows/ files - needs workflows permission.",
     "build": "Project targets net10.0-windows; build requires -p:EnableWindowsTargeting=true on Linux CI. Test project targets net8.0 to avoid this."
   },
-  "notes": "2026-07-15 run (01:12 UTC): Tasks 2+3. Task 2: #24 has no new human activity (2 Repo Assist comments already). Task 3: fixed SettingsWindow_Loaded using SystemParameters.WorkArea (always primary monitor) - now uses Screen.FromHandle+VisualTreeHelper.GetDpi to get correct monitor work area when app is on secondary monitor."
+  "notes": "2026-07-15 13:12 run: Tasks 2+9. Task 2: no new human issues without RA comment (only #24 which has 2 detailed comments already). Task 9: created test project WindowsEdgeLight.Tests with 37 xUnit tests; added internal LoadFrom/SaveTo overloads to AppSettings.cs; all 37 pass."
 }
