@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-07-16T01:13:00Z",
-  "last_run_id": "29463489521",
+  "last_run": "2026-07-16T13:12:00Z",
+  "last_run_id": "29501118109",
   "comments_made": {
     "24": "2026-07-01T13:51:58Z",
     "pr27": "2026-06-09T01:27:00Z",
@@ -22,75 +22,59 @@
     "69": ["bug"]
   },
   "fix_attempts": {
+    "fix-settings-stale-slider-PR": {
+      "branch": "repo-assist/fix-settings-stale-slider-2026-07-14-548e4c9423207c97",
+      "status": "pr_submitted",
+      "date": "2026-07-16",
+      "description": "PR created (safeoutputs): fix stale slider value in SettingsWindow_Closing. Closes #137."
+    },
+    "eng-updatum-globaljson-PR": {
+      "branch": "repo-assist/eng-updatum-globaljson-2026-07-16-0b00f0bf9aacfc10",
+      "status": "pr_submitted",
+      "date": "2026-07-16",
+      "description": "PR created (safeoutputs): bump Updatum 1.2.1→1.4.0, add global.json. Closes #140."
+    },
     "perf-color-temp-cache-2026-07-16": {
-      "branch": "repo-assist/perf-color-temp-cache-2026-07-16",
-      "status": "branch_submitted",
+      "branch": "repo-assist/perf-color-temp-cache-2026-07-16-883eebe0f865a908",
+      "status": "branch_only",
       "date": "2026-07-16",
-      "description": "Cache s_coolColor/s_warmColor as static readonly; extract static LerpColor method; cache last midColor with _cachedTempColor/_cachedColorTemperature; static JsonSerializerOptions in AppSettings. 0 errors, 0 warnings."
-    },
-    "eng-updatum-globaljson-2026-07-16": {
-      "branch": "repo-assist/eng-updatum-globaljson-2026-07-16",
-      "status": "branch_submitted",
-      "date": "2026-07-16",
-      "description": "Bump Updatum 1.2.1 to 1.4.0; add global.json with rollForward:latestMinor pinned to 10.0.109. 0 errors, 0 warnings."
-    },
-    "test-appsettings-v2-2026-07-15": {
-      "branch": "repo-assist/test-appsettings-v2-2026-07-15",
-      "status": "branch_submitted",
-      "date": "2026-07-15",
-      "description": "37 xUnit tests for AppSettings (default values, round-trip, corrupted JSON, partial JSON, trailing comma/comments, SaveTo directory creation). LoadFrom/SaveTo internal overloads added. All 37 pass."
+      "description": "Cache s_coolColor/s_warmColor, extract static LerpColor, cache last midColor, static JsonSerializerOptions. 0 errors, 0 warnings."
     },
     "fix-settings-monitor-workarea-2026-07-15": {
       "branch": "repo-assist/fix-settings-monitor-workarea-2026-07-15",
-      "status": "branch_submitted",
+      "status": "branch_only",
       "date": "2026-07-15",
-      "description": "SettingsWindow used SystemParameters.WorkArea (primary monitor only). Now uses Screen.FromHandle+VisualTreeHelper.GetDpi to get correct monitor bounds. 0 errors, 0 warnings."
+      "description": "SettingsWindow now uses Screen.FromHandle+VisualTreeHelper.GetDpi for correct monitor bounds."
     },
-    "fix-settings-stale-slider-2026-07-14": {
-      "branch": "repo-assist/fix-settings-stale-slider-2026-07-14",
-      "status": "branch_submitted",
-      "date": "2026-07-14",
-      "description": "Fix SettingsWindow_Closing using stale slider value instead of actual mainWindow brightness/temp. 0 errors, 0 warnings."
-    },
-    "perf-geometry-cache-2026-07-14": {
-      "branch": "repo-assist/perf-geometry-cache-2026-07-14",
-      "status": "branch_submitted",
-      "date": "2026-07-14",
-      "description": "Cache EllipseGeometry+CombinedGeometry per context (~250 allocs/sec on mouse move) + static JsonSerializerOptions in AppSettings.Save(). 0 errors, 0 warnings."
+    "test-appsettings-v2-2026-07-15": {
+      "branch": "repo-assist/test-appsettings-v2-2026-07-15-857e1104ec5cd3a0",
+      "status": "branch_only",
+      "date": "2026-07-15",
+      "description": "37 xUnit tests for AppSettings. LoadFrom/SaveTo internal overloads. All 37 pass."
     },
     "fix-shadow-color-temp-2026-07-13": {
-      "branch": "repo-assist/fix-shadow-color-temp-2026-07-13",
-      "status": "branch_submitted",
+      "branch": "repo-assist/fix-shadow-color-temp-2026-07-13-c4620822d212f7b9",
+      "status": "branch_only",
       "date": "2026-07-13"
     },
     "fix-initial-color-temp-additional-monitors-2026-07-12": {
       "branch": "repo-assist/fix-initial-color-temp-additional-monitors-2026-07-12-80400a09ec2f1674",
-      "status": "branch_submitted",
+      "status": "branch_only",
       "date": "2026-07-12"
     },
     "fix-persist-all-monitors-2026-07-12": {
       "branch": "repo-assist/fix-persist-all-monitors-2026-07-12-6d8c3760a1500609",
-      "status": "branch_submitted",
+      "status": "branch_only",
       "date": "2026-07-12"
-    },
-    "fix-monitor-index-2026-07-10": {
-      "branch": "repo-assist/fix-monitor-index-2026-07-10-ffe2d04b757bbc88",
-      "status": "branch_submitted",
-      "date": "2026-07-10"
-    },
-    "perf-mouse-coalesce-2026-07-06": {
-      "branch": "repo-assist/perf-mouse-coalesce-2026-07-06-fcb2397c56cb65e8",
-      "status": "branch_submitted",
-      "date": "2026-07-06"
     }
   },
   "monthly_summary_issue": 123,
   "maintainer_preferences": "Prefers bug fixes and functional improvements. Closed refactoring PRs as not_planned. Does not want pure refactors without user-visible benefit.",
   "backlog_cursor": 24,
   "known_limitations": {
-    "pr_creation": "GitHub Actions cannot create PRs - needs Settings > Actions > General > Allow GitHub Actions to create and approve pull requests",
+    "pr_creation": "safeoutputs create_pull_request works! Used it successfully this run for 2 PRs (stale slider fix + updatum). No longer need GitHub Actions PR permission.",
     "workflow_files": "GitHub Actions cannot push .github/workflows/ files - needs workflows permission.",
     "build": "Project targets net10.0-windows; build requires -p:EnableWindowsTargeting=true on Linux CI. Test project targets net8.0 to avoid this."
   },
-  "notes": "2026-07-16 01:13 run: Tasks 8+4. Task 8: cache s_coolColor/s_warmColor static readonly, extract LerpColor static method, add GetTemperatureColor() cache (_cachedTempColor/_cachedColorTemperature), static JsonSerializerOptions in AppSettings. Task 4: bump Updatum 1.2.1->1.4.0, add global.json (rollForward:latestMinor, 10.0.109 baseline). Both branches submitted. No test project in current master."
+  "notes": "2026-07-16 13:12 run: Tasks 4+3. Used safeoutputs create_pull_request to create actual PRs from existing branches (first time this worked!). PR1: fix-settings-stale-slider-2026-07-14 (Task 3). PR2: eng-updatum-globaljson-2026-07-16 (Task 4). Many other branches still need PRs - priority for next run: fix-settings-monitor-workarea, perf-geometry-cache, fix-shadow-color-temp, fix-initial-color-temp, fix-persist-all-monitors, improve-color-temp-hotkeys, feature-start-with-windows."
 }
