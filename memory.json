@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-07-15T13:12:00Z",
-  "last_run_id": "29418094925",
+  "last_run": "2026-07-16T01:13:00Z",
+  "last_run_id": "29463489521",
   "comments_made": {
     "24": "2026-07-01T13:51:58Z",
     "pr27": "2026-06-09T01:27:00Z",
@@ -22,6 +22,18 @@
     "69": ["bug"]
   },
   "fix_attempts": {
+    "perf-color-temp-cache-2026-07-16": {
+      "branch": "repo-assist/perf-color-temp-cache-2026-07-16",
+      "status": "branch_submitted",
+      "date": "2026-07-16",
+      "description": "Cache s_coolColor/s_warmColor as static readonly; extract static LerpColor method; cache last midColor with _cachedTempColor/_cachedColorTemperature; static JsonSerializerOptions in AppSettings. 0 errors, 0 warnings."
+    },
+    "eng-updatum-globaljson-2026-07-16": {
+      "branch": "repo-assist/eng-updatum-globaljson-2026-07-16",
+      "status": "branch_submitted",
+      "date": "2026-07-16",
+      "description": "Bump Updatum 1.2.1 to 1.4.0; add global.json with rollForward:latestMinor pinned to 10.0.109. 0 errors, 0 warnings."
+    },
     "test-appsettings-v2-2026-07-15": {
       "branch": "repo-assist/test-appsettings-v2-2026-07-15",
       "status": "branch_submitted",
@@ -46,17 +58,10 @@
       "date": "2026-07-14",
       "description": "Cache EllipseGeometry+CombinedGeometry per context (~250 allocs/sec on mouse move) + static JsonSerializerOptions in AppSettings.Save(). 0 errors, 0 warnings."
     },
-    "improve-dedup-2026-07-14": {
-      "branch": "repo-assist/improve-dedup-2026-07-14",
-      "status": "branch_submitted",
-      "date": "2026-07-14",
-      "description": "Extract ComputeTemperatureColor/ApplyTemperatureColorToBrush helpers; promote FrameThickness/FrameOuterRadius/FrameInnerRadius to class constants. 0 errors, 0 warnings."
-    },
     "fix-shadow-color-temp-2026-07-13": {
       "branch": "repo-assist/fix-shadow-color-temp-2026-07-13",
       "status": "branch_submitted",
-      "date": "2026-07-13",
-      "description": "Sync DropShadowEffect glow colour with colour temperature (main window + additional monitors). 0 errors, 0 warnings."
+      "date": "2026-07-13"
     },
     "fix-initial-color-temp-additional-monitors-2026-07-12": {
       "branch": "repo-assist/fix-initial-color-temp-additional-monitors-2026-07-12-80400a09ec2f1674",
@@ -65,11 +70,6 @@
     },
     "fix-persist-all-monitors-2026-07-12": {
       "branch": "repo-assist/fix-persist-all-monitors-2026-07-12-6d8c3760a1500609",
-      "status": "branch_submitted",
-      "date": "2026-07-12"
-    },
-    "eng-global-json-2026-07-12": {
-      "branch": "repo-assist/eng-global-json-2026-07-12-65a791f4b3817c37",
       "status": "branch_submitted",
       "date": "2026-07-12"
     },
@@ -92,5 +92,5 @@
     "workflow_files": "GitHub Actions cannot push .github/workflows/ files - needs workflows permission.",
     "build": "Project targets net10.0-windows; build requires -p:EnableWindowsTargeting=true on Linux CI. Test project targets net8.0 to avoid this."
   },
-  "notes": "2026-07-15 13:12 run: Tasks 2+9. Task 2: no new human issues without RA comment (only #24 which has 2 detailed comments already). Task 9: created test project WindowsEdgeLight.Tests with 37 xUnit tests; added internal LoadFrom/SaveTo overloads to AppSettings.cs; all 37 pass."
+  "notes": "2026-07-16 01:13 run: Tasks 8+4. Task 8: cache s_coolColor/s_warmColor static readonly, extract LerpColor static method, add GetTemperatureColor() cache (_cachedTempColor/_cachedColorTemperature), static JsonSerializerOptions in AppSettings. Task 4: bump Updatum 1.2.1->1.4.0, add global.json (rollForward:latestMinor, 10.0.109 baseline). Both branches submitted. No test project in current master."
 }
