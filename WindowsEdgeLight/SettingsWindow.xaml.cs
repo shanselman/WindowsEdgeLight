@@ -83,8 +83,13 @@ public partial class SettingsWindow : Window
 
     private void SettingsWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
     {
-        mainWindow.SetBrightness(BrightnessSlider.Value, save: true);
-        mainWindow.SetColorTemperature(ColorTempSlider.Value, save: true);
+        // Persist the mainWindow's *current* values rather than the slider positions, which
+        // can be stale if brightness or colour temperature was changed externally (e.g., via
+        // the Ctrl+Shift+↑/↓ hotkeys or the control toolbar) while the Settings window was
+        // open.  Using the actual current values also covers the case where the user clicked
+        // on the slider track without dragging (DragCompleted does not fire for track clicks).
+        mainWindow.SetBrightness(mainWindow.GetBrightness(), save: true);
+        mainWindow.SetColorTemperature(mainWindow.GetColorTemperature(), save: true);
     }
 
     private void ExcludeFromCapture_Click(object sender, RoutedEventArgs e)
