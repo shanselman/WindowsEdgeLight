@@ -14,6 +14,17 @@ public class AppSettings
         "WindowsEdgeLight",
         "settings.json");
 
+    private static readonly JsonSerializerOptions s_loadOptions = new()
+    {
+        AllowTrailingCommas = true,
+        ReadCommentHandling = JsonCommentHandling.Skip
+    };
+
+    private static readonly JsonSerializerOptions s_saveOptions = new()
+    {
+        WriteIndented = true
+    };
+
     /// <summary>
     /// When enabled, excludes the edge light from screen capture (Teams, screenshots, etc.)
     /// Note: When enabled, screenshots won't capture the edge light effect
@@ -66,12 +77,7 @@ public class AppSettings
             if (File.Exists(SettingsFilePath))
             {
                 var json = File.ReadAllText(SettingsFilePath);
-                var options = new JsonSerializerOptions
-                {
-                    AllowTrailingCommas = true,
-                    ReadCommentHandling = JsonCommentHandling.Skip
-                };
-                var settings = JsonSerializer.Deserialize<AppSettings>(json, options);
+                var settings = JsonSerializer.Deserialize<AppSettings>(json, s_loadOptions);
                 
                 // Validate deserialized settings
                 if (settings != null)
@@ -114,10 +120,7 @@ public class AppSettings
                 Directory.CreateDirectory(directory);
             }
 
-            var json = JsonSerializer.Serialize(this, new JsonSerializerOptions 
-            { 
-                WriteIndented = true 
-            });
+            var json = JsonSerializer.Serialize(this, s_saveOptions);
             File.WriteAllText(SettingsFilePath, json);
         }
         catch (Exception ex)
