@@ -1,22 +1,47 @@
 {
-  "last_run": "2026-07-17T01:15:09Z",
-  "last_run_id": "29546898506",
+  "last_run": "2026-07-17T13:11:52Z",
+  "last_run_id": "29582919355",
   "comments_made": {
     "24": "2026-07-01T13:51:58Z"
   },
   "labels_applied": {
-    "24": ["enhancement", "needs investigation"],
-    "33": ["enhancement"],
-    "27": ["help wanted"],
-    "36": ["enhancement"],
-    "56": ["enhancement"],
-    "62": ["enhancement"],
-    "63": ["refactor"],
-    "64": ["enhancement"],
-    "65": ["bug"],
-    "66": ["refactor"],
-    "67": ["bug"],
-    "69": ["bug"]
+    "24": [
+      "enhancement",
+      "needs investigation"
+    ],
+    "33": [
+      "enhancement"
+    ],
+    "27": [
+      "help wanted"
+    ],
+    "36": [
+      "enhancement"
+    ],
+    "56": [
+      "enhancement"
+    ],
+    "62": [
+      "enhancement"
+    ],
+    "63": [
+      "refactor"
+    ],
+    "64": [
+      "enhancement"
+    ],
+    "65": [
+      "bug"
+    ],
+    "66": [
+      "refactor"
+    ],
+    "67": [
+      "bug"
+    ],
+    "69": [
+      "bug"
+    ]
   },
   "fix_attempts": {
     "test-appsettings-v2-2026-07-15": {
@@ -108,5 +133,5 @@
     "121": "feat: color temp hotkeys (dup of #91)",
     "122": "feat: Start with Windows (dup of #94)"
   },
-  "notes": "2026-07-17 01:15 run: Tasks 9+2. PR creation is STILL blocked - all previous create_pull_request calls created fallback issues. 20+ fallback issues now clutter the tracker. Updated monthly summary to prominently flag this and list cleanup candidates. Task 2: #24 only human issue, already has 2 RA comments, no new activity. Task 9: test branch #139 already exists, NOT creating duplicate. Strategy: no new branches/PRs until PR creation is fixed."
+  "notes": "2026-07-17 13:11 run: Tasks 5+9. PR creation STILL blocked. No new branches/issues created - tracker already has 20+ fallback issues. Test work done in #139. Monthly summary updated. Strategy: hold off all new PR/branch work until maintainer enables PR creation in repo settings."
 }
