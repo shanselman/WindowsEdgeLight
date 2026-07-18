@@ -1,0 +1,50 @@
+PackageIdentifier: ScottHanselman.WindowsEdgeLight
+PackageVersion: 0.6.0
+PackageLocale: en-US
+Publisher: Scott Hanselman
+PublisherUrl: https://github.com/shanselman
+PublisherSupportUrl: https://github.com/shanselman/WindowsEdgeLight/issues
+Author: Scott Hanselman
+PackageName: Windows Edge Light
+PackageUrl: https://github.com/shanselman/WindowsEdgeLight
+License: Proprietary
+LicenseUrl: https://github.com/shanselman/WindowsEdgeLight/blob/main/README.md
+Copyright: Copyright © 2025 Scott Hanselman
+ShortDescription: A lightweight WPF application that adds a customizable glowing edge light effect around your primary monitor
+Description: |-
+  Windows Edge Light is a lightweight WPF application that adds a customizable glowing edge light effect around your primary monitor on Windows. Perfect for ambient lighting during video calls, streaming, or just adding a professional touch to your workspace.
+  
+  Features:
+  - Automatic Updates: Built-in update system checks GitHub Releases for new versions
+  - Primary Monitor Display: Automatically detects and displays on your primary monitor, even in multi-monitor setups
+  - DPI Aware: Properly handles high-DPI displays (4K monitors with scaling)
+  - Fluent Design: Modern UX that fits in with the Windows look and feel
+  - Click-Through Transparency: Overlay doesn't interfere with your work - all clicks pass through to applications beneath
+  - Customizable Brightness: Adjust opacity with easy-to-use controls
+  - Adjustable Color Temperature: Shift the edge light from cooler (blue-ish) to warmer (amber) tones
+  - Toggle On/Off: Quickly enable or disable the edge light effect
+  - Hideable Controls: Hide the control toolbar for a cleaner look, restore via tray menu
+  - Always On Top: Stays visible above all other windows
+  - Exclude from Screen Capture: Optional setting to hide the edge light from screen sharing (Teams, Zoom) and screenshots
+  - Keyboard Shortcuts: Ctrl+Shift+L (Toggle), Ctrl+Shift+Up (Increase brightness), Ctrl+Shift+Down (Decrease brightness)
+Moniker: edge-light
+Tags:
+  - ambient-light
+  - edge-light
+  - monitor
+  - lighting
+  - video-call
+  - streaming
+  - wpf
+  - overlay
+  - screen-light
+  - glow-effect
+ReleaseNotes: |-
+  v0.6 - Automatic Update System
+  - Integrated Updatum for automatic updates from GitHub Releases
+  - Beautiful update dialog with release notes
+  - Download progress tracking
+  - One-click install for new versions
+ReleaseNotesUrl: https://github.com/shanselman/WindowsEdgeLight/releases/tag/v0.6.0
+ManifestType: defaultLocale
+ManifestVersion: 1.10.0

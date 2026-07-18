@@ -81,3 +81,7 @@ $RECYCLE.BIN/
 sign.exe
 sign-publish-local.ps1
 .store/
+
+# Temporary files from manifest update script
+temp/
+*.tmp
