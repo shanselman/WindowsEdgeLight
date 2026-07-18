@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-07-18T01:12:13Z",
-  "last_run_id": "29624694770",
+  "last_run": "2026-07-18T13:10:14Z",
+  "last_run_id": "29645616957",
   "comments_made": {
     "24": "2026-07-01T13:51:58Z"
   },
@@ -23,19 +23,19 @@
       "branch": "repo-assist/test-appsettings-v2-2026-07-15-857e1104ec5cd3a0",
       "status": "fallback_issue_139",
       "date": "2026-07-15",
-      "description": "37 xUnit tests for AppSettings. All pass. Fallback issue #139 created (PR creation blocked)."
+      "description": "37 xUnit tests for AppSettings. All pass. Fallback issue #139 created (PR creation blocked). Covers new properties from PR #68."
     },
     "fix-settings-stale-slider": {
       "branch": "repo-assist/fix-settings-stale-slider-2026-07-14-548e4c9423207c97",
       "status": "fallback_issue_137",
       "date": "2026-07-14",
-      "description": "Fix stale slider in SettingsWindow_Closing. Fallback issue #137."
+      "description": "Fix stale slider in SettingsWindow_Closing. Verified still needed July 18 - SetBrightness does NOT update SettingsWindow slider. Fallback issue #137."
     },
     "fix-settings-monitor-workarea": {
       "branch": "repo-assist/fix-settings-monitor-workarea-2026-07-15",
       "status": "fallback_issue_138",
       "date": "2026-07-15",
-      "description": "SettingsWindow on correct monitor. Fallback issue #138."
+      "description": "SettingsWindow on correct monitor. Uses SystemParameters.WorkArea (primary monitor only). Fallback issue #138."
     },
     "fix-shadow-color-temp": {
       "branch": "repo-assist/fix-shadow-color-temp-2026-07-13-c4620822d212f7b9",
@@ -53,7 +53,7 @@
       "branch": "repo-assist/fix-persist-all-monitors-2026-07-12-6d8c3760a1500609",
       "status": "fallback_issue_130",
       "date": "2026-07-12",
-      "description": "Persist Show on All Monitors. Fallback issue #130."
+      "description": "Persist Show on All Monitors. showOnAllMonitors field NOT in AppSettings - still needed July 18. Fallback issue #130."
     },
     "eng-updatum-globaljson": {
       "branch": "repo-assist/eng-updatum-globaljson-2026-07-16-0b00f0bf9aacfc10",
@@ -75,7 +75,7 @@
     }
   },
   "monthly_summary_issue": 123,
-  "maintainer_preferences": "Prefers bug fixes and functional improvements. Closed refactoring PRs as not_planned. Does not want pure refactors without user-visible benefit.",
+  "maintainer_preferences": "Prefers bug fixes and functional improvements. Closed refactoring PRs as not_planned. Does not want pure refactors without user-visible benefit. Has been manually applying Repo Assist branches (issues #65, #67, #69 closed as completed).",
   "backlog_cursor": 24,
   "known_limitations": {
     "pr_creation": "GitHub Actions CANNOT create PRs - repo has this disabled. All create_pull_request attempts produce fallback issues instead. Fix: Settings -> Actions -> General -> Allow GitHub Actions to create and approve pull requests. DO NOT create more PR attempts until this is fixed - causes duplicate issue spam.",
@@ -83,16 +83,16 @@
     "build": "Project targets net10.0-windows; build requires -p:EnableWindowsTargeting=true on Linux CI. Test project targets net8.0 to avoid this."
   },
   "pending_fallback_issues": {
-    "139": "test: 37 xUnit tests for AppSettings",
+    "139": "test: 37 xUnit tests for AppSettings (covers all 8 settings incl. new PR #68 props)",
     "138": "fix: SettingsWindow on wrong monitor",
-    "137": "fix: stale slider in SettingsWindow_Closing",
+    "137": "fix: stale slider in SettingsWindow_Closing (verified still needed July 18)",
     "136": "perf: cache hole-punch geometries",
     "135": "refactor: Lerp helpers + frame-geometry constants",
     "134": "fix: sync drop shadow with color temp",
     "133": "test: 64 tests (superseded by #139)",
     "132": "fix: additional monitors color temp (dup of #131)",
     "131": "fix: additional monitors color temp",
-    "130": "fix: persist Show on All Monitors",
+    "130": "fix: persist Show on All Monitors (verified still needed July 18)",
     "129": "eng: global.json (superseded by #140)",
     "128": "aw: Repo Assist failed (error issue)",
     "127": "docs: update README",
@@ -108,5 +108,5 @@
     "121": "feat: color temp hotkeys (dup of #91)",
     "122": "feat: Start with Windows (dup of #94)"
   },
-  "notes": "2026-07-18 01:12 run: Tasks 2+5. Task 2: only #24 (HDR) is open from a human, already has 2 thorough Repo Assist comments, no new human activity - no comment warranted. Task 5: reviewed full codebase (MainWindow, ControlWindow, SettingsWindow, AppSettings) - PR creation STILL blocked - no new branches/issues created to avoid tracker clutter. Strategy: hold off all new PR/branch work until maintainer enables PR creation in repo settings."
+  "notes": "2026-07-18 13:10 run: Tasks 3+2. Master branch has not changed since July 8 (PR #68). Verified stale-slider (#137) and all-monitors persistence (#130) still needed. Test branch #139 already covers PR #68 new AppSettings properties. No new PR attempts - PR creation still blocked. Strategy: continue holding off new PR/branch work until maintainer enables PR creation in repo settings."
 }
