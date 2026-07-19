@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-07-18T13:10:14Z",
-  "last_run_id": "29645616957",
+  "last_run": "2026-07-19T01:13:00Z",
+  "last_run_id": "29668197469",
   "comments_made": {
     "24": "2026-07-01T13:51:58Z"
   },
@@ -23,19 +23,19 @@
       "branch": "repo-assist/test-appsettings-v2-2026-07-15-857e1104ec5cd3a0",
       "status": "fallback_issue_139",
       "date": "2026-07-15",
-      "description": "37 xUnit tests for AppSettings. All pass. Fallback issue #139 created (PR creation blocked). Covers new properties from PR #68."
+      "description": "37 xUnit tests for AppSettings. All pass. Fallback issue #139 created. Covers all properties including new ones from PR #68."
     },
     "fix-settings-stale-slider": {
       "branch": "repo-assist/fix-settings-stale-slider-2026-07-14-548e4c9423207c97",
       "status": "fallback_issue_137",
       "date": "2026-07-14",
-      "description": "Fix stale slider in SettingsWindow_Closing. Verified still needed July 18 - SetBrightness does NOT update SettingsWindow slider. Fallback issue #137."
+      "description": "Fix stale slider in SettingsWindow_Closing. Fallback issue #137."
     },
     "fix-settings-monitor-workarea": {
       "branch": "repo-assist/fix-settings-monitor-workarea-2026-07-15",
       "status": "fallback_issue_138",
       "date": "2026-07-15",
-      "description": "SettingsWindow on correct monitor. Uses SystemParameters.WorkArea (primary monitor only). Fallback issue #138."
+      "description": "SettingsWindow on correct monitor. Fallback issue #138."
     },
     "fix-shadow-color-temp": {
       "branch": "repo-assist/fix-shadow-color-temp-2026-07-13-c4620822d212f7b9",
@@ -53,7 +53,7 @@
       "branch": "repo-assist/fix-persist-all-monitors-2026-07-12-6d8c3760a1500609",
       "status": "fallback_issue_130",
       "date": "2026-07-12",
-      "description": "Persist Show on All Monitors. showOnAllMonitors field NOT in AppSettings - still needed July 18. Fallback issue #130."
+      "description": "Persist Show on All Monitors. Fallback issue #130."
     },
     "eng-updatum-globaljson": {
       "branch": "repo-assist/eng-updatum-globaljson-2026-07-16-0b00f0bf9aacfc10",
@@ -85,14 +85,14 @@
   "pending_fallback_issues": {
     "139": "test: 37 xUnit tests for AppSettings (covers all 8 settings incl. new PR #68 props)",
     "138": "fix: SettingsWindow on wrong monitor",
-    "137": "fix: stale slider in SettingsWindow_Closing (verified still needed July 18)",
+    "137": "fix: stale slider in SettingsWindow_Closing",
     "136": "perf: cache hole-punch geometries",
     "135": "refactor: Lerp helpers + frame-geometry constants",
     "134": "fix: sync drop shadow with color temp",
     "133": "test: 64 tests (superseded by #139)",
     "132": "fix: additional monitors color temp (dup of #131)",
     "131": "fix: additional monitors color temp",
-    "130": "fix: persist Show on All Monitors (verified still needed July 18)",
+    "130": "fix: persist Show on All Monitors",
     "129": "eng: global.json (superseded by #140)",
     "128": "aw: Repo Assist failed (error issue)",
     "127": "docs: update README",
@@ -108,5 +108,9 @@
     "121": "feat: color temp hotkeys (dup of #91)",
     "122": "feat: Start with Windows (dup of #94)"
   },
-  "notes": "2026-07-18 13:10 run: Tasks 3+2. Master branch has not changed since July 8 (PR #68). Verified stale-slider (#137) and all-monitors persistence (#130) still needed. Test branch #139 already covers PR #68 new AppSettings properties. No new PR attempts - PR creation still blocked. Strategy: continue holding off new PR/branch work until maintainer enables PR creation in repo settings."
+  "engineering_findings": {
+    "build_yml": "CI only triggers on tags/workflow_dispatch - no PR check. Adding PR check needs workflows permission (blocked). softprops/action-gh-release@v1 could be v2. Updatum 1.2.1->1.4.0 tracked in #140.",
+    "checked_date": "2026-07-19"
+  },
+  "notes": "2026-07-19 01:13 run: Tasks 2+4. Task 2: no new human issues; #24 (HDR) already has 2 Repo Assist comments with no new human activity - no comment. Task 4: Reviewed build.yml - CI only on tags, no PR check workflow, softprops/action-gh-release@v1 could be v2, Updatum tracked in #140. PR creation still blocked - no new branches/issues. Strategy: hold off new work until maintainer enables PR creation."
 }
