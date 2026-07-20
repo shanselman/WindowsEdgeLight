@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-07-19T13:10:24Z",
-  "last_run_id": "29688328693",
+  "last_run": "2026-07-20T03:07:37Z",
+  "last_run_id": "29710646412",
   "comments_made": {
     "24": "2026-07-01T13:51:58Z"
   },
@@ -84,8 +84,8 @@
   },
   "pending_fallback_issues": {
     "139": "test: 37 xUnit tests for AppSettings (covers all 8 settings incl. new PR #68 props)",
-    "138": "fix: SettingsWindow on wrong monitor",
-    "137": "fix: stale slider in SettingsWindow_Closing",
+    "138": "fix: SettingsWindow on wrong monitor (SystemParameters.WorkArea = always primary)",
+    "137": "fix: stale slider in SettingsWindow_Closing (overwrites hotkey/toolbar changes)",
     "136": "perf: cache hole-punch geometries",
     "135": "refactor: Lerp helpers + frame-geometry constants",
     "134": "fix: sync drop shadow with color temp",
@@ -109,8 +109,15 @@
     "122": "feat: Start with Windows (dup of #94)"
   },
   "engineering_findings": {
+    "updatum_latest": "1.4.0 (confirmed 2026-07-20 - no newer version)",
     "build_yml": "CI only triggers on tags/workflow_dispatch - no PR check. Adding PR check needs workflows permission (blocked). softprops/action-gh-release@v1 could be v2. Updatum 1.2.1->1.4.0 tracked in #140.",
-    "checked_date": "2026-07-19"
+    "checked_date": "2026-07-20"
   },
-  "notes": "2026-07-19 13:10 run: Tasks 3+8. Both tasks blocked by PR creation being disabled. No new human bug reports (only #24 HDR). All perf improvements already tracked (#136, #141). Strategy: hold off new work until maintainer enables PR creation."
+  "code_findings_2026_07_20": {
+    "settings_window_load": "SettingsWindow_Loaded still uses SystemParameters.WorkArea (primary monitor only) - bug #138 confirmed still present in master",
+    "settings_closing": "SettingsWindow_Closing saves BrightnessSlider.Value and ColorTempSlider.Value on close - this overwrites values changed via hotkey/toolbar while dialog is open - bug #137 partially addressed by PR #68 but stale-overwrite issue remains",
+    "button_visibility": "ShowToggleButton/ShowBrightnessButtons/ShowColorTempButtons/ShowMonitorControlButtons all save immediately via SetIs* methods - working correctly",
+    "value_clamping": "MainWindow clamps Brightness to [MinOpacity, MaxOpacity] and ColorTemp to [0.0, 1.0] on load and on set - working correctly"
+  },
+  "notes": "2026-07-20 03:07 run: Tasks 4+3. Both tasks blocked by PR creation being disabled. Task 4: Updatum 1.4.0 confirmed latest. Task 3: Verified #138 still present (wrong monitor), #137 partially addressed by PR #68 but stale-overwrite still exists. No new bugs found. Strategy: hold off new work until maintainer enables PR creation."
 }
