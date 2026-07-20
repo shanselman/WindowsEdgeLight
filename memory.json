@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-07-20T03:07:37Z",
-  "last_run_id": "29710646412",
+  "last_run": "2026-07-20T13:25:42Z",
+  "last_run_id": "29746099107",
   "comments_made": {
     "24": "2026-07-01T13:51:58Z"
   },
@@ -117,7 +117,8 @@
     "settings_window_load": "SettingsWindow_Loaded still uses SystemParameters.WorkArea (primary monitor only) - bug #138 confirmed still present in master",
     "settings_closing": "SettingsWindow_Closing saves BrightnessSlider.Value and ColorTempSlider.Value on close - this overwrites values changed via hotkey/toolbar while dialog is open - bug #137 partially addressed by PR #68 but stale-overwrite issue remains",
     "button_visibility": "ShowToggleButton/ShowBrightnessButtons/ShowColorTempButtons/ShowMonitorControlButtons all save immediately via SetIs* methods - working correctly",
-    "value_clamping": "MainWindow clamps Brightness to [MinOpacity, MaxOpacity] and ColorTemp to [0.0, 1.0] on load and on set - working correctly"
+    "value_clamping": "MainWindow clamps Brightness to [MinOpacity, MaxOpacity] and ColorTemp to [0.0, 1.0] on load and on set - working correctly",
+    "color_temp_hotkeys": "No hotkeys registered for color temp (only toggle/brightness). Context menu shows K-/K+ options but no keyboard shortcuts - issue #91 tracks adding these."
   },
-  "notes": "2026-07-20 03:07 run: Tasks 4+3. Both tasks blocked by PR creation being disabled. Task 4: Updatum 1.4.0 confirmed latest. Task 3: Verified #138 still present (wrong monitor), #137 partially addressed by PR #68 but stale-overwrite still exists. No new bugs found. Strategy: hold off new work until maintainer enables PR creation."
+  "notes": "2026-07-20 13:25 run: Tasks 5+4. Both tasks blocked by PR creation being disabled. Task 5: Full codebase review done; all identified improvements already tracked in fallback issues (#130-141). No new improvements found. Task 4: Updatum 1.4.0 confirmed latest. Strategy: hold off new work until maintainer enables PR creation."
 }
