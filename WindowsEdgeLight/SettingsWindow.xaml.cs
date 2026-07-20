@@ -133,6 +133,11 @@ public partial class SettingsWindow : Window
         UpdateOwnerControlWindow();
     }
 
+    private void ResetControlBarPosition_Click(object sender, RoutedEventArgs e)
+    {
+        mainWindow.ResetControlWindowPosition();
+    }
+
     private void UpdateOwnerControlWindow()
     {
         if (Owner is ControlWindow controlWindow)

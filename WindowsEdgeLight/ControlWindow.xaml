@@ -3,7 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     Title="Controls"
-    Width="406"
+    Width="424"
     Height="48"
     AllowsTransparency="True"
     Background="Transparent"
@@ -30,6 +30,23 @@
         </Border.Style>
 
         <StackPanel Orientation="Horizontal">
+            <Border
+                x:Name="DragHandle"
+                Width="16"
+                Margin="4,4,0,4"
+                AutomationProperties.Name="Drag toolbar"
+                Cursor="SizeAll"
+                MouseLeftButtonDown="DragHandle_MouseLeftButtonDown"
+                ToolTip="Drag to move">
+                <TextBlock
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    FontFamily="Segoe MDL2 Assets"
+                    FontSize="16"
+                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                    Text="&#xE784;" />
+            </Border>
+
             <Button
                 x:Name="BrightnessDownButton"
                 Width="40"
