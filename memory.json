@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-07-21T01:14:00Z",
-  "last_run_id": "29792476130",
+  "last_run": "2026-07-21T13:13:32Z",
+  "last_run_id": "29833278066",
   "comments_made": {
     "24": "2026-07-01T13:51:58Z"
   },
@@ -23,7 +23,7 @@
       "branch": "repo-assist/test-appsettings-v2-2026-07-15-857e1104ec5cd3a0",
       "status": "fallback_issue_139",
       "date": "2026-07-15",
-      "description": "37 xUnit tests for AppSettings. All pass. Fallback issue #139 created. Branch is 1 commit ahead of master, no diverging master commits."
+      "description": "37 xUnit tests for AppSettings. All pass. Fallback issue #139 created. Branch is 1 commit ahead of master."
     },
     "fix-settings-stale-slider": {
       "branch": "repo-assist/fix-settings-stale-slider-2026-07-14-548e4c9423207c97",
@@ -99,7 +99,7 @@
     "126": "fix: IndexOutOfRangeException on monitor unplug",
     "125": "eng: .editorconfig",
     "124": "test: comprehensive test project (superseded by #139)",
-    "141": "perf: cache color-temp Color structs",
+    "141": "perf: cache color-temp Color structs + JsonSerializerOptions",
     "140": "eng: bump Updatum + global.json",
     "142": "fix: stale slider (dup of #137)",
     "143": "eng: bump Updatum (dup of #140)",
@@ -113,10 +113,11 @@
     "build_yml": "CI only triggers on tags/workflow_dispatch - no PR check. Adding PR check needs workflows permission (blocked). softprops/action-gh-release@v1 could be v2. Updatum 1.2.1->1.4.0 tracked in #140.",
     "checked_date": "2026-07-20"
   },
-  "code_findings_2026_07_21": {
-    "test_branch_status": "repo-assist/test-appsettings-v2-2026-07-15-857e1104ec5cd3a0 is 1 commit ahead of master, master has no diverging commits. Tests are current with master including PR #68 additions. 37 tests covering all 8 AppSettings properties.",
-    "appsettings_properties": "ExcludeFromCapture, IsLightOn, Brightness, ColorTemperature, ShowToggleButton, ShowBrightnessButtons, ShowColorTempButtons, ShowMonitorControlButtons - all 8 tested.",
-    "human_issues": "Only open human issue is #24 (HDR). Has 2 Repo Assist comments. No new human activity since 2026-07-01."
+  "perf_findings_2026_07_21": {
+    "appsettings_save": "AppSettings.Save() still allocates new JsonSerializerOptions on every call. Already tracked in #141.",
+    "mouse_hook": "MouseHookProc dispatches every WM_MOUSEMOVE via Dispatcher.BeginInvoke. Mouse coalescing improvement previously submitted as PR (state.json shows pr_submitted).",
+    "geometry_alloc": "EllipseGeometry+CombinedGeometry allocated on each mouse move for hole-punch. Already tracked in #136.",
+    "conclusion": "No new perf opportunities found beyond what is already tracked in fallback issues."
   },
-  "notes": "2026-07-21 01:14 run: Tasks 9+2. Task 9: test branch confirmed current with master. Task 2: no new human activity. All work remains blocked by PR creation being disabled. Strategy: hold off new work until maintainer enables PR creation."
+  "notes": "2026-07-21 13:13 run: Tasks 8+2. Task 8: thorough review - no new perf opportunities beyond #136 and #141. Task 2: no new human activity. All work remains blocked by PR creation being disabled. Strategy: hold off new work until maintainer enables PR creation."
 }
