@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-07-21T13:13:32Z",
-  "last_run_id": "29833278066",
+  "last_run": "2026-07-22T01:12:55Z",
+  "last_run_id": "29882398157",
   "comments_made": {
     "24": "2026-07-01T13:51:58Z"
   },
@@ -23,7 +23,7 @@
       "branch": "repo-assist/test-appsettings-v2-2026-07-15-857e1104ec5cd3a0",
       "status": "fallback_issue_139",
       "date": "2026-07-15",
-      "description": "37 xUnit tests for AppSettings. All pass. Fallback issue #139 created. Branch is 1 commit ahead of master."
+      "description": "37 xUnit tests for AppSettings. All pass. Fallback issue #139 created."
     },
     "fix-settings-stale-slider": {
       "branch": "repo-assist/fix-settings-stale-slider-2026-07-14-548e4c9423207c97",
@@ -83,41 +83,15 @@
     "build": "Project targets net10.0-windows; build requires -p:EnableWindowsTargeting=true on Linux CI. Test project targets net8.0 to avoid this."
   },
   "pending_fallback_issues": {
-    "139": "test: 37 xUnit tests for AppSettings (covers all 8 settings incl. new PR #68 props)",
+    "139": "test: 37 xUnit tests for AppSettings (covers all 8 settings)",
     "138": "fix: SettingsWindow on wrong monitor (SystemParameters.WorkArea = always primary)",
-    "137": "fix: stale slider in SettingsWindow_Closing (overwrites hotkey/toolbar changes)",
+    "137": "fix: stale slider in SettingsWindow_Closing",
     "136": "perf: cache hole-punch geometries",
-    "135": "refactor: Lerp helpers + frame-geometry constants",
     "134": "fix: sync drop shadow with color temp",
-    "133": "test: 64 tests (superseded by #139)",
-    "132": "fix: additional monitors color temp (dup of #131)",
     "131": "fix: additional monitors color temp",
     "130": "fix: persist Show on All Monitors",
-    "129": "eng: global.json (superseded by #140)",
-    "128": "aw: Repo Assist failed (error issue)",
-    "127": "docs: update README",
-    "126": "fix: IndexOutOfRangeException on monitor unplug",
-    "125": "eng: .editorconfig",
-    "124": "test: comprehensive test project (superseded by #139)",
     "141": "perf: cache color-temp Color structs + JsonSerializerOptions",
-    "140": "eng: bump Updatum + global.json",
-    "142": "fix: stale slider (dup of #137)",
-    "143": "eng: bump Updatum (dup of #140)",
-    "91": "feat: color temp hotkeys",
-    "94": "feat: Start with Windows",
-    "121": "feat: color temp hotkeys (dup of #91)",
-    "122": "feat: Start with Windows (dup of #94)"
+    "140": "eng: bump Updatum + global.json"
   },
-  "engineering_findings": {
-    "updatum_latest": "1.4.0 (confirmed 2026-07-20 - no newer version)",
-    "build_yml": "CI only triggers on tags/workflow_dispatch - no PR check. Adding PR check needs workflows permission (blocked). softprops/action-gh-release@v1 could be v2. Updatum 1.2.1->1.4.0 tracked in #140.",
-    "checked_date": "2026-07-20"
-  },
-  "perf_findings_2026_07_21": {
-    "appsettings_save": "AppSettings.Save() still allocates new JsonSerializerOptions on every call. Already tracked in #141.",
-    "mouse_hook": "MouseHookProc dispatches every WM_MOUSEMOVE via Dispatcher.BeginInvoke. Mouse coalescing improvement previously submitted as PR (state.json shows pr_submitted).",
-    "geometry_alloc": "EllipseGeometry+CombinedGeometry allocated on each mouse move for hole-punch. Already tracked in #136.",
-    "conclusion": "No new perf opportunities found beyond what is already tracked in fallback issues."
-  },
-  "notes": "2026-07-21 13:13 run: Tasks 8+2. Task 8: thorough review - no new perf opportunities beyond #136 and #141. Task 2: no new human activity. All work remains blocked by PR creation being disabled. Strategy: hold off new work until maintainer enables PR creation."
+  "notes": "2026-07-22 01:12 run: Tasks 9+2. No new activity. Test branch (37 tests) awaiting PR creation. #24 (HDR) has 2 comments, no new human activity. All work remains blocked by PR creation being disabled. Master unchanged since July 8."
 }
