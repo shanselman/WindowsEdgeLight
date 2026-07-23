@@ -1,11 +1,8 @@
 {
-  "last_run": "2026-07-09T01:17:32Z",
-  "last_run_id": "28987136982",
+  "last_run": "2026-07-23T13:14:52Z",
+  "last_run_id": "30010238247",
   "comments_made": {
-    "24": "2026-07-01T13:51:58Z",
-    "pr27": "2026-06-09T01:27:00Z",
-    "34": "2026-06-10T13:55:00Z",
-    "58": "2026-06-19T13:55:00Z"
+    "24": "2026-07-01T13:51:58Z"
   },
   "labels_applied": {
     "24": ["enhancement", "needs investigation"],
@@ -22,68 +19,86 @@
     "69": ["bug"]
   },
   "fix_attempts": {
-    "test-appsettings-allprops-2026-07-09": {
-      "branch": "repo-assist/test-appsettings-allprops-2026-07-09",
-      "status": "pr_submitted",
-      "date": "2026-07-09",
-      "description": "Comprehensive xUnit test project for all 8 AppSettings properties (32 tests, all green, net8.0)."
+    "test-appsettings-v2-2026-07-15": {
+      "branch": "repo-assist/test-appsettings-v2-2026-07-15-857e1104ec5cd3a0",
+      "status": "fallback_issue_139",
+      "date": "2026-07-15",
+      "description": "37 xUnit tests for AppSettings. All pass. Fallback issue #139 created."
     },
-    "improve-color-temp-hotkeys-2026-07-08": {
-      "branch": "repo-assist/improve-color-temp-hotkeys-2026-07-08-1200ea5f0106ea64",
-      "status": "pr_submitted",
-      "date": "2026-07-08",
-      "description": "Add Ctrl+Shift+Left/Right global hotkeys for colour temperature. Build: 0 errors, 0 warnings."
+    "fix-settings-stale-slider": {
+      "branch": "repo-assist/fix-settings-stale-slider-2026-07-14-548e4c9423207c97",
+      "status": "fallback_issue_137",
+      "date": "2026-07-14",
+      "description": "Fix stale slider in SettingsWindow_Closing. Fallback issue #137."
     },
-    "feature-start-with-windows-2026-07-08": {
-      "branch": "repo-assist/feature-start-with-windows-2026-07-08-77845b73e75467fe",
-      "status": "pr_submitted",
-      "date": "2026-07-08",
-      "description": "Add Start with Windows toggle in system tray (HKCU Run registry). Build: 0 errors, 0 warnings."
+    "fix-settings-monitor-workarea": {
+      "branch": "repo-assist/fix-settings-monitor-workarea-2026-07-15",
+      "status": "fallback_issue_138",
+      "date": "2026-07-15",
+      "description": "SettingsWindow on correct monitor. Fallback issue #138."
     },
-    "fix-persist-settings-2026-07-08": {
-      "branch": "repo-assist/fix-persist-settings-2026-07-08-c9bd401abed59e5d",
-      "status": "pr_submitted",
-      "date": "2026-07-08",
-      "description": "Persist Brightness, ColorTemperature, IsLightOn + hotkey conflict balloon tip. Build: 0 errors, 0 warnings."
+    "fix-shadow-color-temp": {
+      "branch": "repo-assist/fix-shadow-color-temp-2026-07-13-c4620822d212f7b9",
+      "status": "fallback_issue_134",
+      "date": "2026-07-13",
+      "description": "Sync drop shadow glow with color temp. Fallback issue #134."
     },
-    "fix-monitor-index-2026-07-06": {
-      "branch": "repo-assist/fix-monitor-index-2026-07-06-e7cffeee1eb910dc",
-      "status": "pr_submitted",
-      "date": "2026-07-06",
-      "description": "Fix IndexOutOfRangeException when monitors are unplugged."
+    "fix-initial-color-temp-additional-monitors": {
+      "branch": "repo-assist/fix-initial-color-temp-additional-monitors-2026-07-12-80400a09ec2f1674",
+      "status": "fallback_issue_131",
+      "date": "2026-07-12",
+      "description": "Additional monitors init with correct color temp. Fallback issue #131."
     },
-    "perf-mouse-coalesce-2026-07-06": {
-      "branch": "repo-assist/perf-mouse-coalesce-2026-07-06-fcb2397c56cb65e8",
-      "status": "pr_submitted",
-      "date": "2026-07-06",
-      "description": "Coalesce mouse hook dispatches using Interlocked.CompareExchange."
+    "fix-persist-all-monitors": {
+      "branch": "repo-assist/fix-persist-all-monitors-2026-07-12-6d8c3760a1500609",
+      "status": "fallback_issue_130",
+      "date": "2026-07-12",
+      "description": "Persist Show on All Monitors. Fallback issue #130."
     },
-    "eng-updatum-1.4.0-2026-07-05": {
-      "branch": "repo-assist/eng-updatum-1.4.0-2026-07-05-5b7aca266df3d5e6",
-      "status": "pr_submitted",
-      "date": "2026-07-05",
-      "description": "Bump Updatum 1.2.1 to 1.4.0."
+    "eng-updatum-globaljson": {
+      "branch": "repo-assist/eng-updatum-globaljson-2026-07-16-0b00f0bf9aacfc10",
+      "status": "fallback_issue_140",
+      "date": "2026-07-16",
+      "description": "Bump Updatum 1.2.1->1.4.0 + global.json. Fallback issue #140."
+    },
+    "perf-geometry-cache": {
+      "branch": "repo-assist/perf-geometry-cache-2026-07-14-562ebb5dda852a02",
+      "status": "fallback_issue_136",
+      "date": "2026-07-14",
+      "description": "Cache hole-punch geometries. Fallback issue #136."
+    },
+    "perf-color-temp-cache": {
+      "branch": "repo-assist/perf-color-temp-cache-2026-07-16-883eebe0f865a908",
+      "status": "fallback_issue_141",
+      "date": "2026-07-16",
+      "description": "Cache color-temp Color structs + JsonSerializerOptions. Fallback issue #141."
     }
   },
   "monthly_summary_issue": 123,
-  "monthly_summary_july": "updated_2026-07-09",
-  "closed_monthly_summary_june": 86,
-  "closed_monthly_summary_july_103": "closed_by_maintainer_2026-07-08",
-  "maintainer_preferences": "Prefers bug fixes and functional improvements. Closed refactoring PRs as not_planned. Does not want pure refactors without user-visible benefit.",
+  "maintainer_preferences": "Prefers bug fixes and functional improvements. Closed refactoring PRs as not_planned. Does not want pure refactors without user-visible benefit. Has been manually applying Repo Assist branches (issues #65, #67, #69 closed as completed).",
   "backlog_cursor": 24,
   "known_limitations": {
-    "pr_creation": "GitHub Actions cannot create PRs - needs Settings > Actions > General > Allow GitHub Actions to create and approve pull requests. Branches are pushed to remote but no actual GitHub PRs created.",
-    "workflow_files": "GitHub Actions cannot push .github/workflows/ files - needs 'workflows' permission.",
+    "pr_creation": "GitHub Actions CANNOT create PRs - repo has this disabled. All create_pull_request attempts produce fallback issues instead. Fix: Settings -> Actions -> General -> Allow GitHub Actions to create and approve pull requests. DO NOT create more PR attempts until this is fixed - causes duplicate issue spam.",
+    "workflow_files": "GitHub Actions cannot push .github/workflows/ files - needs workflows permission.",
     "build": "Project targets net10.0-windows; build requires -p:EnableWindowsTargeting=true on Linux CI. Test project targets net8.0 to avoid this."
   },
-  "notes": "2026-07-09 run (01:17 UTC): Tasks 2+9. Task 2: no new user issues to comment on (#24 already has 2 Repo Assist comments, no new human activity). Task 9: Created comprehensive test branch covering ALL 8 AppSettings properties (32 tests vs existing branch's 18 tests covering only ExcludeFromCapture). Duplicate issues #121/#122 exist (duplicates of #91/#94); added to monthly summary.",
-  "key_open_branches": {
-    "test-appsettings-allprops": "repo-assist/test-appsettings-allprops-2026-07-09",
-    "improve-color-temp-hotkeys": "repo-assist/improve-color-temp-hotkeys-2026-07-08-1200ea5f0106ea64",
-    "feature-start-with-windows": "repo-assist/feature-start-with-windows-2026-07-08-77845b73e75467fe",
-    "fix-persist-settings": "repo-assist/fix-persist-settings-2026-07-08-c9bd401abed59e5d",
-    "fix-monitor-index": "repo-assist/fix-monitor-index-2026-07-06-e7cffeee1eb910dc",
-    "perf-mouse-coalesce": "repo-assist/perf-mouse-coalesce-2026-07-06-fcb2397c56cb65e8",
-    "eng-updatum": "repo-assist/eng-updatum-1.4.0-2026-07-05-5b7aca266df3d5e6"
-  }
+  "pending_fallback_issues": {
+    "139": "test: 37 xUnit tests for AppSettings (covers all 8 settings)",
+    "138": "fix: SettingsWindow on wrong monitor (SystemParameters.WorkArea = always primary)",
+    "137": "fix: stale slider in SettingsWindow_Closing",
+    "136": "perf: cache hole-punch geometries",
+    "134": "fix: sync drop shadow with color temp",
+    "131": "fix: additional monitors color temp",
+    "130": "fix: persist Show on All Monitors",
+    "141": "perf: cache color-temp Color structs + JsonSerializerOptions",
+    "140": "eng: bump Updatum + global.json"
+  },
+  "code_verified_2026_07_23_13": {
+    "130_valid": "showOnAllMonitors not in AppSettings - confirmed bug still in master",
+    "131_valid": "CreateMonitorWindow uses hardcoded white gradient, not _colorTemperature - confirmed bug",
+    "134_valid": "SetColorTemperature does not update DropShadowEffect.Color - confirmed bug",
+    "137_valid": "SettingsWindow_Closing reads BrightnessSlider.Value, stale if changed via hotkey - confirmed bug",
+    "138_valid": "SettingsWindow_Loaded uses SystemParameters.WorkArea (primary monitor only) - confirmed bug"
+  },
+  "notes": "2026-07-23 13:14 run: Tasks 4+3. Code review of MainWindow, SettingsWindow, ControlWindow confirmed all known bugs still present. No new bugs found. No new engineering improvements identified. Master unchanged since July 8 (commit c54ebb7). PR creation still disabled."
 }
