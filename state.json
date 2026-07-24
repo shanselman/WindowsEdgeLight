@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-07-24T01:14:54Z",
-  "last_run_id": "30058375118",
+  "last_run": "2026-07-24T13:12:37Z",
+  "last_run_id": "30095864639",
   "comments_made": {
     "24": "2026-07-01T13:51:58Z"
   },
@@ -93,8 +93,12 @@
     "141": "perf: cache color-temp Color structs + JsonSerializerOptions",
     "140": "eng: bump Updatum + global.json"
   },
-  "code_verified_2026_07_24": {
-    "note": "Master still at c54ebb7 (July 8). All bugs verified valid in previous runs. No new bugs or opportunities identified."
+  "code_verified_2026_07_23": {
+    "130_valid": "showOnAllMonitors not in AppSettings - confirmed bug still in master",
+    "131_valid": "ShowOnAllMonitors() does not call UpdateAdditionalMonitorWindows() - confirmed bug",
+    "134_valid": "DropShadowEffect.Color always white, never updated on color temp change - confirmed bug",
+    "137_valid": "SettingsWindow_Closing reads BrightnessSlider.Value not mainWindow.GetBrightness() - confirmed bug",
+    "138_valid": "SettingsWindow_Loaded uses SystemParameters.WorkArea (primary monitor only) - confirmed bug"
   },
-  "notes": "2026-07-24 01:14 run: Tasks 4+2. Task 4: no new engineering opportunities; master unchanged since July 8; all 9 improvements still tracked in fallback issues. Task 2: no new human issues; #24 already has 2 detailed RA comments, no new human activity. PR creation still disabled."
+  "notes": "2026-07-24 13:12 run: Tasks 2+3. Task 2: only #24 open human issue, 2 RA comments already, no new human activity. Task 3: PR creation disabled, all 9 fixes tracked as fallback issues, no new work. Monthly summary #123 updated."
 }
