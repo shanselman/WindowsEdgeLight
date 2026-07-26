@@ -1,48 +1,23 @@
 {
-  "last_run": "2026-07-26T01:20:28Z",
-  "last_run_id": "30182583552",
+  "last_run": "2026-07-26T13:12:06Z",
+  "last_run_id": "30203475045",
   "comments_made": {
     "24": "2026-07-01T13:51:58Z",
     "137": "2026-07-25T01:15:00Z"
   },
   "labels_applied": {
-    "24": [
-      "enhancement",
-      "needs investigation"
-    ],
-    "33": [
-      "enhancement"
-    ],
-    "27": [
-      "help wanted"
-    ],
-    "36": [
-      "enhancement"
-    ],
-    "56": [
-      "enhancement"
-    ],
-    "62": [
-      "enhancement"
-    ],
-    "63": [
-      "refactor"
-    ],
-    "64": [
-      "enhancement"
-    ],
-    "65": [
-      "bug"
-    ],
-    "66": [
-      "refactor"
-    ],
-    "67": [
-      "bug"
-    ],
-    "69": [
-      "bug"
-    ]
+    "24": ["enhancement", "needs investigation"],
+    "33": ["enhancement"],
+    "27": ["help wanted"],
+    "36": ["enhancement"],
+    "56": ["enhancement"],
+    "62": ["enhancement"],
+    "63": ["refactor"],
+    "64": ["enhancement"],
+    "65": ["bug"],
+    "66": ["refactor"],
+    "67": ["bug"],
+    "69": ["bug"]
   },
   "fix_attempts": {
     "test-appsettings-v2-2026-07-15": {
@@ -101,7 +76,7 @@
     },
     "fix-settings-live-sync": {
       "branch": "repo-assist/fix-settings-live-sync-2026-07-26",
-      "status": "fallback_issue_pending",
+      "status": "fallback_issue_145",
       "date": "2026-07-26",
       "description": "Live-sync SettingsWindow sliders with external brightness/color-temp changes via events. Supersedes #137 band-aid fix. Build passes."
     }
@@ -115,15 +90,18 @@
     "build": "Project targets net10.0-windows; build requires -p:EnableWindowsTargeting=true on Linux CI. Test project targets net8.0 to avoid this."
   },
   "pending_fallback_issues": {
+    "145": "fix: live-sync Settings sliders with external brightness/color-temp changes (supersedes #137)",
     "139": "test: 37 xUnit tests for AppSettings (covers all 8 settings)",
     "138": "fix: SettingsWindow on wrong monitor (SystemParameters.WorkArea = always primary)",
-    "137": "fix: stale slider in SettingsWindow_Closing - Bug 1 (hotkey staleness) still present after PR #68",
     "136": "perf: cache hole-punch geometries",
     "134": "fix: sync drop shadow with color temp (DropShadowEffect.Color never updated)",
     "131": "fix: additional monitors color temp",
     "130": "fix: persist Show on All Monitors",
     "141": "perf: cache color-temp Color structs + JsonSerializerOptions",
     "140": "eng: bump Updatum + global.json"
+  },
+  "nuget_last_checked": {
+    "updatum": {"latest": "1.4.0", "current": "1.2.1", "checked": "2026-07-26"}
   },
   "code_verified_2026_07_25": {
     "130_valid": "showOnAllMonitors not in AppSettings - confirmed bug still in master",
@@ -132,5 +110,5 @@
     "137_valid": "SettingsWindow_Closing reads BrightnessSlider.Value not GetBrightness() - Bug 1 (hotkey staleness) still valid. PR #68 only fixed Bug 2 (track-click via Closing save).",
     "138_valid": "SettingsWindow_Loaded uses SystemParameters.WorkArea (primary monitor only) for clamping - confirmed bug"
   },
-  "notes": "2026-07-26 01:20 run: Tasks 2+10. Task 2: #24 only human issue, no new activity. Task 10: Implemented live-sync slider feature (BrightnessChanged/ColorTemperatureChanged events on MainWindow, subscribed in SettingsWindow). Build passes. Fallback issue to be created."
+  "notes": "2026-07-26 13:12 run: Tasks 4+2. Task 4: Verified Updatum 1.4.0 still latest (NuGet API confirmed); all engineering blocked by disabled PR creation. Task 2: No human issues without RA comments; #24 (HDR) has 2 detailed comments, no new human activity. Monthly summary #123 updated."
 }
