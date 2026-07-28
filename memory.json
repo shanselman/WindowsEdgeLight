@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-07-27T13:40:17Z",
-  "last_run_id": "30271235081",
+  "last_run": "2026-07-28T01:13:00Z",
+  "last_run_id": "30319521112",
   "comments_made": {
     "24": "2026-07-01T13:51:58Z",
     "137": "2026-07-25T01:15:00Z",
@@ -41,5 +41,10 @@
     "copilot/support-hdr-feature": "Full HDR impl: HdrColorManager.cs+HdrOverlayWindow.cs. PR #144 (filtered). Linked to #24.",
     "copilot/aw-repo-assist-fix": "Adds copilot-requests:true + fetch-all to repo-assist.md. Doesn't fix PR creation."
   },
-  "notes": "2026-07-27T13: Tasks 3+2. Task3: codebase audit - all known bugs still present, all branched, no new bugs found. Task2: no new human issues. Monthly summary #123 updated. Bugs #130,#131,#134,#137,#138 still in master."
+  "ci_findings": {
+    "checked": "2026-07-28",
+    "outdated_actions": ["softprops/action-gh-release@v1 (should be @v2)", "azure/trusted-signing-action@v1 (may be outdated)"],
+    "missing": ["NuGet package caching in build.yml"]
+  },
+  "notes": "2026-07-28: Tasks 4+3. Task4: CI audit - softprops/action-gh-release@v1 outdated (v2 current), azure/trusted-signing-action@v1 possibly outdated, no NuGet caching. Task3: master unchanged since 2026-07-08, all known bugs still present. Monthly summary #123 updated with CI findings."
 }
