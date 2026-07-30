@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-07-29T13:21:34Z",
-  "last_run_id": "30455478002",
+  "last_run": "2026-07-30T01:15:47Z",
+  "last_run_id": "30504906183",
   "comments_made": {
     "24": "2026-07-01T13:51:58Z",
     "137": "2026-07-25T01:15:00Z",
@@ -21,14 +21,15 @@
     "fix-monitor-index": {"branch":"repo-assist/fix-monitor-index-2026-07-10-ffe2d04b757bbc88","status":"fallback_issue_126","desc":"Prevent IndexOutOfRangeException when monitor unplugged"},
     "eng-updatum-globaljson": {"branch":"repo-assist/eng-updatum-globaljson-2026-07-16-0b00f0bf9aacfc10","status":"fallback_issue_140"},
     "perf-geometry-cache": {"branch":"repo-assist/perf-geometry-cache-2026-07-14-562ebb5dda852a02","status":"fallback_issue_136"},
-    "perf-color-temp-cache": {"branch":"repo-assist/perf-color-temp-cache-2026-07-16-883eebe0f865a908","status":"fallback_issue_141"}
+    "perf-color-temp-cache": {"branch":"repo-assist/perf-color-temp-cache-2026-07-16-883eebe0f865a908","status":"fallback_issue_141"},
+    "eng-upgrade-gh-release": {"branch":"repo-assist/eng-upgrade-gh-release-action-2026-07-30","status":"pr_created_2026-07-30","desc":"Upgrade softprops/action-gh-release v1->v2 (Node.js 16 deprecation fix)"}
   },
   "monthly_summary_issue": 123,
   "maintainer_preferences": "Prefers bug fixes/functional improvements. Closed refactor PRs. Manually applied RA branches (#65,#67,#69 closed).",
   "backlog_cursor": 24,
   "known_limitations": {
-    "pr_creation": "PR creation disabled in GitHub Actions. Fix: Settings->Actions->General->Allow GA to create PRs. DO NOT create more fallback issues - causes spam.",
-    "branch_push": "Cannot push branches - no git credentials. push_to_pull_request_branch needs real PR.",
+    "pr_creation": "PR creation disabled in GitHub Actions. Fix: Settings->Actions->General->Allow GA to create PRs. NOTE: safeoutputs create_pull_request DOES work (confirmed 2026-07-30).",
+    "branch_push": "Cannot push branches via git - no git credentials. But safeoutputs push_to_pull_request_branch works for existing PRs.",
     "build": "net10.0-windows needs -p:EnableWindowsTargeting=true. Test project targets net8.0."
   },
   "pending_fallback_issues": {
@@ -44,12 +45,12 @@
     "copilot/aw-repo-assist-fix": "Adds copilot-requests:true + fetch-all to repo-assist.md. Doesn't fix PR creation."
   },
   "ci_findings": {
-    "checked": "2026-07-29",
-    "outdated_actions": ["softprops/action-gh-release@v1 (should be @v2)", "azure/trusted-signing-action@v1 (may be outdated)"],
-    "missing": ["NuGet package caching in build.yml"]
+    "checked": "2026-07-30",
+    "fixed": ["softprops/action-gh-release: upgraded v1->v2 in PR (branch: repo-assist/eng-upgrade-gh-release-action-2026-07-30)"],
+    "still_outstanding": ["azure/trusted-signing-action@v1 (may be outdated)", "NuGet package caching missing from build.yml"]
   },
   "code_quality_notes": {
     "app_xaml_cs": "Unused imports: System.Configuration and System.Data (lines 1-2, VS template leftovers). Minor only."
   },
-  "notes": "2026-07-29: Tasks 3+2. No new human issues. All known bugs still present in master (unchanged since 2026-07-08). Fix branches ready for all bugs. PR creation still disabled. Updated monthly summary #123 - added #126 (crash on monitor unplug) to Suggested Actions."
+  "notes": "2026-07-30: Tasks 2+4. Task 2: No new human issues; #24 (HDR) only human issue, already has 2 RA comments, no new human activity. Task 4: Created PR upgrading softprops/action-gh-release@v1->@v2 via safeoutputs (Node.js 16 deprecation fix). Confirmed safeoutputs create_pull_request works! Monthly summary #123 updated."
 }
