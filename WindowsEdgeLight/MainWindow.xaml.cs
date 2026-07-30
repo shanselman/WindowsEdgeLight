@@ -55,6 +55,9 @@ public partial class MainWindow : Window
         public double PathOffsetY { get; set; }
         public double DpiScaleX { get; set; } = 1.0;
         public double DpiScaleY { get; set; } = 1.0;
+        // Cached geometries reused on every mouse-move to avoid heap allocations
+        public EllipseGeometry HoleGeometry { get; set; } = null!;
+        public CombinedGeometry HoleCombinedGeometry { get; set; } = null!;
     }
 
     // Monitor management
@@ -139,6 +142,9 @@ public partial class MainWindow : Window
     private readonly Ellipse? hoverCursorRing;
     // Added fields for hole effect
     private Geometry? baseFrameGeometry; // original frame geometry (outer minus inner)
+    // Cached geometries reused on every mouse-move to avoid per-event heap allocations
+    private EllipseGeometry? mainHoleGeometry;
+    private CombinedGeometry? mainHoleCombinedGeometry;
     private double pathOffsetX; // offset of geometry within window
     private double pathOffsetY;
 
@@ -441,7 +447,8 @@ Version {version}";
         }
 
         // --- Main Window Logic ---
-        if (frameOuterRect != null && frameInnerRect != null && hoverCursorRing != null && baseFrameGeometry != null)
+        if (frameOuterRect != null && frameInnerRect != null && hoverCursorRing != null && baseFrameGeometry != null
+            && mainHoleGeometry != null && mainHoleCombinedGeometry != null)
         {
             var screen = availableMonitors.Length > 0 ? availableMonitors[currentMonitorIndex] : Screen.PrimaryScreen;
             if (screen != null)
@@ -455,7 +462,8 @@ Version {version}";
                     EdgeLightBorder,
                     baseFrameGeometry,
                     pathOffsetX, pathOffsetY,
-                    (ring, x, y) => { Canvas.SetLeft(ring, x); Canvas.SetTop(ring, y); }
+                    (ring, x, y) => { Canvas.SetLeft(ring, x); Canvas.SetTop(ring, y); },
+                    mainHoleGeometry, mainHoleCombinedGeometry
                 );
             }
         }
@@ -474,7 +482,8 @@ Version {version}";
                     ctx.BorderPath,
                     ctx.BaseGeometry,
                     ctx.PathOffsetX, ctx.PathOffsetY,
-                    (ring, x, y) => { ring.Margin = new Thickness(x, y, 0, 0); }
+                    (ring, x, y) => { ring.Margin = new Thickness(x, y, 0, 0); },
+                    ctx.HoleGeometry, ctx.HoleCombinedGeometry
                 );
             }
             catch (InvalidOperationException)
@@ -493,7 +502,9 @@ Version {version}";
         System.Windows.Shapes.Path borderPath,
         Geometry baseGeometry,
         double pathOffsetX, double pathOffsetY,
-        Action<Ellipse, double, double> positionRing)
+        Action<Ellipse, double, double> positionRing,
+        EllipseGeometry holeGeometry,
+        CombinedGeometry combinedGeometry)
     {
         // Manual coordinate calculation to avoid PointFromScreen issues across monitors/DPIs
         // We positioned the window using dpiScaleX/Y relative to the screen WorkingArea.
@@ -527,11 +538,11 @@ Version {version}";
                 hoverRing.Visibility = Visibility.Visible;
             }
 
-            // Punch a transparent hole under the ring by excluding a circle geometry from the frame
-            // Convert window coordinates to geometry local coordinates by subtracting stored offsets
+            // Reuse cached geometries: update hole center in-place instead of allocating new objects
             var localCenter = new System.Windows.Point(windowPt.X - pathOffsetX, windowPt.Y - pathOffsetY);
-            var hole = new EllipseGeometry(localCenter, holeRadius, holeRadius);
-            borderPath.Data = new CombinedGeometry(GeometryCombineMode.Exclude, baseGeometry, hole);
+            holeGeometry.Center = localCenter;
+            if (borderPath.Data != combinedGeometry)
+                borderPath.Data = combinedGeometry;
         }
         else
         {
@@ -595,6 +606,9 @@ Version {version}";
         double holeRadius = ringDiameter / 2.0;
         frameOuterRect = new Rect(pathOffsetX - holeRadius, pathOffsetY - holeRadius, width + holeRadius * 2, height + holeRadius * 2);
         frameInnerRect = new Rect(pathOffsetX + frameThickness + holeRadius, pathOffsetY + frameThickness + holeRadius, width - (frameThickness * 2) - holeRadius * 2, height - (frameThickness * 2) - holeRadius * 2);
+        // Cache hole geometries so ApplyHolePunchEffect can reuse them instead of allocating on every mouse-move event
+        mainHoleGeometry = new EllipseGeometry(new System.Windows.Point(0, 0), holeRadius, holeRadius);
+        mainHoleCombinedGeometry = new CombinedGeometry(GeometryCombineMode.Exclude, frameGeometry, mainHoleGeometry);
     }
 
     private IntPtr HwndHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
@@ -1148,6 +1162,10 @@ Version {version}";
         var frameOuterRect = new Rect(pathOffsetX - holeRadius, pathOffsetY - holeRadius, width + holeRadius * 2, height + holeRadius * 2);
         var frameInnerRect = new Rect(pathOffsetX + frameThickness + holeRadius, pathOffsetY + frameThickness + holeRadius, width - (frameThickness * 2) - holeRadius * 2, height - (frameThickness * 2) - holeRadius * 2);
 
+        // Cache hole geometries for reuse in mouse-move handler
+        var holeGeom = new EllipseGeometry(new System.Windows.Point(0, 0), holeRadius, holeRadius);
+        var holeCombined = new CombinedGeometry(GeometryCombineMode.Exclude, frameGeometry, holeGeom);
+
         var ctx = new MonitorWindowContext
         {
             Window = window,
@@ -1160,7 +1178,9 @@ Version {version}";
             PathOffsetX = pathOffsetX,
             PathOffsetY = pathOffsetY,
             DpiScaleX = screenDpiX, // Use calculated DPI for this screen
-            DpiScaleY = screenDpiY
+            DpiScaleY = screenDpiY,
+            HoleGeometry = holeGeom,
+            HoleCombinedGeometry = holeCombined
         };
 
         // Make window click-through and handle DPI
@@ -1247,6 +1267,9 @@ Version {version}";
         
         ctx.FrameOuterRect = new Rect(ctx.PathOffsetX - holeRadius, ctx.PathOffsetY - holeRadius, width + holeRadius * 2, height + holeRadius * 2);
         ctx.FrameInnerRect = new Rect(ctx.PathOffsetX + frameThickness + holeRadius, ctx.PathOffsetY + frameThickness + holeRadius, width - (frameThickness * 2) - holeRadius * 2, height - (frameThickness * 2) - holeRadius * 2);
+        // Recreate hole geometries to match the new frame dimensions
+        ctx.HoleGeometry = new EllipseGeometry(new System.Windows.Point(0, 0), holeRadius, holeRadius);
+        ctx.HoleCombinedGeometry = new CombinedGeometry(GeometryCombineMode.Exclude, frameGeometry, ctx.HoleGeometry);
     }
 
     public bool IsShowingOnAllMonitors()
