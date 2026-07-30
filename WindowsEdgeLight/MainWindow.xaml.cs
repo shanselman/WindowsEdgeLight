@@ -846,6 +846,19 @@ Version {version}";
         }
     }
 
+    // Cool (blue-white) and warm (amber) endpoint colors for the temperature gradient
+    private static readonly System.Windows.Media.Color _coolColor = System.Windows.Media.Color.FromRgb(220, 235, 255);
+    private static readonly System.Windows.Media.Color _warmColor = System.Windows.Media.Color.FromRgb(255, 220, 180);
+
+    private static System.Windows.Media.Color GetColorForTemperature(double t)
+    {
+        byte LerpByte(byte x, byte y, double tt) => (byte)(x + (y - x) * tt);
+        return System.Windows.Media.Color.FromArgb(255,
+            LerpByte(_coolColor.R, _warmColor.R, t),
+            LerpByte(_coolColor.G, _warmColor.G, t),
+            LerpByte(_coolColor.B, _warmColor.B, t));
+    }
+
     private void UpdateAdditionalMonitorWindows()
     {
         foreach (var ctx in additionalMonitorWindows)
@@ -854,26 +867,13 @@ Version {version}";
             path.Opacity = currentOpacity;
             path.Visibility = isLightOn ? Visibility.Visible : Visibility.Collapsed;
             
-            // Update color temperature
             if (path.Fill is LinearGradientBrush brush && brush.GradientStops.Count >= 3)
             {
-                var cool = System.Windows.Media.Color.FromRgb(220, 235, 255);
-                var warm = System.Windows.Media.Color.FromRgb(255, 220, 180);
-                
-                System.Windows.Media.Color Lerp(System.Windows.Media.Color a, System.Windows.Media.Color b, double t)
-                {
-                    byte LerpByte(byte x, byte y, double tt) => (byte)(x + (y - x) * tt);
-                    return System.Windows.Media.Color.FromArgb(255, LerpByte(a.R, b.R, t), LerpByte(a.G, b.G, t), LerpByte(a.B, b.B, t));
-                }
-                
-                var midColor = Lerp(cool, warm, _colorTemperature);
-                
+                var midColor = GetColorForTemperature(_colorTemperature);
                 foreach (var stop in brush.GradientStops)
                 {
                     if (stop.Offset is > 0.2 and < 0.8)
-                    {
                         stop.Color = midColor;
-                    }
                 }
             }
         }
@@ -898,31 +898,11 @@ Version {version}";
         // NOTE: This assumes the brush defined in XAML is still a LinearGradientBrush.
         if (EdgeLightBorder.Fill is LinearGradientBrush brush && brush.GradientStops.Count >= 3)
         {
-            // Cool: RGB ~ (220, 235, 255), Warm: RGB ~ (255, 220, 180)
-            System.Windows.Media.Color Lerp(System.Windows.Media.Color a, System.Windows.Media.Color b, double t)
-            {
-                byte LerpByte(byte x, byte y, double tt) => (byte)(x + (y - x) * tt);
-
-                return System.Windows.Media.Color.FromArgb(
-                    255,
-                    LerpByte(a.R, b.R, t),
-                    LerpByte(a.G, b.G, t),
-                    LerpByte(a.B, b.B, t));
-            }
-
-            var cool = System.Windows.Media.Color.FromRgb(220, 235, 255);
-            var warm = System.Windows.Media.Color.FromRgb(255, 220, 180);
-
-            var midColor = Lerp(cool, warm, _colorTemperature);
-
-            // Update a couple of inner stops to shift perceived temperature
-            // Keep outer rim relatively neutral for consistent edge.
+            var midColor = GetColorForTemperature(_colorTemperature);
             foreach (var stop in brush.GradientStops)
             {
                 if (stop.Offset is > 0.2 and < 0.8)
-                {
                     stop.Color = midColor;
-                }
             }
         }
         
