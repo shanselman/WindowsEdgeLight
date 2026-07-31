@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-07-31T01:17:00Z",
-  "last_run_id": "30595830349",
+  "last_run": "2026-07-31T13:19:00Z",
+  "last_run_id": "30633853312",
   "comments_made": {
     "24": "2026-07-01T13:51:58Z",
     "130": "2026-07-31T01:17:00Z",
@@ -13,6 +13,8 @@
     "64":["enhancement"],"65":["bug"],"66":["refactor"],"67":["bug"],"69":["bug"]
   },
   "fix_attempts": {
+    "fix-persist-control-window-visibility": {"branch":"repo-assist/fix-persist-control-window-visibility-2026-07-31","status":"pr_created_2026-07-31","desc":"Persist IsControlWindowVisible in AppSettings; restore on load; save on toggle."},
+    "improve-appsettings-validation": {"branch":"repo-assist/improve-appsettings-validation-2026-07-31","status":"pr_created_2026-07-31","desc":"Add ClampRanges() to AppSettings.Load(); remove redundant clamping from MainWindow."},
     "fix-persist-show-all-monitors-v2": {"branch":"repo-assist/fix-persist-show-all-monitors-2026-07-31","status":"pr_created_2026-07-31","desc":"Persist showOnAllMonitors in AppSettings; restore on load; save on toggle. Closes #130."},
     "improve-static-json-options": {"branch":"repo-assist/improve-static-json-options-2026-07-31","status":"pr_created_2026-07-31","desc":"Cache JsonSerializerOptions as static readonly in AppSettings."},
     "perf-cache-hole-geometry": {"branch":"repo-assist/perf-cache-hole-geometry-2026-07-30","status":"pr_created_2026-07-30","desc":"Cache EllipseGeometry+CombinedGeometry per monitor context; eliminates ~200 heap allocations/s from mouse-move"},
@@ -55,5 +57,5 @@
     "fixed": ["softprops/action-gh-release: upgraded v1->v2 in PR (branch: repo-assist/eng-upgrade-gh-release-action-2026-07-30)"],
     "still_outstanding": ["azure/trusted-signing-action@v1 (may be outdated)", "NuGet package caching missing from build.yml"]
   },
-  "notes": "2026-07-31 01:17: Tasks 3+5. Task 3: Created PR fixing showOnAllMonitors not persisted (branch: repo-assist/fix-persist-show-all-monitors-2026-07-31). Task 5: Created PR caching JsonSerializerOptions as static readonly in AppSettings (branch: repo-assist/improve-static-json-options-2026-07-31). Both built successfully (0 errors). Commented on #130. NOTE: PRs created by safeoutputs are filtered by integrity filter - use branch comparison links."
+  "notes": "2026-07-31 13:19: Tasks 3+5. Task 3: Created PR fixing isControlWindowVisible not persisted (branch: repo-assist/fix-persist-control-window-visibility-2026-07-31). Task 5: Created PR improving AppSettings.Load() to clamp ranges internally via ClampRanges(); removed redundant clamping from MainWindow (branch: repo-assist/improve-appsettings-validation-2026-07-31). Both built successfully (0 errors)."
 }
