@@ -73,9 +73,9 @@ public class AppSettings
                 };
                 var settings = JsonSerializer.Deserialize<AppSettings>(json, options);
                 
-                // Validate deserialized settings
                 if (settings != null)
                 {
+                    settings.ClampRanges();
                     return settings;
                 }
             }
@@ -99,6 +99,16 @@ public class AppSettings
         }
 
         return new AppSettings();
+    }
+
+    /// <summary>
+    /// Clamp numeric settings to their valid ranges so callers never see out-of-range values.
+    /// Brightness: [0.2, 1.0]; ColorTemperature: [0.0, 1.0]
+    /// </summary>
+    private void ClampRanges()
+    {
+        Brightness = Math.Clamp(Brightness, 0.2, 1.0);
+        ColorTemperature = Math.Clamp(ColorTemperature, 0.0, 1.0);
     }
 
     /// <summary>

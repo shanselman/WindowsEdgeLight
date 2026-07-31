@@ -156,18 +156,10 @@ public partial class MainWindow : Window
         // Load settings
         settings = AppSettings.Load();
         
-        // Restore persisted state
+        // Restore persisted state (AppSettings.Load() already clamps Brightness and ColorTemperature)
         isLightOn = settings.IsLightOn;
-        currentOpacity = Math.Max(MinOpacity, Math.Min(MaxOpacity, settings.Brightness));
-        _colorTemperature = Math.Max(MinColorTemp, Math.Min(MaxColorTemp, settings.ColorTemperature));
-
-        // Save back if values were clamped
-        if (currentOpacity != settings.Brightness || _colorTemperature != settings.ColorTemperature)
-        {
-            settings.Brightness = currentOpacity;
-            settings.ColorTemperature = _colorTemperature;
-            settings.Save();
-        }
+        currentOpacity = settings.Brightness;
+        _colorTemperature = settings.ColorTemperature;
 
         SetupNotifyIcon();
     }
