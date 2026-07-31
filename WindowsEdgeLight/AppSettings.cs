@@ -57,6 +57,11 @@ public class AppSettings
     public bool ShowMonitorControlButtons { get; set; } = true;
 
     /// <summary>
+    /// Whether to show the edge light on all monitors simultaneously (persisted across restarts)
+    /// </summary>
+    public bool ShowOnAllMonitors { get; set; } = false;
+
+    /// <summary>
     /// Load settings from disk
     /// </summary>
     public static AppSettings Load()
