@@ -1,8 +1,9 @@
 {
-  "last_run": "2026-07-30T13:17:17Z",
-  "last_run_id": "30546068746",
+  "last_run": "2026-07-31T01:17:00Z",
+  "last_run_id": "30595830349",
   "comments_made": {
     "24": "2026-07-01T13:51:58Z",
+    "130": "2026-07-31T01:17:00Z",
     "137": "2026-07-25T01:15:00Z",
     "139": "2026-07-27T01:18:00Z"
   },
@@ -12,6 +13,8 @@
     "64":["enhancement"],"65":["bug"],"66":["refactor"],"67":["bug"],"69":["bug"]
   },
   "fix_attempts": {
+    "fix-persist-show-all-monitors-v2": {"branch":"repo-assist/fix-persist-show-all-monitors-2026-07-31","status":"pr_created_2026-07-31","desc":"Persist showOnAllMonitors in AppSettings; restore on load; save on toggle. Closes #130."},
+    "improve-static-json-options": {"branch":"repo-assist/improve-static-json-options-2026-07-31","status":"pr_created_2026-07-31","desc":"Cache JsonSerializerOptions as static readonly in AppSettings."},
     "perf-cache-hole-geometry": {"branch":"repo-assist/perf-cache-hole-geometry-2026-07-30","status":"pr_created_2026-07-30","desc":"Cache EllipseGeometry+CombinedGeometry per monitor context; eliminates ~200 heap allocations/s from mouse-move"},
     "improve-code-clarity": {"branch":"repo-assist/improve-code-clarity-2026-07-30","status":"pr_created_2026-07-30","desc":"Remove unused System.Configuration/System.Data imports; extract GetColorForTemperature() static helper (dedup Lerp boilerplate)"},
     "test-appsettings": {"branch":"repo-assist/test-appsettings-v2-2026-07-15-857e1104ec5cd3a0","status":"fallback_issue_139","desc":"50 xUnit tests (37+13 clamping). Push blocked. Commented #139."},
@@ -19,7 +22,7 @@
     "fix-settings-monitor-workarea": {"branch":"repo-assist/fix-settings-monitor-workarea-2026-07-15","status":"fallback_issue_138"},
     "fix-shadow-color-temp": {"branch":"repo-assist/fix-shadow-color-temp-2026-07-13-c4620822d212f7b9","status":"fallback_issue_134"},
     "fix-initial-color-temp-monitors": {"branch":"repo-assist/fix-initial-color-temp-additional-monitors-2026-07-12-80400a09ec2f1674","status":"fallback_issue_131"},
-    "fix-persist-all-monitors": {"branch":"repo-assist/fix-persist-all-monitors-2026-07-12-6d8c3760a1500609","status":"fallback_issue_130"},
+    "fix-persist-all-monitors": {"branch":"repo-assist/fix-persist-all-monitors-2026-07-12-6d8c3760a1500609","status":"fallback_issue_130","desc":"OLD branch - superseded by fix-persist-show-all-monitors-2026-07-31"},
     "fix-monitor-index": {"branch":"repo-assist/fix-monitor-index-2026-07-10-ffe2d04b757bbc88","status":"fallback_issue_126","desc":"Prevent IndexOutOfRangeException when monitor unplugged"},
     "eng-updatum-globaljson": {"branch":"repo-assist/eng-updatum-globaljson-2026-07-16-0b00f0bf9aacfc10","status":"fallback_issue_140"},
     "perf-geometry-cache": {"branch":"repo-assist/perf-geometry-cache-2026-07-14-562ebb5dda852a02","status":"fallback_issue_136"},
@@ -30,7 +33,7 @@
   "maintainer_preferences": "Prefers bug fixes/functional improvements. Closed refactor PRs. Manually applied RA branches (#65,#67,#69 closed). NOTE: refactor/cleanup PRs may be closed.",
   "backlog_cursor": 24,
   "known_limitations": {
-    "pr_creation": "PR creation via safeoutputs create_pull_request confirmed working (2026-07-30).",
+    "pr_creation": "PR creation via safeoutputs create_pull_request confirmed working. PRs are filtered by integrity (github-actions[bot] PRs invisible to RA agent). Use branch comparison links.",
     "branch_push": "Cannot push branches via git - no git credentials. But safeoutputs push_to_pull_request_branch works for existing PRs.",
     "build": "net10.0-windows needs -p:EnableWindowsTargeting=true. Test project targets net8.0."
   },
@@ -38,7 +41,8 @@
     "145":"fix: live-sync Settings sliders","139":"test: 50 xUnit AppSettings tests + clamping fix",
     "138":"fix: SettingsWindow wrong monitor","136":"perf: cache geometries (OLD - superseded by new PR)",
     "134":"fix: drop shadow color sync","131":"fix: additional monitors color temp",
-    "130":"fix: persist Show on All Monitors","141":"perf: cache color structs","140":"eng: bump Updatum 1.4.0",
+    "130":"fix: persist Show on All Monitors (NEW PR: fix-persist-show-all-monitors-2026-07-31)",
+    "141":"perf: cache color structs","140":"eng: bump Updatum 1.4.0",
     "126":"fix: prevent IndexOutOfRangeException on monitor unplug"
   },
   "nuget_last_checked": {"updatum":{"latest":"1.4.0","current":"1.2.1","checked":"2026-07-26"}},
@@ -51,9 +55,5 @@
     "fixed": ["softprops/action-gh-release: upgraded v1->v2 in PR (branch: repo-assist/eng-upgrade-gh-release-action-2026-07-30)"],
     "still_outstanding": ["azure/trusted-signing-action@v1 (may be outdated)", "NuGet package caching missing from build.yml"]
   },
-  "code_quality_notes": {
-    "app_xaml_cs": "FIXED in pr_created_2026-07-30: unused System.Configuration and System.Data imports removed.",
-    "main_window_lerp": "FIXED in pr_created_2026-07-30: duplicate Lerp boilerplate extracted to GetColorForTemperature() static helper."
-  },
-  "notes": "2026-07-30 13:17: Tasks 8+5. Task 8: Created PR caching EllipseGeometry/CombinedGeometry per monitor context (branch: repo-assist/perf-cache-hole-geometry-2026-07-30). Eliminates ~200 heap allocations/s from mouse-move. Task 5: Created PR removing unused imports from App.xaml.cs and extracting duplicate Lerp helper to GetColorForTemperature() (branch: repo-assist/improve-code-clarity-2026-07-30). Both built successfully. Monthly summary #123 updated."
+  "notes": "2026-07-31 01:17: Tasks 3+5. Task 3: Created PR fixing showOnAllMonitors not persisted (branch: repo-assist/fix-persist-show-all-monitors-2026-07-31). Task 5: Created PR caching JsonSerializerOptions as static readonly in AppSettings (branch: repo-assist/improve-static-json-options-2026-07-31). Both built successfully (0 errors). Commented on #130. NOTE: PRs created by safeoutputs are filtered by integrity filter - use branch comparison links."
 }
