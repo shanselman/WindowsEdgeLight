@@ -57,6 +57,11 @@ public class AppSettings
     public bool ShowMonitorControlButtons { get; set; } = true;
 
     /// <summary>
+    /// Whether the floating control toolbar is currently visible
+    /// </summary>
+    public bool IsControlWindowVisible { get; set; } = true;
+
+    /// <summary>
     /// Load settings from disk
     /// </summary>
     public static AppSettings Load()

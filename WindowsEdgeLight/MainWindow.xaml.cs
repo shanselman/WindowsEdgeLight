@@ -158,6 +158,7 @@ public partial class MainWindow : Window
         
         // Restore persisted state
         isLightOn = settings.IsLightOn;
+        isControlWindowVisible = settings.IsControlWindowVisible;
         currentOpacity = Math.Max(MinOpacity, Math.Min(MaxOpacity, settings.Brightness));
         _colorTemperature = Math.Max(MinColorTemp, Math.Min(MaxColorTemp, settings.ColorTemperature));
 
@@ -737,6 +738,8 @@ Version {version}";
     public void ToggleControlsVisibility()
     {
         isControlWindowVisible = !isControlWindowVisible;
+        settings.IsControlWindowVisible = isControlWindowVisible;
+        settings.Save();
         
         // Apply visibility change if control window exists
         if (controlWindow != null)
