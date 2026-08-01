@@ -279,7 +279,7 @@ Version {version}";
             }
         }
 
-        var targetScreen = availableMonitors.Length > 0 ? availableMonitors[currentMonitorIndex] : Screen.PrimaryScreen;
+        var targetScreen = availableMonitors.Length > 0 ? availableMonitors[Math.Min(currentMonitorIndex, availableMonitors.Length - 1)] : Screen.PrimaryScreen;
         if (targetScreen == null) return;
 
         SetupWindowForScreen(targetScreen);
@@ -443,6 +443,8 @@ Version {version}";
         // --- Main Window Logic ---
         if (frameOuterRect != null && frameInnerRect != null && hoverCursorRing != null && baseFrameGeometry != null)
         {
+            // Clamp index in case a monitor was unplugged between refreshes
+            if (currentMonitorIndex >= availableMonitors.Length) currentMonitorIndex = 0;
             var screen = availableMonitors.Length > 0 ? availableMonitors[currentMonitorIndex] : Screen.PrimaryScreen;
             if (screen != null)
             {
@@ -1364,6 +1366,12 @@ Version {version}";
         catch (InvalidOperationException)
         {
             // Window might not be loaded or visible yet
+        }
+
+        // Guard against stale index after a monitor is unplugged: clamp to valid range.
+        if (currentMonitorIndex >= availableMonitors.Length)
+        {
+            currentMonitorIndex = 0;
         }
     }
     
