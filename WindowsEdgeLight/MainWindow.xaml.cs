@@ -1,6 +1,7 @@
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows;
+using Microsoft.Win32;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
@@ -38,6 +39,7 @@ public partial class MainWindow : Window
     private bool isControlWindowVisible = true;
     private ToolStripMenuItem? toggleControlsMenuItem;
     private ToolStripMenuItem? excludeFromCaptureMenuItem;
+    private ToolStripMenuItem? startWithWindowsMenuItem;
     
     // Application settings
     private AppSettings settings = new AppSettings();
@@ -170,6 +172,7 @@ public partial class MainWindow : Window
         }
 
         SetupNotifyIcon();
+        SyncStartWithWindowsRegistry();
     }
 
     private void SetupNotifyIcon()
@@ -223,6 +226,12 @@ public partial class MainWindow : Window
     excludeFromCaptureMenuItem.CheckOnClick = true;
     excludeFromCaptureMenuItem.Checked = settings.ExcludeFromCapture;
     contextMenu.Items.Add(excludeFromCaptureMenuItem);
+
+    // Add start with Windows menu item with checkmark
+    startWithWindowsMenuItem = new ToolStripMenuItem("🚀 Start with Windows", null, (s, e) => ToggleStartWithWindows());
+    startWithWindowsMenuItem.CheckOnClick = false;
+    startWithWindowsMenuItem.Checked = settings.StartWithWindows;
+    contextMenu.Items.Add(startWithWindowsMenuItem);
     
     contextMenu.Items.Add(new ToolStripSeparator());
     contextMenu.Items.Add("✖ Exit", null, (s, e) => System.Windows.Application.Current.Shutdown());
@@ -820,6 +829,45 @@ Version {version}";
                     System.Diagnostics.Debug.WriteLine($"Failed to set display affinity for monitor window. Error: {error}");
                 }
             }
+        }
+    }
+
+    private const string RunRegistryKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
+    private const string RunRegistryValue = "WindowsEdgeLight";
+
+    private void ToggleStartWithWindows()
+    {
+        settings.StartWithWindows = !settings.StartWithWindows;
+        settings.Save();
+
+        if (startWithWindowsMenuItem != null)
+            startWithWindowsMenuItem.Checked = settings.StartWithWindows;
+
+        SyncStartWithWindowsRegistry();
+    }
+
+    private void SyncStartWithWindowsRegistry()
+    {
+        try
+        {
+            using var key = Registry.CurrentUser.OpenSubKey(RunRegistryKey, writable: true);
+            if (key == null) return;
+
+            if (settings.StartWithWindows)
+            {
+                var exePath = Environment.ProcessPath
+                    ?? System.Reflection.Assembly.GetExecutingAssembly().Location;
+                key.SetValue(RunRegistryValue, $"\"{exePath}\"");
+            }
+            else
+            {
+                if (key.GetValue(RunRegistryValue) != null)
+                    key.DeleteValue(RunRegistryValue, throwOnMissingValue: false);
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Failed to update startup registry: {ex.Message}");
         }
     }
 

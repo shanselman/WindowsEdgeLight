@@ -57,6 +57,12 @@ public class AppSettings
     public bool ShowMonitorControlButtons { get; set; } = true;
 
     /// <summary>
+    /// Whether the application should start automatically with Windows.
+    /// When true, a Run registry entry is added for the current user.
+    /// </summary>
+    public bool StartWithWindows { get; set; } = false;
+
+    /// <summary>
     /// Load settings from disk
     /// </summary>
     public static AppSettings Load()
