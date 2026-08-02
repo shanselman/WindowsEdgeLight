@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-08-02T01:17:00Z",
-  "last_run_id": "30726728567",
+  "last_run": "2026-08-02T13:10:48Z",
+  "last_run_id": "30749321454",
   "comments_made": {
     "24": "2026-07-01T13:51:58Z",
     "126": "2026-08-01T13:11:00Z",
@@ -10,28 +10,135 @@
     "139": "2026-07-27T01:18:00Z"
   },
   "labels_applied": {
-    "24": ["enhancement","needs investigation"],"33":["enhancement"],"27":["help wanted"],
-    "36":["enhancement"],"56":["enhancement"],"62":["enhancement"],"63":["refactor"],
-    "64":["enhancement"],"65":["bug"],"66":["refactor"],"67":["bug"],"69":["bug"]
+    "24": [
+      "enhancement",
+      "needs investigation"
+    ],
+    "33": [
+      "enhancement"
+    ],
+    "27": [
+      "help wanted"
+    ],
+    "36": [
+      "enhancement"
+    ],
+    "56": [
+      "enhancement"
+    ],
+    "62": [
+      "enhancement"
+    ],
+    "63": [
+      "refactor"
+    ],
+    "64": [
+      "enhancement"
+    ],
+    "65": [
+      "bug"
+    ],
+    "66": [
+      "refactor"
+    ],
+    "67": [
+      "bug"
+    ],
+    "69": [
+      "bug"
+    ]
   },
   "fix_attempts": {
-    "feat-start-with-windows": {"branch":"repo-assist/feat-start-with-windows-2026-08-02","status":"pr_created_2026-08-02","desc":"Add Start with Windows toggle to tray menu; HKCU Run registry entry."},
-    "fix-issue-126-monitor-unplug": {"branch":"repo-assist/fix-issue-126-monitor-unplug-2026-08-01","status":"pr_created_2026-08-01","desc":"Clamp currentMonitorIndex in UpdateCurrentMonitorIndex/HandleMouseMove/SetupWindow. Closes #126."},
-    "fix-issue-131-color-temp-init": {"branch":"repo-assist/fix-issue-131-color-temp-init-2026-08-01","status":"pr_created_2026-08-01","desc":"Fix CreateMonitorWindow() gradient stops and drop shadow colour to use _colorTemperature lerp. Closes #131."},
-    "fix-persist-control-window-visibility": {"branch":"repo-assist/fix-persist-control-window-visibility-2026-07-31","status":"pr_created_2026-07-31","desc":"Persist IsControlWindowVisible in AppSettings; restore on load; save on toggle."},
-    "improve-appsettings-validation": {"branch":"repo-assist/improve-appsettings-validation-2026-07-31","status":"pr_created_2026-07-31","desc":"Add ClampRanges() to AppSettings.Load(); remove redundant clamping from MainWindow."},
-    "fix-persist-show-all-monitors-v2": {"branch":"repo-assist/fix-persist-show-all-monitors-2026-07-31","status":"pr_created_2026-07-31","desc":"Persist showOnAllMonitors in AppSettings; restore on load; save on toggle. Closes #130."},
-    "improve-static-json-options": {"branch":"repo-assist/improve-static-json-options-2026-07-31","status":"pr_created_2026-07-31","desc":"Cache JsonSerializerOptions as static readonly in AppSettings."},
-    "perf-cache-hole-geometry": {"branch":"repo-assist/perf-cache-hole-geometry-2026-07-30","status":"pr_created_2026-07-30","desc":"Cache EllipseGeometry+CombinedGeometry per monitor context; eliminates ~200 heap allocations/s from mouse-move"},
-    "improve-code-clarity": {"branch":"repo-assist/improve-code-clarity-2026-07-30","status":"pr_created_2026-07-30","desc":"Remove unused System.Configuration/System.Data imports; extract GetColorForTemperature() static helper (dedup Lerp boilerplate)"},
-    "test-appsettings": {"branch":"repo-assist/test-appsettings-v2-2026-07-15-857e1104ec5cd3a0","status":"fallback_issue_139","desc":"50 xUnit tests (37+13 clamping). Push blocked. Commented #139."},
-    "fix-settings-live-sync": {"branch":"repo-assist/fix-settings-live-sync-2026-07-26","status":"fallback_issue_145","desc":"Live-sync sliders via events. Supersedes #137."},
-    "fix-settings-monitor-workarea": {"branch":"repo-assist/fix-settings-monitor-workarea-2026-07-15","status":"fallback_issue_138"},
-    "fix-shadow-color-temp": {"branch":"repo-assist/fix-shadow-color-temp-2026-07-13-c4620822d212f7b9","status":"fallback_issue_134"},
-    "fix-monitor-index": {"branch":"repo-assist/fix-monitor-index-2026-07-10-ffe2d04b757bbc88","status":"superseded_by_fix-issue-126-monitor-unplug-2026-08-01"},
-    "eng-updatum-globaljson": {"branch":"repo-assist/eng-updatum-globaljson-2026-07-16-0b00f0bf9aacfc10","status":"fallback_issue_140"},
-    "perf-color-temp-cache": {"branch":"repo-assist/perf-color-temp-cache-2026-07-16-883eebe0f865a908","status":"fallback_issue_141"},
-    "eng-upgrade-gh-release": {"branch":"repo-assist/eng-upgrade-gh-release-action-2026-07-30","status":"pr_created_2026-07-30","desc":"Upgrade softprops/action-gh-release v1->v2 (Node.js 16 deprecation fix)"}
+    "feat-start-with-windows": {
+      "branch": "repo-assist/feat-start-with-windows-2026-08-02",
+      "status": "pr_created_2026-08-02",
+      "desc": "Add Start with Windows toggle to tray menu; HKCU Run registry entry."
+    },
+    "fix-issue-126-monitor-unplug": {
+      "branch": "repo-assist/fix-issue-126-monitor-unplug-2026-08-01",
+      "status": "pr_created_2026-08-01",
+      "desc": "Clamp currentMonitorIndex in UpdateCurrentMonitorIndex/HandleMouseMove/SetupWindow. Closes #126."
+    },
+    "fix-issue-131-color-temp-init": {
+      "branch": "repo-assist/fix-issue-131-color-temp-init-2026-08-01",
+      "status": "pr_created_2026-08-01",
+      "desc": "Fix CreateMonitorWindow() gradient stops and drop shadow colour to use _colorTemperature lerp. Closes #131."
+    },
+    "fix-persist-control-window-visibility": {
+      "branch": "repo-assist/fix-persist-control-window-visibility-2026-07-31",
+      "status": "pr_created_2026-07-31",
+      "desc": "Persist IsControlWindowVisible in AppSettings; restore on load; save on toggle."
+    },
+    "improve-appsettings-validation": {
+      "branch": "repo-assist/improve-appsettings-validation-2026-07-31",
+      "status": "pr_created_2026-07-31",
+      "desc": "Add ClampRanges() to AppSettings.Load(); remove redundant clamping from MainWindow."
+    },
+    "fix-persist-show-all-monitors-v2": {
+      "branch": "repo-assist/fix-persist-show-all-monitors-2026-07-31",
+      "status": "pr_created_2026-07-31",
+      "desc": "Persist showOnAllMonitors in AppSettings; restore on load; save on toggle. Closes #130."
+    },
+    "improve-static-json-options": {
+      "branch": "repo-assist/improve-static-json-options-2026-07-31",
+      "status": "pr_created_2026-07-31",
+      "desc": "Cache JsonSerializerOptions as static readonly in AppSettings."
+    },
+    "perf-cache-hole-geometry": {
+      "branch": "repo-assist/perf-cache-hole-geometry-2026-07-30",
+      "status": "pr_created_2026-07-30",
+      "desc": "Cache EllipseGeometry+CombinedGeometry per monitor context; eliminates ~200 heap allocations/s from mouse-move"
+    },
+    "improve-code-clarity": {
+      "branch": "repo-assist/improve-code-clarity-2026-07-30",
+      "status": "pr_created_2026-07-30",
+      "desc": "Remove unused System.Configuration/System.Data imports; extract GetColorForTemperature() static helper (dedup Lerp boilerplate)"
+    },
+    "test-appsettings": {
+      "branch": "repo-assist/test-appsettings-v2-2026-07-15-857e1104ec5cd3a0",
+      "status": "fallback_issue_139",
+      "desc": "50 xUnit tests (37+13 clamping). Push blocked. Commented #139."
+    },
+    "fix-settings-live-sync": {
+      "branch": "repo-assist/fix-settings-live-sync-2026-07-26",
+      "status": "fallback_issue_145",
+      "desc": "Live-sync sliders via events. Supersedes #137."
+    },
+    "fix-settings-monitor-workarea": {
+      "branch": "repo-assist/fix-settings-monitor-workarea-2026-07-15",
+      "status": "fallback_issue_138"
+    },
+    "fix-shadow-color-temp": {
+      "branch": "repo-assist/fix-shadow-color-temp-2026-07-13-c4620822d212f7b9",
+      "status": "fallback_issue_134"
+    },
+    "fix-monitor-index": {
+      "branch": "repo-assist/fix-monitor-index-2026-07-10-ffe2d04b757bbc88",
+      "status": "superseded_by_fix-issue-126-monitor-unplug-2026-08-01"
+    },
+    "eng-updatum-globaljson": {
+      "branch": "repo-assist/eng-updatum-globaljson-2026-07-16-0b00f0bf9aacfc10",
+      "status": "fallback_issue_140"
+    },
+    "perf-color-temp-cache": {
+      "branch": "repo-assist/perf-color-temp-cache-2026-07-16-883eebe0f865a908",
+      "status": "fallback_issue_141"
+    },
+    "eng-upgrade-gh-release": {
+      "branch": "repo-assist/eng-upgrade-gh-release-action-2026-07-30",
+      "status": "pr_created_2026-07-30",
+      "desc": "Upgrade softprops/action-gh-release v1->v2 (Node.js 16 deprecation fix)"
+    },
+    "perf-cache-hole-geometry-v2": {
+      "branch": "repo-assist/perf-cache-hole-geometry-v2-2026-08-02",
+      "status": "pr_created_2026-08-02",
+      "desc": "Cache EllipseGeometry+CombinedGeometry in HoleCache; mutate Center in-place on each mouse move. Eliminates ~200-2000 heap allocations/s."
+    },
+    "eng-updatum-v2": {
+      "branch": "repo-assist/eng-updatum-v2-2026-08-02",
+      "status": "pr_created_2026-08-02",
+      "desc": "Bump Updatum 1.2.1->1.4.0. Cache JsonSerializerOptions as static readonly fields in AppSettings."
+    }
   },
   "monthly_summary_issue": 156,
   "monthly_summary_july_closed": 123,
@@ -43,20 +150,33 @@
     "build": "net10.0-windows needs -p:EnableWindowsTargeting=true on both restore and build steps. Test project targets net8.0."
   },
   "pending_fallback_issues": {
-    "145":"fix: live-sync Settings sliders","139":"test: 50 xUnit AppSettings tests + clamping fix",
-    "138":"fix: SettingsWindow wrong monitor",
-    "134":"fix: drop shadow color sync",
-    "141":"perf: cache color structs","140":"eng: bump Updatum 1.4.0"
+    "145": "fix: live-sync Settings sliders",
+    "139": "test: 50 xUnit AppSettings tests + clamping fix",
+    "138": "fix: SettingsWindow wrong monitor",
+    "134": "fix: drop shadow color sync",
+    "141": "perf: cache color structs",
+    "140": "eng: bump Updatum 1.4.0"
   },
-  "nuget_last_checked": {"updatum":{"latest":"1.4.0","current":"1.2.1","checked":"2026-07-26"}},
+  "nuget_last_checked": {
+    "updatum": {
+      "latest": "1.4.0",
+      "current": "1.2.1",
+      "checked": "2026-07-26"
+    }
+  },
   "notable_branches": {
     "copilot/support-hdr-feature": "Full HDR impl: HdrColorManager.cs+HdrOverlayWindow.cs. PR #144 (filtered). Linked to #24.",
     "copilot/aw-repo-assist-fix": "Adds copilot-requests:true + fetch-all to repo-assist.md."
   },
   "ci_findings": {
     "checked": "2026-07-30",
-    "fixed": ["softprops/action-gh-release: upgraded v1->v2 in PR (branch: repo-assist/eng-upgrade-gh-release-action-2026-07-30)"],
-    "still_outstanding": ["azure/trusted-signing-action@v1 (may be outdated)", "NuGet package caching missing from build.yml"]
+    "fixed": [
+      "softprops/action-gh-release: upgraded v1->v2 in PR (branch: repo-assist/eng-upgrade-gh-release-action-2026-07-30)"
+    ],
+    "still_outstanding": [
+      "azure/trusted-signing-action@v1 (may be outdated)",
+      "NuGet package caching missing from build.yml"
+    ]
   },
-  "notes": "2026-08-02 01:17: Tasks 2+10. Task 2: No new user issues without RA comments; all real issues already addressed. Task 10: Implemented 'Start with Windows' toggle (tray menu + HKCU Run registry, AppSettings.StartWithWindows). Branch: repo-assist/feat-start-with-windows-2026-08-02. Build: 0 warnings 0 errors. Task 11: Updated #156 with new run entry."
+  "notes": "2026-08-02 13:10: Tasks 8+4. Task 8: Cache hole geometry in ApplyHolePunchEffect - added HoleCache inner class, _primaryHoleCache field, MonitorHoleCache property. Build: 0 warnings 0 errors. Task 4: Bump Updatum 1.2.1->1.4.0 + cache JsonSerializerOptions static fields in AppSettings. Build: 0 warnings 0 errors. Task 11: Updated #156 with new run entry."
 }
