@@ -42,6 +42,14 @@ public partial class MainWindow : Window
     // Application settings
     private AppSettings settings = new AppSettings();
 
+    // Caches EllipseGeometry + CombinedGeometry across mouse-move frames to avoid per-frame allocation.
+    private sealed class HoleCache
+    {
+        public Geometry? BaseGeometry;
+        public EllipseGeometry? Hole;
+        public CombinedGeometry? Combined;
+    }
+
     private class MonitorWindowContext
     {
         public Window Window { get; set; } = null!;
@@ -55,6 +63,7 @@ public partial class MainWindow : Window
         public double PathOffsetY { get; set; }
         public double DpiScaleX { get; set; } = 1.0;
         public double DpiScaleY { get; set; } = 1.0;
+        public HoleCache MonitorHoleCache { get; } = new();
     }
 
     // Monitor management
@@ -141,6 +150,7 @@ public partial class MainWindow : Window
     private Geometry? baseFrameGeometry; // original frame geometry (outer minus inner)
     private double pathOffsetX; // offset of geometry within window
     private double pathOffsetY;
+    private readonly HoleCache _primaryHoleCache = new();
 
     private const uint MOD_CONTROL = 0x0002;
     private const uint MOD_SHIFT = 0x0004;
@@ -455,7 +465,8 @@ Version {version}";
                     EdgeLightBorder,
                     baseFrameGeometry,
                     pathOffsetX, pathOffsetY,
-                    (ring, x, y) => { Canvas.SetLeft(ring, x); Canvas.SetTop(ring, y); }
+                    (ring, x, y) => { Canvas.SetLeft(ring, x); Canvas.SetTop(ring, y); },
+                    _primaryHoleCache
                 );
             }
         }
@@ -474,7 +485,8 @@ Version {version}";
                     ctx.BorderPath,
                     ctx.BaseGeometry,
                     ctx.PathOffsetX, ctx.PathOffsetY,
-                    (ring, x, y) => { ring.Margin = new Thickness(x, y, 0, 0); }
+                    (ring, x, y) => { ring.Margin = new Thickness(x, y, 0, 0); },
+                    ctx.MonitorHoleCache
                 );
             }
             catch (InvalidOperationException)
@@ -493,7 +505,8 @@ Version {version}";
         System.Windows.Shapes.Path borderPath,
         Geometry baseGeometry,
         double pathOffsetX, double pathOffsetY,
-        Action<Ellipse, double, double> positionRing)
+        Action<Ellipse, double, double> positionRing,
+        HoleCache holeCache)
     {
         // Manual coordinate calculation to avoid PointFromScreen issues across monitors/DPIs
         // We positioned the window using dpiScaleX/Y relative to the screen WorkingArea.
@@ -530,8 +543,17 @@ Version {version}";
             // Punch a transparent hole under the ring by excluding a circle geometry from the frame
             // Convert window coordinates to geometry local coordinates by subtracting stored offsets
             var localCenter = new System.Windows.Point(windowPt.X - pathOffsetX, windowPt.Y - pathOffsetY);
-            var hole = new EllipseGeometry(localCenter, holeRadius, holeRadius);
-            borderPath.Data = new CombinedGeometry(GeometryCombineMode.Exclude, baseGeometry, hole);
+            if (holeCache.Hole == null || holeCache.Combined == null || holeCache.BaseGeometry != baseGeometry)
+            {
+                holeCache.Hole = new EllipseGeometry(localCenter, holeRadius, holeRadius);
+                holeCache.Combined = new CombinedGeometry(GeometryCombineMode.Exclude, baseGeometry, holeCache.Hole);
+                holeCache.BaseGeometry = baseGeometry;
+            }
+            else
+            {
+                holeCache.Hole.Center = localCenter;
+            }
+            borderPath.Data = holeCache.Combined;
         }
         else
         {
