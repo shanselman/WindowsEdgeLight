@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-08-03T01:17:04Z",
-  "last_run_id": "30776440502",
+  "last_run": "2026-08-03T13:42:19Z",
+  "last_run_id": "30818910135",
   "comments_made": {
     "24": "2026-07-01T13:51:58Z",
     "126": "2026-08-01T13:11:00Z",
@@ -24,6 +24,16 @@
     "69": ["bug"]
   },
   "fix_attempts": {
+    "fix-settings-stale-slider-2026-08-03": {
+      "branch": "repo-assist/fix-settings-stale-slider-2026-08-03",
+      "status": "pr_created_2026-08-03",
+      "desc": "Fix SettingsWindow_Closing to use actual brightness/color-temp values instead of stale slider values."
+    },
+    "improve-appsettings-2026-08-03": {
+      "branch": "repo-assist/improve-appsettings-2026-08-03",
+      "status": "pr_created_2026-08-03",
+      "desc": "Cache JsonSerializerOptions as static readonly + atomic write (temp+rename) in AppSettings."
+    },
     "test-appsettings-v3": {
       "branch": "repo-assist/test-appsettings-v3-2026-08-03",
       "status": "pr_created_2026-08-03",
@@ -63,21 +73,6 @@
       "branch": "repo-assist/improve-static-json-options-2026-07-31",
       "status": "pr_created_2026-07-31",
       "desc": "Cache JsonSerializerOptions as static readonly in AppSettings."
-    },
-    "perf-cache-hole-geometry": {
-      "branch": "repo-assist/perf-cache-hole-geometry-2026-07-30",
-      "status": "pr_created_2026-07-30",
-      "desc": "Cache EllipseGeometry+CombinedGeometry per monitor context."
-    },
-    "improve-code-clarity": {
-      "branch": "repo-assist/improve-code-clarity-2026-07-30",
-      "status": "pr_created_2026-07-30",
-      "desc": "Remove unused imports; extract GetColorForTemperature() static helper."
-    },
-    "eng-upgrade-gh-release": {
-      "branch": "repo-assist/eng-upgrade-gh-release-action-2026-07-30",
-      "status": "pr_created_2026-07-30",
-      "desc": "Upgrade softprops/action-gh-release v1->v2."
     },
     "perf-cache-hole-geometry-v2": {
       "branch": "repo-assist/perf-cache-hole-geometry-v2-2026-08-02",
@@ -138,5 +133,5 @@
       "NuGet package caching missing from build.yml"
     ]
   },
-  "notes": "2026-08-03 01:17: Tasks 2+9. Task 2: Only human issue #24 already has 2 RA comments, no new activity. Task 9: Created xUnit test project WindowsEdgeLight.Tests (net8.0). Modified AppSettings.Load/Save to accept optional filePath param. 19 tests all pass. PR created via safeoutputs. Task 11: Updated #156 with new run entry."
+  "notes": "2026-08-03 13:42: Tasks 3+5. Task 3: fixed SettingsWindow_Closing stale-slider bug (uses mainWindow.GetBrightness() instead of slider values). Task 5: cache JsonSerializerOptions as static readonly + atomic write in AppSettings. Both build clean. Task 11: updated #156."
 }
