@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-08-02T13:10:48Z",
-  "last_run_id": "30749321454",
+  "last_run": "2026-08-03T01:17:04Z",
+  "last_run_id": "30776440502",
   "comments_made": {
     "24": "2026-07-01T13:51:58Z",
     "126": "2026-08-01T13:11:00Z",
@@ -10,45 +10,25 @@
     "139": "2026-07-27T01:18:00Z"
   },
   "labels_applied": {
-    "24": [
-      "enhancement",
-      "needs investigation"
-    ],
-    "33": [
-      "enhancement"
-    ],
-    "27": [
-      "help wanted"
-    ],
-    "36": [
-      "enhancement"
-    ],
-    "56": [
-      "enhancement"
-    ],
-    "62": [
-      "enhancement"
-    ],
-    "63": [
-      "refactor"
-    ],
-    "64": [
-      "enhancement"
-    ],
-    "65": [
-      "bug"
-    ],
-    "66": [
-      "refactor"
-    ],
-    "67": [
-      "bug"
-    ],
-    "69": [
-      "bug"
-    ]
+    "24": ["enhancement", "needs investigation"],
+    "33": ["enhancement"],
+    "27": ["help wanted"],
+    "36": ["enhancement"],
+    "56": ["enhancement"],
+    "62": ["enhancement"],
+    "63": ["refactor"],
+    "64": ["enhancement"],
+    "65": ["bug"],
+    "66": ["refactor"],
+    "67": ["bug"],
+    "69": ["bug"]
   },
   "fix_attempts": {
+    "test-appsettings-v3": {
+      "branch": "repo-assist/test-appsettings-v3-2026-08-03",
+      "status": "pr_created_2026-08-03",
+      "desc": "19 xUnit tests for AppSettings (defaults, round-trip, corrupt JSON, trailing commas). Closes #139 #133."
+    },
     "feat-start-with-windows": {
       "branch": "repo-assist/feat-start-with-windows-2026-08-02",
       "status": "pr_created_2026-08-02",
@@ -87,22 +67,32 @@
     "perf-cache-hole-geometry": {
       "branch": "repo-assist/perf-cache-hole-geometry-2026-07-30",
       "status": "pr_created_2026-07-30",
-      "desc": "Cache EllipseGeometry+CombinedGeometry per monitor context; eliminates ~200 heap allocations/s from mouse-move"
+      "desc": "Cache EllipseGeometry+CombinedGeometry per monitor context."
     },
     "improve-code-clarity": {
       "branch": "repo-assist/improve-code-clarity-2026-07-30",
       "status": "pr_created_2026-07-30",
-      "desc": "Remove unused System.Configuration/System.Data imports; extract GetColorForTemperature() static helper (dedup Lerp boilerplate)"
+      "desc": "Remove unused imports; extract GetColorForTemperature() static helper."
     },
-    "test-appsettings": {
-      "branch": "repo-assist/test-appsettings-v2-2026-07-15-857e1104ec5cd3a0",
-      "status": "fallback_issue_139",
-      "desc": "50 xUnit tests (37+13 clamping). Push blocked. Commented #139."
+    "eng-upgrade-gh-release": {
+      "branch": "repo-assist/eng-upgrade-gh-release-action-2026-07-30",
+      "status": "pr_created_2026-07-30",
+      "desc": "Upgrade softprops/action-gh-release v1->v2."
+    },
+    "perf-cache-hole-geometry-v2": {
+      "branch": "repo-assist/perf-cache-hole-geometry-v2-2026-08-02",
+      "status": "pr_created_2026-08-02",
+      "desc": "Cache EllipseGeometry+CombinedGeometry in HoleCache; mutate Center in-place on each mouse move."
+    },
+    "eng-updatum-v2": {
+      "branch": "repo-assist/eng-updatum-v2-2026-08-02",
+      "status": "pr_created_2026-08-02",
+      "desc": "Bump Updatum 1.2.1->1.4.0. Cache JsonSerializerOptions as static readonly fields in AppSettings."
     },
     "fix-settings-live-sync": {
       "branch": "repo-assist/fix-settings-live-sync-2026-07-26",
       "status": "fallback_issue_145",
-      "desc": "Live-sync sliders via events. Supersedes #137."
+      "desc": "Live-sync sliders via events."
     },
     "fix-settings-monitor-workarea": {
       "branch": "repo-assist/fix-settings-monitor-workarea-2026-07-15",
@@ -111,33 +101,6 @@
     "fix-shadow-color-temp": {
       "branch": "repo-assist/fix-shadow-color-temp-2026-07-13-c4620822d212f7b9",
       "status": "fallback_issue_134"
-    },
-    "fix-monitor-index": {
-      "branch": "repo-assist/fix-monitor-index-2026-07-10-ffe2d04b757bbc88",
-      "status": "superseded_by_fix-issue-126-monitor-unplug-2026-08-01"
-    },
-    "eng-updatum-globaljson": {
-      "branch": "repo-assist/eng-updatum-globaljson-2026-07-16-0b00f0bf9aacfc10",
-      "status": "fallback_issue_140"
-    },
-    "perf-color-temp-cache": {
-      "branch": "repo-assist/perf-color-temp-cache-2026-07-16-883eebe0f865a908",
-      "status": "fallback_issue_141"
-    },
-    "eng-upgrade-gh-release": {
-      "branch": "repo-assist/eng-upgrade-gh-release-action-2026-07-30",
-      "status": "pr_created_2026-07-30",
-      "desc": "Upgrade softprops/action-gh-release v1->v2 (Node.js 16 deprecation fix)"
-    },
-    "perf-cache-hole-geometry-v2": {
-      "branch": "repo-assist/perf-cache-hole-geometry-v2-2026-08-02",
-      "status": "pr_created_2026-08-02",
-      "desc": "Cache EllipseGeometry+CombinedGeometry in HoleCache; mutate Center in-place on each mouse move. Eliminates ~200-2000 heap allocations/s."
-    },
-    "eng-updatum-v2": {
-      "branch": "repo-assist/eng-updatum-v2-2026-08-02",
-      "status": "pr_created_2026-08-02",
-      "desc": "Bump Updatum 1.2.1->1.4.0. Cache JsonSerializerOptions as static readonly fields in AppSettings."
     }
   },
   "monthly_summary_issue": 156,
@@ -151,11 +114,8 @@
   },
   "pending_fallback_issues": {
     "145": "fix: live-sync Settings sliders",
-    "139": "test: 50 xUnit AppSettings tests + clamping fix",
     "138": "fix: SettingsWindow wrong monitor",
-    "134": "fix: drop shadow color sync",
-    "141": "perf: cache color structs",
-    "140": "eng: bump Updatum 1.4.0"
+    "134": "fix: drop shadow color sync"
   },
   "nuget_last_checked": {
     "updatum": {
@@ -178,5 +138,5 @@
       "NuGet package caching missing from build.yml"
     ]
   },
-  "notes": "2026-08-02 13:10: Tasks 8+4. Task 8: Cache hole geometry in ApplyHolePunchEffect - added HoleCache inner class, _primaryHoleCache field, MonitorHoleCache property. Build: 0 warnings 0 errors. Task 4: Bump Updatum 1.2.1->1.4.0 + cache JsonSerializerOptions static fields in AppSettings. Build: 0 warnings 0 errors. Task 11: Updated #156 with new run entry."
+  "notes": "2026-08-03 01:17: Tasks 2+9. Task 2: Only human issue #24 already has 2 RA comments, no new activity. Task 9: Created xUnit test project WindowsEdgeLight.Tests (net8.0). Modified AppSettings.Load/Save to accept optional filePath param. 19 tests all pass. PR created via safeoutputs. Task 11: Updated #156 with new run entry."
 }
