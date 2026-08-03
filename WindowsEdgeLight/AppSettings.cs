@@ -14,6 +14,17 @@ public class AppSettings
         "WindowsEdgeLight",
         "settings.json");
 
+    private static readonly JsonSerializerOptions ReadOptions = new JsonSerializerOptions
+    {
+        AllowTrailingCommas = true,
+        ReadCommentHandling = JsonCommentHandling.Skip
+    };
+
+    private static readonly JsonSerializerOptions WriteOptions = new JsonSerializerOptions
+    {
+        WriteIndented = true
+    };
+
     /// <summary>
     /// When enabled, excludes the edge light from screen capture (Teams, screenshots, etc.)
     /// Note: When enabled, screenshots won't capture the edge light effect
@@ -66,12 +77,7 @@ public class AppSettings
             if (File.Exists(SettingsFilePath))
             {
                 var json = File.ReadAllText(SettingsFilePath);
-                var options = new JsonSerializerOptions
-                {
-                    AllowTrailingCommas = true,
-                    ReadCommentHandling = JsonCommentHandling.Skip
-                };
-                var settings = JsonSerializer.Deserialize<AppSettings>(json, options);
+                var settings = JsonSerializer.Deserialize<AppSettings>(json, ReadOptions);
                 
                 // Validate deserialized settings
                 if (settings != null)
@@ -114,11 +120,14 @@ public class AppSettings
                 Directory.CreateDirectory(directory);
             }
 
-            var json = JsonSerializer.Serialize(this, new JsonSerializerOptions 
-            { 
-                WriteIndented = true 
-            });
-            File.WriteAllText(SettingsFilePath, json);
+            var json = JsonSerializer.Serialize(this, WriteOptions);
+
+            // Write to a temp file first, then atomically rename into place so the
+            // settings file is never left in a partially-written state if the process
+            // is interrupted mid-write (e.g. forced shutdown or BSOD).
+            var tempPath = SettingsFilePath + ".tmp";
+            File.WriteAllText(tempPath, json);
+            File.Move(tempPath, SettingsFilePath, overwrite: true);
         }
         catch (Exception ex)
         {
