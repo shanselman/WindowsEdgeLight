@@ -83,8 +83,11 @@ public partial class SettingsWindow : Window
 
     private void SettingsWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
     {
-        mainWindow.SetBrightness(BrightnessSlider.Value, save: true);
-        mainWindow.SetColorTemperature(ColorTempSlider.Value, save: true);
+        // Use the mainWindow's actual current values rather than the slider display values.
+        // Sliders do not react to external changes (hotkeys, toolbar), so their values can be
+        // stale if the user adjusted brightness/temperature while this window was open.
+        mainWindow.SetBrightness(mainWindow.GetBrightness(), save: true);
+        mainWindow.SetColorTemperature(mainWindow.GetColorTemperature(), save: true);
     }
 
     private void ExcludeFromCapture_Click(object sender, RoutedEventArgs e)
