@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Interop;
 
 namespace WindowsEdgeLight;
 
@@ -59,7 +60,22 @@ public partial class SettingsWindow : Window
         }
 
         const double gap = 12;
-        var workArea = SystemParameters.WorkArea;
+
+        // Use the screen that contains the owner window so that the settings
+        // panel positions correctly on secondary/high-DPI monitors.
+        var ownerHandle = new WindowInteropHelper(Owner).Handle;
+        var screen = System.Windows.Forms.Screen.FromHandle(ownerHandle);
+        var source = PresentationSource.FromVisual(Owner);
+        double scaleX = source?.CompositionTarget?.TransformFromDevice.M11 ?? 1.0;
+        double scaleY = source?.CompositionTarget?.TransformFromDevice.M22 ?? 1.0;
+
+        // Convert the screen's pixel working area to WPF logical units.
+        var workArea = new Rect(
+            screen.WorkingArea.X * scaleX,
+            screen.WorkingArea.Y * scaleY,
+            screen.WorkingArea.Width * scaleX,
+            screen.WorkingArea.Height * scaleY);
+
         MaxHeight = Math.Max(200, workArea.Height - (gap * 2));
         var desiredLeft = Owner.Left + ((Owner.ActualWidth - ActualWidth) / 2);
         Left = Math.Min(Math.Max(desiredLeft, workArea.Left + gap), workArea.Right - ActualWidth - gap);
