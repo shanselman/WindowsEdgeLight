@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-08-04T01:12:37Z",
-  "last_run_id": "30867955501",
+  "last_run": "2026-08-04T13:21:12Z",
+  "last_run_id": "30913238033",
   "comments_made": {
     "24": "2026-07-01T13:51:58Z",
     "126": "2026-08-01T13:11:00Z",
@@ -24,6 +24,11 @@
     "69": ["bug"]
   },
   "fix_attempts": {
+    "eng-pr-ci-2026-08-04": {
+      "branch": "repo-assist/eng-pr-ci-2026-08-04",
+      "status": "pr_created_2026-08-04",
+      "desc": "Add .github/workflows/ci.yml: build+test on every PR and push to master. Auto-discovers *.Tests.csproj."
+    },
     "fix-settings-monitor-workarea-2026-08-04": {
       "branch": "repo-assist/fix-settings-monitor-workarea-2026-08-04",
       "status": "pr_created_2026-08-04",
@@ -104,14 +109,15 @@
     "copilot/aw-repo-assist-fix": "Adds copilot-requests:true + fetch-all to repo-assist.md."
   },
   "ci_findings": {
-    "checked": "2026-07-30",
+    "checked": "2026-08-04",
     "fixed": [
-      "softprops/action-gh-release: upgraded v1->v2 in PR (branch: repo-assist/eng-upgrade-gh-release-action-2026-07-30)"
+      "softprops/action-gh-release: upgraded v1->v2 in PR (branch: repo-assist/eng-upgrade-gh-release-action-2026-07-30)",
+      "Added ci.yml: PR build+test workflow (branch: repo-assist/eng-pr-ci-2026-08-04)"
     ],
     "still_outstanding": [
       "azure/trusted-signing-action@v1 (may be outdated)",
       "NuGet package caching missing from build.yml"
     ]
   },
-  "notes": "2026-08-04 01:12: Tasks 2+3. Task 2: no unaddressed user issues (only #24 already commented twice, no new human activity). Task 3: fixed SettingsWindow_Loaded to use Screen.FromHandle(owner) + TransformFromDevice DPI scale instead of SystemParameters.WorkArea. Builds clean. PR created for branch repo-assist/fix-settings-monitor-workarea-2026-08-04. Task 11: updated #156."
+  "notes": "2026-08-04 13:21: Tasks 2+9. Task 2: only human issue is #24, already commented twice, no new human activity - nothing to add. Task 9: No CI on PRs - added .github/workflows/ci.yml that builds on every PR + auto-discovers test projects. Branch repo-assist/eng-pr-ci-2026-08-04, PR created. Task 11: updated #156."
 }
