@@ -51,6 +51,7 @@ public partial class MainWindow : Window
         public Geometry BaseGeometry { get; set; } = null!;
         public Rect FrameOuterRect { get; set; }
         public Rect FrameInnerRect { get; set; }
+        public Rect InnerProximityRect { get; set; }
         public double PathOffsetX { get; set; }
         public double PathOffsetY { get; set; }
         public double DpiScaleX { get; set; } = 1.0;
@@ -133,9 +134,12 @@ public partial class MainWindow : Window
     // Mouse hook management
     private IntPtr mouseHookHandle = IntPtr.Zero;
     private LowLevelMouseProc? mouseHookCallback;
+    private int _lastMouseX = int.MinValue;
+    private int _lastMouseY = int.MinValue;
 
     private Rect? frameOuterRect;
     private Rect? frameInnerRect;
+    private Rect _innerProximityRect;
     private readonly Ellipse? hoverCursorRing;
     // Added fields for hole effect
     private Geometry? baseFrameGeometry; // original frame geometry (outer minus inner)
@@ -396,12 +400,22 @@ Version {version}";
         if (nCode >= 0 && wParam == (IntPtr)WM_MOUSEMOVE)
         {
             var hookStruct = Marshal.PtrToStructure<MSLLHOOKSTRUCT>(lParam);
-            
-            // Dispatch to UI thread for WPF operations
-            Dispatcher.BeginInvoke(new Action(() => 
+            int x = hookStruct.pt.x;
+            int y = hookStruct.pt.y;
+
+            // Skip dispatch if cursor hasn't moved — the hook can fire multiple
+            // times at the same position (e.g. from overlapping hooks or DWM).
+            if (x != _lastMouseX || y != _lastMouseY)
             {
-                HandleMouseMove(hookStruct.pt.x, hookStruct.pt.y);
-            }), System.Windows.Threading.DispatcherPriority.Input);
+                _lastMouseX = x;
+                _lastMouseY = y;
+
+                // Dispatch to UI thread for WPF operations
+                Dispatcher.BeginInvoke(new Action(() => 
+                {
+                    HandleMouseMove(x, y);
+                }), System.Windows.Threading.DispatcherPriority.Input);
+            }
         }
 
         return CallNextHookEx(mouseHookHandle, nCode, wParam, lParam);
@@ -450,7 +464,7 @@ Version {version}";
                     screenX, screenY,
                     screen,
                     _dpiScaleX, _dpiScaleY,
-                    frameOuterRect.Value, frameInnerRect.Value,
+                    frameOuterRect.Value, frameInnerRect.Value, _innerProximityRect,
                     hoverCursorRing,
                     EdgeLightBorder,
                     baseFrameGeometry,
@@ -469,7 +483,7 @@ Version {version}";
                     screenX, screenY,
                     ctx.Screen,
                     ctx.DpiScaleX, ctx.DpiScaleY,
-                    ctx.FrameOuterRect, ctx.FrameInnerRect,
+                    ctx.FrameOuterRect, ctx.FrameInnerRect, ctx.InnerProximityRect,
                     ctx.HoverRing,
                     ctx.BorderPath,
                     ctx.BaseGeometry,
@@ -488,7 +502,7 @@ Version {version}";
         int screenX, int screenY,
         Screen screen,
         double dpiScaleX, double dpiScaleY,
-        Rect frameOuterRect, Rect frameInnerRect,
+        Rect frameOuterRect, Rect frameInnerRect, Rect innerProximityRect,
         Ellipse hoverRing,
         System.Windows.Shapes.Path borderPath,
         Geometry baseGeometry,
@@ -504,16 +518,11 @@ Version {version}";
         // Existing frame band detection (outer minus inner)
         bool inFrameBand = frameOuterRect.Contains(windowPt) && !frameInnerRect.Contains(windowPt);
 
-        // Early detection zone just inside the inner edge: a band with thickness = hole radius (cursor ring radius)
         double ringDiameter = hoverRing.Width;
-        double holeRadius = ringDiameter / 2; // match ring size
-        var innerProximityRect = new Rect(
-            frameInnerRect.X + holeRadius,
-            frameInnerRect.Y + holeRadius,
-            frameInnerRect.Width - (holeRadius * 2),
-            frameInnerRect.Height - (holeRadius * 2));
+        double holeRadius = ringDiameter / 2;
 
-        // Near from inside means inside innerRect but within holeRadius of its edge (i.e., not deep inside innerProximityRect)
+        // Near from inside means inside innerRect but within holeRadius of its edge (i.e., not deep inside innerProximityRect).
+        // innerProximityRect is pre-computed and passed in to avoid per-call Rect allocation.
         bool nearFromInside = frameInnerRect.Contains(windowPt) && !innerProximityRect.Contains(windowPt);
 
         bool overFrame = inFrameBand || nearFromInside;
@@ -595,6 +604,12 @@ Version {version}";
         double holeRadius = ringDiameter / 2.0;
         frameOuterRect = new Rect(pathOffsetX - holeRadius, pathOffsetY - holeRadius, width + holeRadius * 2, height + holeRadius * 2);
         frameInnerRect = new Rect(pathOffsetX + frameThickness + holeRadius, pathOffsetY + frameThickness + holeRadius, width - (frameThickness * 2) - holeRadius * 2, height - (frameThickness * 2) - holeRadius * 2);
+        // Cache the inner-proximity rect (used on every mouse-move) so it isn't reallocated per event.
+        _innerProximityRect = new Rect(
+            frameInnerRect.Value.X + holeRadius,
+            frameInnerRect.Value.Y + holeRadius,
+            frameInnerRect.Value.Width - holeRadius * 2,
+            frameInnerRect.Value.Height - holeRadius * 2);
     }
 
     private IntPtr HwndHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
@@ -1157,6 +1172,11 @@ Version {version}";
             BaseGeometry = frameGeometry,
             FrameOuterRect = frameOuterRect,
             FrameInnerRect = frameInnerRect,
+            InnerProximityRect = new Rect(
+                frameInnerRect.X + holeRadius,
+                frameInnerRect.Y + holeRadius,
+                frameInnerRect.Width - holeRadius * 2,
+                frameInnerRect.Height - holeRadius * 2),
             PathOffsetX = pathOffsetX,
             PathOffsetY = pathOffsetY,
             DpiScaleX = screenDpiX, // Use calculated DPI for this screen
@@ -1247,6 +1267,11 @@ Version {version}";
         
         ctx.FrameOuterRect = new Rect(ctx.PathOffsetX - holeRadius, ctx.PathOffsetY - holeRadius, width + holeRadius * 2, height + holeRadius * 2);
         ctx.FrameInnerRect = new Rect(ctx.PathOffsetX + frameThickness + holeRadius, ctx.PathOffsetY + frameThickness + holeRadius, width - (frameThickness * 2) - holeRadius * 2, height - (frameThickness * 2) - holeRadius * 2);
+        ctx.InnerProximityRect = new Rect(
+            ctx.FrameInnerRect.X + holeRadius,
+            ctx.FrameInnerRect.Y + holeRadius,
+            ctx.FrameInnerRect.Width - holeRadius * 2,
+            ctx.FrameInnerRect.Height - holeRadius * 2);
     }
 
     public bool IsShowingOnAllMonitors()
