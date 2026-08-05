@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-08-04T13:21:12Z",
-  "last_run_id": "30913238033",
+  "last_run": "2026-08-05T01:14:31Z",
+  "last_run_id": "30965627111",
   "comments_made": {
     "24": "2026-07-01T13:51:58Z",
     "126": "2026-08-01T13:11:00Z",
@@ -10,18 +10,43 @@
     "139": "2026-07-27T01:18:00Z"
   },
   "labels_applied": {
-    "24": ["enhancement", "needs investigation"],
-    "33": ["enhancement"],
-    "27": ["help wanted"],
-    "36": ["enhancement"],
-    "56": ["enhancement"],
-    "62": ["enhancement"],
-    "63": ["refactor"],
-    "64": ["enhancement"],
-    "65": ["bug"],
-    "66": ["refactor"],
-    "67": ["bug"],
-    "69": ["bug"]
+    "24": [
+      "enhancement",
+      "needs investigation"
+    ],
+    "33": [
+      "enhancement"
+    ],
+    "27": [
+      "help wanted"
+    ],
+    "36": [
+      "enhancement"
+    ],
+    "56": [
+      "enhancement"
+    ],
+    "62": [
+      "enhancement"
+    ],
+    "63": [
+      "refactor"
+    ],
+    "64": [
+      "enhancement"
+    ],
+    "65": [
+      "bug"
+    ],
+    "66": [
+      "refactor"
+    ],
+    "67": [
+      "bug"
+    ],
+    "69": [
+      "bug"
+    ]
   },
   "fix_attempts": {
     "eng-pr-ci-2026-08-04": {
@@ -82,6 +107,11 @@
     "fix-shadow-color-temp": {
       "branch": "repo-assist/fix-shadow-color-temp-2026-07-13-c4620822d212f7b9",
       "status": "fallback_issue_134"
+    },
+    "fix-allmonitors-button-feedback-2026-08-05": {
+      "branch": "repo-assist/fix-allmonitors-button-feedback-2026-08-05",
+      "status": "pr_created_2026-08-05",
+      "desc": "Add toggleAllMonitorsMenuItem + dynamic tooltip on AllMonitorsButton - shows active all-monitors state in tray and control bar."
     }
   },
   "monthly_summary_issue": 156,
@@ -119,5 +149,5 @@
       "NuGet package caching missing from build.yml"
     ]
   },
-  "notes": "2026-08-04 13:21: Tasks 2+9. Task 2: only human issue is #24, already commented twice, no new human activity - nothing to add. Task 9: No CI on PRs - added .github/workflows/ci.yml that builds on every PR + auto-discovers test projects. Branch repo-assist/eng-pr-ci-2026-08-04, PR created. Task 11: updated #156."
+  "notes": "2026-08-05 01:14: Tasks 2+3. Task 2: #24 only human issue, no new activity - nothing to add. Task 3: fix AllMonitors button/tray menu to show active state (no prior branch for this). Branch repo-assist/fix-allmonitors-button-feedback-2026-08-05, PR created."
 }
