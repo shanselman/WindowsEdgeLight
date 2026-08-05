@@ -17,8 +17,15 @@ public partial class ControlWindow : Window
 
     private void UpdateMonitorButtonState()
     {
-        SwitchMonitorButton.IsEnabled = mainWindow.HasMultipleMonitors() && !mainWindow.IsShowingOnAllMonitors();
-        AllMonitorsButton.IsEnabled = mainWindow.HasMultipleMonitors();
+        bool multipleMonitors = mainWindow.HasMultipleMonitors();
+        bool allMonitors = mainWindow.IsShowingOnAllMonitors();
+
+        SwitchMonitorButton.IsEnabled = multipleMonitors && !allMonitors;
+        AllMonitorsButton.IsEnabled = multipleMonitors;
+
+        AllMonitorsButton.ToolTip = allMonitors
+            ? "Return to primary monitor only"
+            : "Show on all monitors";
     }
 
     public void ApplyButtonVisibility()

@@ -38,6 +38,7 @@ public partial class MainWindow : Window
     private bool isControlWindowVisible = true;
     private ToolStripMenuItem? toggleControlsMenuItem;
     private ToolStripMenuItem? excludeFromCaptureMenuItem;
+    private ToolStripMenuItem? toggleAllMonitorsMenuItem;
     
     // Application settings
     private AppSettings settings = new AppSettings();
@@ -211,7 +212,9 @@ public partial class MainWindow : Window
     contextMenu.Items.Add("❄️ K+ Cooler Light", null, (s, e) => DecreaseColorTemperature());
     contextMenu.Items.Add(new ToolStripSeparator());
     contextMenu.Items.Add("🖥️ Switch Monitor", null, (s, e) => MoveToNextMonitor());
-    contextMenu.Items.Add("🖥️🖥️ Toggle All Monitors", null, (s, e) => ToggleAllMonitors());
+    
+    toggleAllMonitorsMenuItem = new ToolStripMenuItem("🖥️🖥️ Show on All Monitors", null, (s, e) => ToggleAllMonitors());
+    contextMenu.Items.Add(toggleAllMonitorsMenuItem);
     contextMenu.Items.Add(new ToolStripSeparator());
     
     // Add toggle controls menu item - text will be set by UpdateTrayMenuToggleControlsText
@@ -1014,7 +1017,18 @@ Version {version}";
             HideAdditionalMonitorWindows();
         }
 
+        UpdateTrayMenuAllMonitorsText();
         controlWindow?.UpdateAllMonitorsButtonState();
+    }
+
+    private void UpdateTrayMenuAllMonitorsText()
+    {
+        if (toggleAllMonitorsMenuItem != null)
+        {
+            toggleAllMonitorsMenuItem.Text = showOnAllMonitors
+                ? "🖥️ Return to Primary Monitor"
+                : "🖥️🖥️ Show on All Monitors";
+        }
     }
 
     private void ShowOnAllMonitors()
