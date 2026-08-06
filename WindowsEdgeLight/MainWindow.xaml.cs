@@ -197,7 +197,7 @@ public partial class MainWindow : Window
             notifyIcon.Icon = System.Drawing.SystemIcons.Application;
         }
         
-        notifyIcon.Text = "Windows Edge Light - Right-click for options";
+        notifyIcon.Text = "Windows Edge Light";
         notifyIcon.Visible = true;
         
     var contextMenu = new ContextMenuStrip();
@@ -232,6 +232,7 @@ public partial class MainWindow : Window
         
         // Set initial menu text based on current state
         UpdateTrayMenuToggleControlsText();
+        UpdateTrayTooltip();
     }
 
     private void ShowHelp()
@@ -727,6 +728,7 @@ Version {version}";
         
         settings.IsLightOn = isLightOn;
         settings.Save();
+        UpdateTrayTooltip();
     }
 
     public void HandleToggle()
@@ -762,6 +764,16 @@ Version {version}";
         {
             toggleControlsMenuItem.Text = isControlWindowVisible ? "🎛️ Hide Controls" : "🎛️ Show Controls";
         }
+    }
+
+    private void UpdateTrayTooltip()
+    {
+        if (notifyIcon == null) return;
+        string state = isLightOn ? "On" : "Off";
+        int brightness = (int)(currentOpacity * 100);
+        string temp = _colorTemperature < 0.3 ? "Cool" : _colorTemperature > 0.7 ? "Warm" : "Neutral";
+        // NotifyIcon.Text is limited to 63 characters
+        notifyIcon.Text = $"Windows Edge Light [{state}] {brightness}% {temp}";
     }
 
     public void ToggleExcludeFromCapture()
@@ -844,6 +856,7 @@ Version {version}";
             settings.Brightness = currentOpacity;
             settings.Save();
         }
+        UpdateTrayTooltip();
     }
 
     private void UpdateAdditionalMonitorWindows()
@@ -934,6 +947,7 @@ Version {version}";
             settings.ColorTemperature = _colorTemperature;
             settings.Save();
         }
+        UpdateTrayTooltip();
     }
 
     public void MoveToNextMonitor()
