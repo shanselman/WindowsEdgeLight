@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-08-06T01:12:34Z",
-  "last_run_id": "31061998609",
+  "last_run": "2026-08-06T13:18:42Z",
+  "last_run_id": "31105203673",
   "comments_made": {
     "24": "2026-07-01T13:51:58Z",
     "126": "2026-08-01T13:11:00Z",
@@ -25,6 +25,11 @@
     "69": ["bug"]
   },
   "fix_attempts": {
+    "improve-tray-tooltip-2026-08-06": {
+      "branch": "repo-assist/improve-tray-tooltip-2026-08-06",
+      "status": "pr_created_2026-08-06",
+      "desc": "Dynamic tray tooltip showing current light state: [On/Off] brightness% Cool/Neutral/Warm."
+    },
     "fix-shadow-color-sync-2026-08-06": {
       "branch": "repo-assist/fix-shadow-color-sync-2026-08-06",
       "status": "pr_created_2026-08-06",
@@ -90,10 +95,6 @@
       "status": "fallback_issue_145",
       "desc": "Live-sync sliders via events."
     },
-    "fix-shadow-color-temp": {
-      "branch": "repo-assist/fix-shadow-color-temp-2026-07-13-c4620822d212f7b9",
-      "status": "superseded_by_fix-shadow-color-sync-2026-08-06"
-    },
     "fix-allmonitors-button-feedback-2026-08-05": {
       "branch": "repo-assist/fix-allmonitors-button-feedback-2026-08-05",
       "status": "pr_created_2026-08-05",
@@ -134,5 +135,5 @@
       "NuGet package caching missing from build.yml"
     ]
   },
-  "notes": "2026-08-06 01:12: Tasks 3+2+11. Task 3: fix drop shadow color sync - SetColorTemperature() and UpdateAdditionalMonitorWindows() now update DropShadowEffect.Color with midColor. Branch repo-assist/fix-shadow-color-sync-2026-08-06, PR created. Closes #134. Task 2: all human issues (#24, #128, #146) already addressed; no new human comments found."
+  "notes": "2026-08-06 13:18: Tasks 2+3+11. Task 2: no new human comments on any real user issues; only #24 has been engaged with twice already. Task 3: new improvement - dynamic tray tooltip showing On/Off + brightness% + Cool/Neutral/Warm temperature label. Branch repo-assist/improve-tray-tooltip-2026-08-06, PR created. Build succeeded on Linux. Task 11: updated monthly summary #156."
 }
