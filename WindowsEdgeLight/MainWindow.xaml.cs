@@ -875,6 +875,11 @@ Version {version}";
                         stop.Color = midColor;
                     }
                 }
+
+                if (path.Effect is System.Windows.Media.Effects.DropShadowEffect pathShadow)
+                {
+                    pathShadow.Color = midColor;
+                }
             }
         }
     }
@@ -923,6 +928,11 @@ Version {version}";
                 {
                     stop.Color = midColor;
                 }
+            }
+
+            if (EdgeLightBorder.Effect is System.Windows.Media.Effects.DropShadowEffect mainShadow)
+            {
+                mainShadow.Color = midColor;
             }
         }
         
