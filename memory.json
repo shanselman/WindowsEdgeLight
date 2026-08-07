@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-08-07T01:41:05Z",
-  "last_run_id": "31138733494",
+  "last_run": "2026-08-07T13:09:28Z",
+  "last_run_id": "31181227524",
   "comments_made": {
     "24": "2026-07-01T13:51:58Z",
     "126": "2026-08-01T13:11:00Z",
@@ -57,8 +57,8 @@
     },
     "fix-settings-stale-slider-2026-08-03": {
       "branch": "repo-assist/fix-settings-stale-slider-2026-08-03",
-      "status": "pr_created_2026-08-03",
-      "desc": "Fix SettingsWindow_Closing to use actual brightness/color-temp values instead of stale slider values."
+      "status": "SUPERSEDED_by_maintainer_2026-07-08",
+      "desc": "Maintainer's July 8 commit already persists slider values on close. Branch can be closed."
     },
     "improve-appsettings-2026-08-03": {
       "branch": "repo-assist/improve-appsettings-2026-08-03",
@@ -104,11 +104,21 @@
       "branch": "repo-assist/fix-allmonitors-button-feedback-2026-08-05",
       "status": "pr_created_2026-08-05",
       "desc": "Add toggleAllMonitorsMenuItem + dynamic tooltip on AllMonitorsButton - shows active all-monitors state in tray and control bar."
+    },
+    "perf-cache-hole-geometry-v2-2026-08-02": {
+      "branch": "repo-assist/perf-cache-hole-geometry-v2-2026-08-02",
+      "status": "pr_created_2026-08-02",
+      "desc": "Cache hole-punch CombinedGeometry + PathGeometry to eliminate per-mouse-move allocations."
+    },
+    "eng-updatum-v2-2026-08-02": {
+      "branch": "repo-assist/eng-updatum-v2-2026-08-02",
+      "status": "pr_created_2026-08-02",
+      "desc": "Bump Updatum 1.2.1->1.4.0 + cache JsonSerializerOptions as static fields."
     }
   },
   "monthly_summary_issue": 156,
   "monthly_summary_july_closed": 123,
-  "maintainer_preferences": "Prefers bug fixes/functional improvements. Closed refactor PRs. Manually applied RA branches (#65,#67,#69 closed). NOTE: refactor/cleanup PRs may be closed.",
+  "maintainer_preferences": "Prefers bug fixes/functional improvements. Closed refactor PRs. Manually applied RA branches (#65,#67,#69 closed). NOTE: refactor/cleanup PRs may be closed. Last merged: July 8 2026 (settings page PR #68).",
   "backlog_cursor": 24,
   "known_limitations": {
     "pr_creation": "PR creation via safeoutputs create_pull_request confirmed working. PRs are filtered by integrity (github-actions[bot] PRs invisible to RA agent). Use branch comparison links.",
@@ -140,5 +150,9 @@
       "azure/trusted-signing-action@v1 (may be outdated - cannot verify from Linux CI)"
     ]
   },
-  "notes": "2026-08-07 01:41: Tasks 4+11. Task 4 (Eng): created branch eng-nuget-cache-2026-08-07 - added NuGet restore caching (actions/cache@v4) to build.yml and upgraded softprops/action-gh-release v1->v2. Task 9 skipped (test branch already exists: test-appsettings-v3-2026-08-03 with 19 tests). Task 11: updated monthly summary #156. NOTE: Large backlog of ~16 unreviewed branches - maintainer has not merged any. Consider pausing new branch creation until some are reviewed."
+  "app_xaml_cs_issues": {
+    "unused_imports": ["System.Configuration", "System.Data"],
+    "dispatcher_async_pattern": "await Dispatcher.InvokeAsync(async () => {...}) in CheckForUpdatesAsync does not properly await inner Task. Fix: await (await Dispatcher.InvokeAsync(async () => {...}))"
+  },
+  "notes": "2026-08-07 13:09: Tasks 5+2+11. Task 2: Only #24 is real user issue, already commented twice, no new activity. Task 5: Analyzed App.xaml.cs - unused imports (System.Configuration, System.Data) + Dispatcher.InvokeAsync async pattern issue found. No new branch created - 17+ unreviewed branches already in backlog. fix-settings-stale-slider superseded by maintainer's July 8 commit. Task 11: Updated monthly summary #156. NOTE: Maintainer has not merged any RA branches since July 8. Consider whether to continue creating branches or pause and focus on summarizing."
 }
