@@ -5,8 +5,10 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
+using System.Windows.Media.Effects;
 using System.Windows.Shapes;
 using System.Windows.Threading;
+using MediaColor = System.Windows.Media.Color;
 
 namespace WindowsEdgeLight;
 
@@ -44,6 +46,13 @@ public partial class MainWindow : Window
     // Application settings
     private AppSettings settings = new AppSettings();
 
+    private sealed class HoleCache
+    {
+        public Geometry? BaseGeometry { get; set; }
+        public EllipseGeometry? Hole { get; set; }
+        public CombinedGeometry? Combined { get; set; }
+    }
+
     private class MonitorWindowContext
     {
         public Window Window { get; set; } = null!;
@@ -57,6 +66,7 @@ public partial class MainWindow : Window
         public double PathOffsetY { get; set; }
         public double DpiScaleX { get; set; } = 1.0;
         public double DpiScaleY { get; set; } = 1.0;
+        public HoleCache HoleCache { get; } = new();
     }
 
     // Monitor management
@@ -143,6 +153,10 @@ public partial class MainWindow : Window
     private Geometry? baseFrameGeometry; // original frame geometry (outer minus inner)
     private double pathOffsetX; // offset of geometry within window
     private double pathOffsetY;
+    private readonly HoleCache primaryHoleCache = new();
+
+    private static readonly MediaColor CoolColor = MediaColor.FromRgb(220, 235, 255);
+    private static readonly MediaColor WarmColor = MediaColor.FromRgb(255, 220, 180);
 
     private const uint MOD_CONTROL = 0x0002;
     private const uint MOD_SHIFT = 0x0004;
@@ -219,6 +233,7 @@ public partial class MainWindow : Window
     // Add toggle controls menu item - text will be set by UpdateTrayMenuToggleControlsText
     toggleControlsMenuItem = new ToolStripMenuItem("🎛️ Hide Controls", null, (s, e) => ToggleControlsVisibility());
     contextMenu.Items.Add(toggleControlsMenuItem);
+    contextMenu.Items.Add("📍 Reset Control Bar Position", null, (s, e) => ResetControlWindowPosition());
     
     // Add exclude from capture menu item with checkmark
     excludeFromCaptureMenuItem = new ToolStripMenuItem("🎥 Exclude from Screen Capture", null, (s, e) => ToggleExcludeFromCapture());
@@ -268,7 +283,7 @@ Version {version}";
         // Initialize available monitors on first setup
         if (availableMonitors.Length == 0)
         {
-            availableMonitors = Screen.AllScreens;
+            RefreshAvailableMonitors();
             
             // Find the primary monitor index
             for (int i = 0; i < availableMonitors.Length; i++)
@@ -281,7 +296,7 @@ Version {version}";
             }
         }
 
-        var targetScreen = availableMonitors.Length > 0 ? availableMonitors[currentMonitorIndex] : Screen.PrimaryScreen;
+        var targetScreen = GetCurrentScreen();
         if (targetScreen == null) return;
 
         SetupWindowForScreen(targetScreen);
@@ -445,7 +460,7 @@ Version {version}";
         // --- Main Window Logic ---
         if (frameOuterRect != null && frameInnerRect != null && hoverCursorRing != null && baseFrameGeometry != null)
         {
-            var screen = availableMonitors.Length > 0 ? availableMonitors[currentMonitorIndex] : Screen.PrimaryScreen;
+            var screen = GetCurrentScreen();
             if (screen != null)
             {
                 ApplyHolePunchEffect(
@@ -457,7 +472,8 @@ Version {version}";
                     EdgeLightBorder,
                     baseFrameGeometry,
                     pathOffsetX, pathOffsetY,
-                    (ring, x, y) => { Canvas.SetLeft(ring, x); Canvas.SetTop(ring, y); }
+                    (ring, x, y) => { Canvas.SetLeft(ring, x); Canvas.SetTop(ring, y); },
+                    primaryHoleCache
                 );
             }
         }
@@ -476,7 +492,8 @@ Version {version}";
                     ctx.BorderPath,
                     ctx.BaseGeometry,
                     ctx.PathOffsetX, ctx.PathOffsetY,
-                    (ring, x, y) => { ring.Margin = new Thickness(x, y, 0, 0); }
+                    (ring, x, y) => { ring.Margin = new Thickness(x, y, 0, 0); },
+                    ctx.HoleCache
                 );
             }
             catch (InvalidOperationException)
@@ -495,7 +512,8 @@ Version {version}";
         System.Windows.Shapes.Path borderPath,
         Geometry baseGeometry,
         double pathOffsetX, double pathOffsetY,
-        Action<Ellipse, double, double> positionRing)
+        Action<Ellipse, double, double> positionRing,
+        HoleCache holeCache)
     {
         // Manual coordinate calculation to avoid PointFromScreen issues across monitors/DPIs
         // We positioned the window using dpiScaleX/Y relative to the screen WorkingArea.
@@ -532,8 +550,21 @@ Version {version}";
             // Punch a transparent hole under the ring by excluding a circle geometry from the frame
             // Convert window coordinates to geometry local coordinates by subtracting stored offsets
             var localCenter = new System.Windows.Point(windowPt.X - pathOffsetX, windowPt.Y - pathOffsetY);
-            var hole = new EllipseGeometry(localCenter, holeRadius, holeRadius);
-            borderPath.Data = new CombinedGeometry(GeometryCombineMode.Exclude, baseGeometry, hole);
+            if (holeCache.BaseGeometry != baseGeometry ||
+                holeCache.Hole == null ||
+                holeCache.Hole.RadiusX != holeRadius ||
+                holeCache.Combined == null)
+            {
+                holeCache.BaseGeometry = baseGeometry;
+                holeCache.Hole = new EllipseGeometry(localCenter, holeRadius, holeRadius);
+                holeCache.Combined = new CombinedGeometry(GeometryCombineMode.Exclude, baseGeometry, holeCache.Hole);
+            }
+            else
+            {
+                holeCache.Hole.Center = localCenter;
+            }
+
+            borderPath.Data = holeCache.Combined;
         }
         else
         {
@@ -855,29 +886,7 @@ Version {version}";
             var path = ctx.BorderPath;
             path.Opacity = currentOpacity;
             path.Visibility = isLightOn ? Visibility.Visible : Visibility.Collapsed;
-            
-            // Update color temperature
-            if (path.Fill is LinearGradientBrush brush && brush.GradientStops.Count >= 3)
-            {
-                var cool = System.Windows.Media.Color.FromRgb(220, 235, 255);
-                var warm = System.Windows.Media.Color.FromRgb(255, 220, 180);
-                
-                System.Windows.Media.Color Lerp(System.Windows.Media.Color a, System.Windows.Media.Color b, double t)
-                {
-                    byte LerpByte(byte x, byte y, double tt) => (byte)(x + (y - x) * tt);
-                    return System.Windows.Media.Color.FromArgb(255, LerpByte(a.R, b.R, t), LerpByte(a.G, b.G, t), LerpByte(a.B, b.B, t));
-                }
-                
-                var midColor = Lerp(cool, warm, _colorTemperature);
-                
-                foreach (var stop in brush.GradientStops)
-                {
-                    if (stop.Offset is > 0.2 and < 0.8)
-                    {
-                        stop.Color = midColor;
-                    }
-                }
-            }
+            ApplyColorTemperature(path);
         }
     }
 
@@ -894,39 +903,7 @@ Version {version}";
     public void SetColorTemperature(double value, bool save = true)
     {
         _colorTemperature = Math.Max(MinColorTemp, Math.Min(MaxColorTemp, value));
-
-        // Map 0-1 slider to a simple cool-to-warm gradient.
-        // We'll bias the inner gradient stops from blueish-white (cool) to amber (warm).
-        // NOTE: This assumes the brush defined in XAML is still a LinearGradientBrush.
-        if (EdgeLightBorder.Fill is LinearGradientBrush brush && brush.GradientStops.Count >= 3)
-        {
-            // Cool: RGB ~ (220, 235, 255), Warm: RGB ~ (255, 220, 180)
-            System.Windows.Media.Color Lerp(System.Windows.Media.Color a, System.Windows.Media.Color b, double t)
-            {
-                byte LerpByte(byte x, byte y, double tt) => (byte)(x + (y - x) * tt);
-
-                return System.Windows.Media.Color.FromArgb(
-                    255,
-                    LerpByte(a.R, b.R, t),
-                    LerpByte(a.G, b.G, t),
-                    LerpByte(a.B, b.B, t));
-            }
-
-            var cool = System.Windows.Media.Color.FromRgb(220, 235, 255);
-            var warm = System.Windows.Media.Color.FromRgb(255, 220, 180);
-
-            var midColor = Lerp(cool, warm, _colorTemperature);
-
-            // Update a couple of inner stops to shift perceived temperature
-            // Keep outer rim relatively neutral for consistent edge.
-            foreach (var stop in brush.GradientStops)
-            {
-                if (stop.Offset is > 0.2 and < 0.8)
-                {
-                    stop.Color = midColor;
-                }
-            }
-        }
+        ApplyColorTemperature(EdgeLightBorder);
         
         // Update all additional monitor windows
         UpdateAdditionalMonitorWindows();
@@ -944,7 +921,7 @@ Version {version}";
         if (showOnAllMonitors) return;
         
         // Refresh monitor list in case of hot-plug/unplug
-        availableMonitors = Screen.AllScreens;
+        RefreshAvailableMonitors();
 
         if (availableMonitors.Length <= 1)
         {
@@ -993,8 +970,8 @@ Version {version}";
             _isManualMonitorSwitch = false;
         }
         
-        // Reposition control window to follow
-        RepositionControlWindow();
+        // An explicit monitor switch should bring the controls to the selected monitor.
+        ResetControlWindowPosition();
     }
 
     [DllImport("user32.dll", SetLastError = true)]
@@ -1021,8 +998,7 @@ Version {version}";
 
     private void ShowOnAllMonitors()
     {
-        // Refresh monitor list
-        availableMonitors = Screen.AllScreens;
+        RefreshAvailableMonitors();
 
         // Close any existing additional windows
         HideAdditionalMonitorWindows();
@@ -1084,26 +1060,26 @@ Version {version}";
             Visibility = isLightOn ? Visibility.Visible : Visibility.Collapsed
         };
 
-        // Create gradient brush
+        var temperatureColor = GetColorForTemperature(_colorTemperature);
         var gradient = new LinearGradientBrush
         {
             StartPoint = new System.Windows.Point(0, 0),
             EndPoint = new System.Windows.Point(1, 1)
         };
         gradient.GradientStops.Add(new GradientStop(System.Windows.Media.Color.FromRgb(255, 255, 255), 0.0));
-        gradient.GradientStops.Add(new GradientStop(System.Windows.Media.Color.FromRgb(240, 240, 240), 0.3));
-        gradient.GradientStops.Add(new GradientStop(System.Windows.Media.Color.FromRgb(255, 255, 255), 0.5));
-        gradient.GradientStops.Add(new GradientStop(System.Windows.Media.Color.FromRgb(240, 240, 240), 0.7));
+        gradient.GradientStops.Add(new GradientStop(temperatureColor, 0.3));
+        gradient.GradientStops.Add(new GradientStop(temperatureColor, 0.5));
+        gradient.GradientStops.Add(new GradientStop(temperatureColor, 0.7));
         gradient.GradientStops.Add(new GradientStop(System.Windows.Media.Color.FromRgb(255, 255, 255), 1.0));
         path.Fill = gradient;
 
         // Add drop shadow effect
-        path.Effect = new System.Windows.Media.Effects.DropShadowEffect
+        path.Effect = new DropShadowEffect
         {
             BlurRadius = 76,
             Opacity = 1,
             ShadowDepth = 0,
-            Color = System.Windows.Media.Color.FromRgb(255, 255, 255)
+            Color = temperatureColor
         };
 
         // Create hover ring (Ellipse)
@@ -1282,7 +1258,7 @@ Version {version}";
     public bool HasMultipleMonitors()
     {
         // Refresh monitor count to handle hot-plug scenarios
-        availableMonitors = Screen.AllScreens;
+        RefreshAvailableMonitors();
         return availableMonitors.Length > 1;
     }
 
@@ -1294,6 +1270,13 @@ Version {version}";
     public double GetBrightness() => currentOpacity;
 
     public double GetColorTemperature() => _colorTemperature;
+
+    public void SaveAppearanceSettings()
+    {
+        settings.Brightness = currentOpacity;
+        settings.ColorTemperature = _colorTemperature;
+        settings.Save();
+    }
 
     public bool GetIsToggleButtonVisible() => settings.ShowToggleButton;
 
@@ -1356,8 +1339,7 @@ Version {version}";
         // If we are manually switching, trust the index we set explicitly
         if (_isManualMonitorSwitch) return;
 
-        // Refresh monitor list
-        availableMonitors = Screen.AllScreens;
+        RefreshAvailableMonitors();
         
         if (availableMonitors.Length == 0) return;
 
@@ -1380,6 +1362,55 @@ Version {version}";
         catch (InvalidOperationException)
         {
             // Window might not be loaded or visible yet
+        }
+    }
+
+    private void RefreshAvailableMonitors()
+    {
+        availableMonitors = Screen.AllScreens;
+        currentMonitorIndex = availableMonitors.Length == 0
+            ? 0
+            : Math.Clamp(currentMonitorIndex, 0, availableMonitors.Length - 1);
+    }
+
+    private Screen? GetCurrentScreen()
+    {
+        if (availableMonitors.Length == 0)
+        {
+            return Screen.PrimaryScreen;
+        }
+
+        currentMonitorIndex = Math.Clamp(currentMonitorIndex, 0, availableMonitors.Length - 1);
+        return availableMonitors[currentMonitorIndex];
+    }
+
+    private static MediaColor GetColorForTemperature(double temperature)
+    {
+        byte Lerp(byte cool, byte warm) => (byte)(cool + ((warm - cool) * temperature));
+        return MediaColor.FromRgb(
+            Lerp(CoolColor.R, WarmColor.R),
+            Lerp(CoolColor.G, WarmColor.G),
+            Lerp(CoolColor.B, WarmColor.B));
+    }
+
+    private void ApplyColorTemperature(System.Windows.Shapes.Path path)
+    {
+        var temperatureColor = GetColorForTemperature(_colorTemperature);
+
+        if (path.Fill is LinearGradientBrush brush)
+        {
+            foreach (var stop in brush.GradientStops)
+            {
+                if (stop.Offset is > 0.2 and < 0.8)
+                {
+                    stop.Color = temperatureColor;
+                }
+            }
+        }
+
+        if (path.Effect is DropShadowEffect shadow)
+        {
+            shadow.Color = temperatureColor;
         }
     }
     

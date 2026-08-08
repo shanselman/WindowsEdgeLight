@@ -1,5 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Interop;
+using System.Windows.Media;
 
 namespace WindowsEdgeLight;
 
@@ -59,7 +61,16 @@ public partial class SettingsWindow : Window
         }
 
         const double gap = 12;
-        var workArea = SystemParameters.WorkArea;
+        var ownerHandle = new WindowInteropHelper(Owner).Handle;
+        var screen = System.Windows.Forms.Screen.FromHandle(ownerHandle);
+        var transformFromDevice = PresentationSource.FromVisual(Owner)?
+            .CompositionTarget?.TransformFromDevice ?? Matrix.Identity;
+        var workArea = new Rect(
+            screen.WorkingArea.X * transformFromDevice.M11,
+            screen.WorkingArea.Y * transformFromDevice.M22,
+            screen.WorkingArea.Width * transformFromDevice.M11,
+            screen.WorkingArea.Height * transformFromDevice.M22);
+
         MaxHeight = Math.Max(200, workArea.Height - (gap * 2));
         var desiredLeft = Owner.Left + ((Owner.ActualWidth - ActualWidth) / 2);
         Left = Math.Min(Math.Max(desiredLeft, workArea.Left + gap), workArea.Right - ActualWidth - gap);
@@ -83,8 +94,7 @@ public partial class SettingsWindow : Window
 
     private void SettingsWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
     {
-        mainWindow.SetBrightness(BrightnessSlider.Value, save: true);
-        mainWindow.SetColorTemperature(ColorTempSlider.Value, save: true);
+        mainWindow.SaveAppearanceSettings();
     }
 
     private void ExcludeFromCapture_Click(object sender, RoutedEventArgs e)

@@ -14,6 +14,17 @@ public class AppSettings
         "WindowsEdgeLight",
         "settings.json");
 
+    private static readonly JsonSerializerOptions ReadOptions = new()
+    {
+        AllowTrailingCommas = true,
+        ReadCommentHandling = JsonCommentHandling.Skip
+    };
+
+    private static readonly JsonSerializerOptions WriteOptions = new()
+    {
+        WriteIndented = true
+    };
+
     /// <summary>
     /// When enabled, excludes the edge light from screen capture (Teams, screenshots, etc.)
     /// Note: When enabled, screenshots won't capture the edge light effect
@@ -59,20 +70,17 @@ public class AppSettings
     /// <summary>
     /// Load settings from disk
     /// </summary>
-    public static AppSettings Load()
+    public static AppSettings Load() => LoadFrom(SettingsFilePath);
+
+    internal static AppSettings LoadFrom(string filePath)
     {
         try
         {
-            if (File.Exists(SettingsFilePath))
+            if (File.Exists(filePath))
             {
-                var json = File.ReadAllText(SettingsFilePath);
-                var options = new JsonSerializerOptions
-                {
-                    AllowTrailingCommas = true,
-                    ReadCommentHandling = JsonCommentHandling.Skip
-                };
-                var settings = JsonSerializer.Deserialize<AppSettings>(json, options);
-                
+                var json = File.ReadAllText(filePath);
+                var settings = JsonSerializer.Deserialize<AppSettings>(json, ReadOptions);
+
                 // Validate deserialized settings
                 if (settings != null)
                 {
@@ -86,9 +94,9 @@ public class AppSettings
             // Delete corrupted settings file
             try
             {
-                if (File.Exists(SettingsFilePath))
+                if (File.Exists(filePath))
                 {
-                    File.Delete(SettingsFilePath);
+                    File.Delete(filePath);
                 }
             }
             catch { /* Ignore deletion errors */ }
@@ -104,21 +112,22 @@ public class AppSettings
     /// <summary>
     /// Save settings to disk
     /// </summary>
-    public void Save()
+    public void Save() => SaveTo(SettingsFilePath);
+
+    internal void SaveTo(string filePath)
     {
         try
         {
-            var directory = Path.GetDirectoryName(SettingsFilePath);
+            var directory = Path.GetDirectoryName(filePath);
             if (directory != null && !Directory.Exists(directory))
             {
                 Directory.CreateDirectory(directory);
             }
 
-            var json = JsonSerializer.Serialize(this, new JsonSerializerOptions 
-            { 
-                WriteIndented = true 
-            });
-            File.WriteAllText(SettingsFilePath, json);
+            var json = JsonSerializer.Serialize(this, WriteOptions);
+            var tempPath = filePath + ".tmp";
+            File.WriteAllText(tempPath, json);
+            File.Move(tempPath, filePath, overwrite: true);
         }
         catch (Exception ex)
         {
