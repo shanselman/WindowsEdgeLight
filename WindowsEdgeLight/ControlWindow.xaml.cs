@@ -94,7 +94,8 @@ public partial class ControlWindow : Window
             return;
         }
 
-        mainWindow.NotifyControlWindowManuallyMoved();
+        var initialLeft = Left;
+        var initialTop = Top;
 
         try
         {
@@ -103,6 +104,11 @@ public partial class ControlWindow : Window
         catch (System.InvalidOperationException)
         {
             // DragMove can throw if the mouse button is no longer pressed; ignore.
+        }
+
+        if (Math.Abs(Left - initialLeft) > 0.5 || Math.Abs(Top - initialTop) > 0.5)
+        {
+            mainWindow.NotifyControlWindowManuallyMoved();
         }
     }
 

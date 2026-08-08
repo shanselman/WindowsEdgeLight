@@ -4,6 +4,8 @@ VisualStudioVersion = 17.5.2.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WindowsEdgeLight", "WindowsEdgeLight\WindowsEdgeLight.csproj", "{C2187EC4-5511-1F4A-A7C5-D7D114D039DC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WindowsEdgeLight.Tests", "WindowsEdgeLight.Tests\WindowsEdgeLight.Tests.csproj", "{B1E2F3A4-6622-2F5B-B8D6-E8E225E04AED}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -14,6 +16,10 @@ Global
 		{C2187EC4-5511-1F4A-A7C5-D7D114D039DC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C2187EC4-5511-1F4A-A7C5-D7D114D039DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C2187EC4-5511-1F4A-A7C5-D7D114D039DC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B1E2F3A4-6622-2F5B-B8D6-E8E225E04AED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B1E2F3A4-6622-2F5B-B8D6-E8E225E04AED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B1E2F3A4-6622-2F5B-B8D6-E8E225E04AED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B1E2F3A4-6622-2F5B-B8D6-E8E225E04AED}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

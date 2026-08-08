@@ -1,19 +1,21 @@
 # Windows Edge Light
 
-A lightweight WPF application that adds a customizable glowing edge light effect around your primary monitor on Windows. Perfect for ambient lighting during video calls, streaming, or just adding a professional touch to your workspace.
+A lightweight WPF application that adds a customizable glowing edge light effect around your monitors on Windows. Perfect for ambient lighting during video calls, streaming, or just adding a professional touch to your workspace.
 
 ## Features
 
 - **Automatic Updates**: Built-in update system checks GitHub Releases for new versions
-- **Primary Monitor Display**: Automatically detects and displays on your primary monitor, even in multi-monitor setups
+- **Multi-Monitor Support**: Display on your primary monitor, switch to another monitor, or show on all monitors simultaneously
 - **DPI Aware**: Properly handles high-DPI displays (4K monitors with scaling)
 - **Fluent Design**: Modern UX that fits in with the Windows look and feel
 - **Click-Through Transparency**: Overlay doesn't interfere with your work - all clicks pass through to applications beneath
 - **Customizable Brightness**: Adjust opacity with easy-to-use controls
- - **Adjustable Color Temperature**: Shift the edge light from cooler (blue-ish) to warmer (amber) tones
+- **Adjustable Color Temperature**: Shift the edge light from cooler (blue-ish) to warmer (amber) tones
 - **Toggle On/Off**: Quickly enable or disable the edge light effect
 - **Hideable Controls**: Hide the control toolbar for a cleaner look, restore via tray menu
 - **Always On Top**: Stays visible above all other windows
+- **Persistent Settings**: Brightness, color temperature, on/off state, and preferences are saved across restarts
+- **Settings Window**: Dedicated settings panel with sliders and control-bar customization
 - **Exclude from Screen Capture**: Optional setting to hide the edge light from screen sharing (Teams, Zoom) and screenshots
 - **Keyboard Shortcuts**: 
   - `Ctrl+Shift+L` - Toggle light on/off
@@ -82,19 +84,19 @@ The executable will be in `bin\Release\net10.0-windows\win-x64\publish\WindowsEd
 3. Control toolbar appears at the bottom center with these buttons:
    - 🔅 **Decrease Brightness** - Reduces opacity
    - 🔆 **Increase Brightness** - Increases opacity
-   - 🌡️ **Cooler Color** - Shifts the glow towards a cooler, blue-ish white
    - 🔥 **Warmer Color** - Shifts the glow towards a warmer, amber tone
+   - ❄️ **Cooler Color** - Shifts the glow towards a cooler, blue-ish white
    - 💡 **Toggle Light** - Turn the effect on/off
    - 🖥️ **Switch Monitor** - Move to next monitor (if multiple monitors)
    - 🖥️🖥️ **All Monitors** - Show on all monitors (if multiple monitors)
-   - 🎥 **Exclude from Capture** - Hide from screen sharing and screenshots
+   - ⚙️ **Settings** - Adjust appearance, capture exclusion, and control visibility
    - ✖ **Exit** - Close the application
 4. Hide the control toolbar for a cleaner look using the tray menu (right-click tray icon → "Hide Controls")
 
 ### Screen Sharing Mode
 
 When sharing your screen on video conferencing apps (Teams, Zoom, etc.), you may want the edge light to be visible to you but invisible to viewers. Enable **"Exclude from Screen Capture"** via:
-- Click the 🎥 button in the control toolbar, or
+- Open ⚙️ **Settings** from the control toolbar and enable **Exclude from Screen Capture**, or
 - Right-click the tray icon → "Exclude from Screen Capture"
 
 **Note**: When this setting is enabled, the edge light will also be excluded from screenshots taken with Windows Snipping Tool, PrintScreen, or other capture tools.
@@ -124,11 +126,11 @@ When sharing your screen on video conferencing apps (Teams, Zoom, etc.), you may
 
 ## Multi-Monitor Support
 
-The application specifically targets the **primary monitor** in your display setup:
-- Automatically detects primary monitor position and dimensions
-- Correctly handles DPI scaling (e.g., 150%, 200% on 4K displays)
-- Works with any monitor arrangement (horizontal, vertical, mixed)
-- Does not span across multiple monitors
+The application supports flexible multi-monitor configurations:
+- Starts on the primary monitor
+- Switches between connected monitors from the toolbar or tray menu
+- Can display the edge light on every connected monitor simultaneously
+- Handles per-monitor DPI scaling and mixed monitor arrangements
 
 ## Development
 
