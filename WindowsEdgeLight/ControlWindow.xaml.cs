@@ -1,4 +1,5 @@
 using System.Windows;
+using System.Windows.Input;
 
 namespace WindowsEdgeLight;
 
@@ -84,6 +85,25 @@ public partial class ControlWindow : Window
         settings.Owner = this;
         settings.ShowDialog();
         ApplyButtonVisibility();
+    }
+
+    private void DragHandle_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (e.LeftButton != MouseButtonState.Pressed)
+        {
+            return;
+        }
+
+        mainWindow.NotifyControlWindowManuallyMoved();
+
+        try
+        {
+            DragMove();
+        }
+        catch (System.InvalidOperationException)
+        {
+            // DragMove can throw if the mouse button is no longer pressed; ignore.
+        }
     }
 
     private void Close_Click(object sender, RoutedEventArgs e)

@@ -36,6 +36,8 @@ public partial class MainWindow : Window
     private ControlWindow? controlWindow;
     // Tracks whether the control window should be visible (controls initial visibility and toggle state)
     private bool isControlWindowVisible = true;
+    // Session-only: once the user drags the control toolbar, stop auto-repositioning it.
+    private bool controlWindowManuallyMoved = false;
     private ToolStripMenuItem? toggleControlsMenuItem;
     private ToolStripMenuItem? excludeFromCaptureMenuItem;
     
@@ -1258,9 +1260,23 @@ Version {version}";
     {
         if (controlWindow == null) return;
 
+        // Respect a user-dragged position for the current session.
+        if (controlWindowManuallyMoved) return;
+
         // Position at bottom center of main window
         controlWindow.Left = this.Left + (this.Width - controlWindow.Width) / 2;
         controlWindow.Top = this.Top + this.Height - controlWindow.Height - 124;
+    }
+
+    public void NotifyControlWindowManuallyMoved()
+    {
+        controlWindowManuallyMoved = true;
+    }
+
+    public void ResetControlWindowPosition()
+    {
+        controlWindowManuallyMoved = false;
+        RepositionControlWindow();
     }
 
     public bool HasMultipleMonitors()
