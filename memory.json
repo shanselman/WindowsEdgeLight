@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-08-08T01:11:01Z",
-  "last_run_id": "31231979837",
+  "last_run": "2026-08-08T13:06:55Z",
+  "last_run_id": "31258739347",
   "comments_made": {
     "24": "2026-07-01T13:51:58Z",
     "126": "2026-08-01T13:11:00Z",
@@ -12,176 +12,59 @@
     "33": "2026-08-08T01:11:00Z"
   },
   "labels_applied": {
-    "24": [
-      "enhancement",
-      "needs investigation"
-    ],
-    "33": [
-      "enhancement"
-    ],
-    "27": [
-      "help wanted"
-    ],
-    "36": [
-      "enhancement"
-    ],
-    "56": [
-      "enhancement"
-    ],
-    "62": [
-      "enhancement"
-    ],
-    "63": [
-      "refactor"
-    ],
-    "64": [
-      "enhancement"
-    ],
-    "65": [
-      "bug"
-    ],
-    "66": [
-      "refactor"
-    ],
-    "67": [
-      "bug"
-    ],
-    "69": [
-      "bug"
-    ]
+    "24": ["enhancement", "needs investigation"],
+    "33": ["enhancement"],
+    "27": ["help wanted"],
+    "36": ["enhancement"],
+    "56": ["enhancement"],
+    "62": ["enhancement"],
+    "63": ["refactor"],
+    "64": ["enhancement"],
+    "65": ["bug"],
+    "66": ["refactor"],
+    "67": ["bug"],
+    "69": ["bug"]
   },
   "fix_attempts": {
-    "eng-nuget-cache-2026-08-07": {
-      "branch": "repo-assist/eng-nuget-cache-2026-08-07",
-      "status": "pr_created_2026-08-07",
-      "desc": "Add NuGet restore caching (actions/cache@v4) to build.yml + upgrade softprops/action-gh-release v1->v2."
-    },
-    "improve-tray-tooltip-2026-08-06": {
-      "branch": "repo-assist/improve-tray-tooltip-2026-08-06",
-      "status": "pr_created_2026-08-06",
-      "desc": "Dynamic tray tooltip showing current light state: [On/Off] brightness% Cool/Neutral/Warm."
-    },
-    "fix-shadow-color-sync-2026-08-06": {
-      "branch": "repo-assist/fix-shadow-color-sync-2026-08-06",
-      "status": "pr_created_2026-08-06",
-      "desc": "Sync DropShadowEffect.Color with colour temperature in SetColorTemperature() and UpdateAdditionalMonitorWindows(). Closes #134."
-    },
-    "perf-mouse-hook-dedup-2026-08-05": {
-      "branch": "repo-assist/perf-mouse-hook-dedup-2026-08-05",
-      "status": "pr_created_2026-08-05",
-      "desc": "Deduplicate WH_MOUSE_LL dispatches (skip same-coord events) + cache innerProximityRect to avoid per-mouse-move Rect allocation."
-    },
-    "eng-pr-ci-2026-08-04": {
-      "branch": "repo-assist/eng-pr-ci-2026-08-04",
-      "status": "pr_created_2026-08-04",
-      "desc": "Add .github/workflows/ci.yml: build+test on every PR and push to master. Auto-discovers *.Tests.csproj."
-    },
-    "fix-settings-monitor-workarea-2026-08-04": {
-      "branch": "repo-assist/fix-settings-monitor-workarea-2026-08-04",
-      "status": "pr_created_2026-08-04",
-      "desc": "Fix SettingsWindow_Loaded to use Screen.FromHandle(owner) + DPI scale instead of SystemParameters.WorkArea. Closes #138."
-    },
-    "fix-settings-stale-slider-2026-08-03": {
-      "branch": "repo-assist/fix-settings-stale-slider-2026-08-03",
-      "status": "SUPERSEDED_by_maintainer_2026-07-08",
-      "desc": "Maintainer's July 8 commit already persists slider values on close. Branch can be closed."
-    },
-    "improve-appsettings-2026-08-03": {
-      "branch": "repo-assist/improve-appsettings-2026-08-03",
-      "status": "pr_created_2026-08-03",
-      "desc": "Cache JsonSerializerOptions as static readonly + atomic write (temp+rename) in AppSettings."
-    },
-    "test-appsettings-v3": {
-      "branch": "repo-assist/test-appsettings-v3-2026-08-03",
-      "status": "pr_created_2026-08-03",
-      "desc": "19 xUnit tests for AppSettings (defaults, round-trip, corrupt JSON, trailing commas). Closes #139 #133."
-    },
-    "feat-start-with-windows": {
-      "branch": "repo-assist/feat-start-with-windows-2026-08-02",
-      "status": "pr_created_2026-08-02",
-      "desc": "Add Start with Windows toggle to tray menu; HKCU Run registry entry."
-    },
-    "fix-issue-126-monitor-unplug": {
-      "branch": "repo-assist/fix-issue-126-monitor-unplug-2026-08-01",
-      "status": "pr_created_2026-08-01",
-      "desc": "Clamp currentMonitorIndex in UpdateCurrentMonitorIndex/HandleMouseMove/SetupWindow. Closes #126."
-    },
-    "fix-issue-131-color-temp-init": {
-      "branch": "repo-assist/fix-issue-131-color-temp-init-2026-08-01",
-      "status": "pr_created_2026-08-01",
-      "desc": "Fix CreateMonitorWindow() gradient stops and drop shadow colour to use _colorTemperature lerp. Closes #131."
-    },
-    "fix-persist-control-window-visibility": {
-      "branch": "repo-assist/fix-persist-control-window-visibility-2026-07-31",
-      "status": "pr_created_2026-07-31",
-      "desc": "Persist IsControlWindowVisible in AppSettings; restore on load; save on toggle."
-    },
-    "fix-persist-show-all-monitors-v2": {
-      "branch": "repo-assist/fix-persist-show-all-monitors-2026-07-31",
-      "status": "pr_created_2026-07-31",
-      "desc": "Persist showOnAllMonitors in AppSettings; restore on load; save on toggle. Closes #130."
-    },
-    "fix-settings-live-sync": {
-      "branch": "repo-assist/fix-settings-live-sync-2026-07-26",
-      "status": "fallback_issue_145",
-      "desc": "Live-sync sliders via events."
-    },
-    "fix-allmonitors-button-feedback-2026-08-05": {
-      "branch": "repo-assist/fix-allmonitors-button-feedback-2026-08-05",
-      "status": "pr_created_2026-08-05",
-      "desc": "Add toggleAllMonitorsMenuItem + dynamic tooltip on AllMonitorsButton - shows active all-monitors state in tray and control bar."
-    },
-    "perf-cache-hole-geometry-v2-2026-08-02": {
-      "branch": "repo-assist/perf-cache-hole-geometry-v2-2026-08-02",
-      "status": "pr_created_2026-08-02",
-      "desc": "Cache hole-punch CombinedGeometry + PathGeometry to eliminate per-mouse-move allocations."
-    },
     "eng-updatum-v2-2026-08-02": {
       "branch": "repo-assist/eng-updatum-v2-2026-08-02",
-      "status": "pr_created_2026-08-02",
+      "status": "PARTIALLY_MERGED: JsonSerializerOptions caching was merged in batch PR #170; Updatum bump (1.2.1->1.4.0) NOT merged",
       "desc": "Bump Updatum 1.2.1->1.4.0 + cache JsonSerializerOptions as static fields."
+    },
+    "fix-settings-live-sync-2026-07-26": {
+      "branch": "repo-assist/fix-settings-live-sync-2026-07-26",
+      "status": "fallback_issue_145; likely superseded by batch merge",
+      "desc": "Live-sync sliders via events."
+    },
+    "BATCH_MERGED_PR170_2026-08-08": {
+      "status": "MERGED",
+      "desc": "Batch merge by maintainer in PR #170 (2026-08-08 05:25 UTC). Included: eng-nuget-cache, eng-pr-ci, improve-appsettings, test-appsettings-v3, fix-settings-monitor-workarea, improve-tray-tooltip, fix-shadow-color-sync, perf-mouse-hook-dedup, fix-allmonitors-button-feedback, feat-start-with-windows, fix-issue-126-monitor-unplug, fix-issue-131-color-temp-init, fix-persist-control-window-visibility, fix-persist-show-all-monitors, perf-cache-hole-geometry. Also merged PR #144 (drag control window by gcampbell). Most RA fix/improve/perf/eng branches cleared."
     }
   },
-  "monthly_summary_issue": 156,
+  "monthly_summary_issue": 157,
   "monthly_summary_july_closed": 123,
-  "maintainer_preferences": "Prefers bug fixes/functional improvements. Closed refactor PRs. Manually applied RA branches (#65,#67,#69 closed). NOTE: refactor/cleanup PRs may be closed. Last merged: July 8 2026 (settings page PR #68).",
+  "monthly_summary_august_prev_closed": 156,
+  "maintainer_preferences": "Active reviewer. Merged massive batch PR #170 on 2026-08-08 incorporating 15+ RA branches. Closed monthly summary #156 as 'not_planned' (may just be clearing queue). Merged PR #144 (community contributor drag feature). Prefers bug fixes/functional improvements.",
   "backlog_cursor": 24,
   "known_limitations": {
-    "pr_creation": "PR creation via safeoutputs create_pull_request confirmed working. PRs are filtered by integrity (github-actions[bot] PRs invisible to RA agent). Use branch comparison links.",
+    "pr_creation": "PR creation via safeoutputs create_pull_request confirmed working.",
     "branch_push": "Cannot push branches via git - no git credentials. But safeoutputs push_to_pull_request_branch works for existing PRs.",
     "build": "net10.0-windows needs -p:EnableWindowsTargeting=true on both restore and build steps. Test project targets net8.0."
   },
-  "pending_fallback_issues": {
-    "145": "fix: live-sync Settings sliders"
-  },
-  "nuget_last_checked": {
-    "updatum": {
-      "latest": "1.4.0",
-      "current": "1.2.1",
-      "checked": "2026-07-26"
-    }
-  },
-  "notable_branches": {
-    "copilot/support-hdr-feature": "Full HDR impl: HdrColorManager.cs+HdrOverlayWindow.cs. PR #144 (filtered). Linked to #24.",
-    "copilot/aw-repo-assist-fix": "Adds copilot-requests:true + fetch-all to repo-assist.md."
+  "outstanding_items": {
+    "updatum_bump": "Updatum still at 1.2.1 (vs 1.4.0). Create new clean branch with only the bump.",
+    "unused_imports_app_xaml_cs": "using System.Configuration and using System.Data are unused in App.xaml.cs",
+    "dispatcher_async_pattern": "await Dispatcher.InvokeAsync(async () => {...}) does not await inner Task. Low practical impact since DownloadAndInstallUpdateAsync has full internal error handling.",
+    "pr_33_auth": "PR #33 still open - Agentic Workflows auth upgrade"
   },
   "ci_findings": {
-    "checked": "2026-08-07",
-    "fixed": [
-      "softprops/action-gh-release: upgraded v1->v2 in branch eng-nuget-cache-2026-08-07",
-      "Added ci.yml: PR build+test workflow (branch: repo-assist/eng-pr-ci-2026-08-04)",
-      "NuGet restore caching added to build.yml (branch: eng-nuget-cache-2026-08-07)"
-    ],
-    "still_outstanding": [
-      "azure/trusted-signing-action@v1 (may be outdated - cannot verify from Linux CI)"
-    ]
+    "checked": "2026-08-08",
+    "merged": ["ci.yml added", "build.yml NuGet caching + action-gh-release v2"],
+    "outstanding": ["azure/trusted-signing-action@v1 - may be outdated"]
   },
-  "app_xaml_cs_issues": {
-    "unused_imports": [
-      "System.Configuration",
-      "System.Data"
-    ],
-    "dispatcher_async_pattern": "await Dispatcher.InvokeAsync(async () => {...}) in CheckForUpdatesAsync does not properly await inner Task. Fix: await (await Dispatcher.InvokeAsync(async () => {...}))"
+  "notable_branches": {
+    "copilot/support-hdr-feature": "Full HDR impl: HdrColorManager.cs+HdrOverlayWindow.cs. PR #144 was filtered and turned out to be drag feature (gcampbell). HDR branch by Copilot agent may be stale.",
+    "aw-copilot-requests-upgrade": "PR #33: Agentic Workflows auth upgrade. Still open."
   },
-  "notes": "2026-08-08 01:11: Tasks 3+2+11. Task 2 (alternate Task 7 nudge): Posted brief comment on PR #33 (stale since June 8) encouraging merge - enables Copilot token flow/better RA visibility. Task 3: Deferred - 18 unreviewed branches in backlog, maintainer has not merged since July 8. Task 11: Updated monthly summary #156 with current run entry. NOTE: Maintainer still has not merged any RA branches since July 8. Should consider pausing new branch creation and focusing on existing backlog summary."
+  "notes": "2026-08-08 13:07: Tasks 2+10+11. Maintainer was very active today: merged batch PR #170 (15+ RA branches), merged PR #144 (drag feature), closed monthly summary #156 as 'not_planned'. Task 2: Issue #24 no new human activity - nothing to add. Task 10: No new branches created - backlog cleared, pausing new branch creation. Outstanding: Updatum 1.2.1 vs 1.4.0, unused imports in App.xaml.cs. Task 11: Created new monthly summary #157."
 }
