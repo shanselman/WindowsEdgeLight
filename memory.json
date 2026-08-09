@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-08-08T13:06:55Z",
-  "last_run_id": "31258739347",
+  "last_run": "2026-08-09T01:11:04Z",
+  "last_run_id": "31287699890",
   "comments_made": {
     "24": "2026-07-01T13:51:58Z",
     "126": "2026-08-01T13:11:00Z",
@@ -12,18 +12,43 @@
     "33": "2026-08-08T01:11:00Z"
   },
   "labels_applied": {
-    "24": ["enhancement", "needs investigation"],
-    "33": ["enhancement"],
-    "27": ["help wanted"],
-    "36": ["enhancement"],
-    "56": ["enhancement"],
-    "62": ["enhancement"],
-    "63": ["refactor"],
-    "64": ["enhancement"],
-    "65": ["bug"],
-    "66": ["refactor"],
-    "67": ["bug"],
-    "69": ["bug"]
+    "24": [
+      "enhancement",
+      "needs investigation"
+    ],
+    "33": [
+      "enhancement"
+    ],
+    "27": [
+      "help wanted"
+    ],
+    "36": [
+      "enhancement"
+    ],
+    "56": [
+      "enhancement"
+    ],
+    "62": [
+      "enhancement"
+    ],
+    "63": [
+      "refactor"
+    ],
+    "64": [
+      "enhancement"
+    ],
+    "65": [
+      "bug"
+    ],
+    "66": [
+      "refactor"
+    ],
+    "67": [
+      "bug"
+    ],
+    "69": [
+      "bug"
+    ]
   },
   "fix_attempts": {
     "eng-updatum-v2-2026-08-02": {
@@ -53,18 +78,22 @@
   },
   "outstanding_items": {
     "updatum_bump": "Updatum still at 1.2.1 (vs 1.4.0). Create new clean branch with only the bump.",
-    "unused_imports_app_xaml_cs": "using System.Configuration and using System.Data are unused in App.xaml.cs",
     "dispatcher_async_pattern": "await Dispatcher.InvokeAsync(async () => {...}) does not await inner Task. Low practical impact since DownloadAndInstallUpdateAsync has full internal error handling.",
     "pr_33_auth": "PR #33 still open - Agentic Workflows auth upgrade"
   },
   "ci_findings": {
     "checked": "2026-08-08",
-    "merged": ["ci.yml added", "build.yml NuGet caching + action-gh-release v2"],
-    "outstanding": ["azure/trusted-signing-action@v1 - may be outdated"]
+    "merged": [
+      "ci.yml added",
+      "build.yml NuGet caching + action-gh-release v2"
+    ],
+    "outstanding": [
+      "azure/trusted-signing-action@v1 - may be outdated"
+    ]
   },
   "notable_branches": {
     "copilot/support-hdr-feature": "Full HDR impl: HdrColorManager.cs+HdrOverlayWindow.cs. PR #144 was filtered and turned out to be drag feature (gcampbell). HDR branch by Copilot agent may be stale.",
     "aw-copilot-requests-upgrade": "PR #33: Agentic Workflows auth upgrade. Still open."
   },
-  "notes": "2026-08-08 13:07: Tasks 2+10+11. Maintainer was very active today: merged batch PR #170 (15+ RA branches), merged PR #144 (drag feature), closed monthly summary #156 as 'not_planned'. Task 2: Issue #24 no new human activity - nothing to add. Task 10: No new branches created - backlog cleared, pausing new branch creation. Outstanding: Updatum 1.2.1 vs 1.4.0, unused imports in App.xaml.cs. Task 11: Created new monthly summary #157."
+  "notes": "2026-08-09 01:11: Tasks 9+10+11. Task 10: Removed unused System.Configuration and System.Data imports from App.xaml.cs - created PR. Task 9: Added 8 new edge-case tests to AppSettingsTests.cs (empty JSON, partial JSON, null JSON, boundary values theory tests, multiple saves stability, non-writable path) - created PR. Build passes for both. Test runner still needs WindowsDesktop.App runtime."
 }
