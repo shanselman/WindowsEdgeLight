@@ -127,6 +127,103 @@ public sealed class AppSettingsTests : IDisposable
         Assert.NotNull(JsonSerializer.Deserialize<AppSettings>(json));
     }
 
+    [Fact]
+    public void EmptyJsonObjectReturnsDefaults()
+    {
+        Directory.CreateDirectory(tempDirectory);
+        File.WriteAllText(SettingsPath, "{}");
+
+        var settings = AppSettings.LoadFrom(SettingsPath);
+
+        Assert.Equal(1.0, settings.Brightness);
+        Assert.Equal(0.5, settings.ColorTemperature);
+        Assert.True(settings.IsLightOn);
+        Assert.True(settings.ExcludeFromCapture);
+    }
+
+    [Fact]
+    public void PartialJsonUsesDefaultsForMissingProperties()
+    {
+        Directory.CreateDirectory(tempDirectory);
+        File.WriteAllText(SettingsPath, """{"Brightness": 0.4}""");
+
+        var settings = AppSettings.LoadFrom(SettingsPath);
+
+        Assert.Equal(0.4, settings.Brightness);
+        // Unset properties should have their defaults
+        Assert.Equal(0.5, settings.ColorTemperature);
+        Assert.True(settings.IsLightOn);
+        Assert.True(settings.ShowToggleButton);
+    }
+
+    [Fact]
+    public void NullJsonDeserializationReturnsDefaults()
+    {
+        Directory.CreateDirectory(tempDirectory);
+        File.WriteAllText(SettingsPath, "null");
+
+        var settings = AppSettings.LoadFrom(SettingsPath);
+
+        Assert.Equal(1.0, settings.Brightness);
+        Assert.True(settings.IsLightOn);
+    }
+
+    [Theory]
+    [InlineData(0.2)]
+    [InlineData(0.5)]
+    [InlineData(1.0)]
+    public void BoundaryBrightnessValuesRoundTrip(double brightness)
+    {
+        var original = new AppSettings { Brightness = brightness };
+        original.SaveTo(SettingsPath);
+
+        var loaded = AppSettings.LoadFrom(SettingsPath);
+
+        Assert.Equal(brightness, loaded.Brightness);
+    }
+
+    [Theory]
+    [InlineData(0.0)]
+    [InlineData(0.5)]
+    [InlineData(1.0)]
+    public void BoundaryColorTemperatureValuesRoundTrip(double colorTemp)
+    {
+        var original = new AppSettings { ColorTemperature = colorTemp };
+        original.SaveTo(SettingsPath);
+
+        var loaded = AppSettings.LoadFrom(SettingsPath);
+
+        Assert.Equal(colorTemp, loaded.ColorTemperature);
+    }
+
+    [Fact]
+    public void MultipleSavesAreStable()
+    {
+        var settings = new AppSettings { Brightness = 0.6, ColorTemperature = 0.3 };
+
+        for (int i = 0; i < 5; i++)
+        {
+            settings.SaveTo(SettingsPath);
+        }
+
+        var loaded = AppSettings.LoadFrom(SettingsPath);
+        Assert.Equal(0.6, loaded.Brightness);
+        Assert.Equal(0.3, loaded.ColorTemperature);
+        Assert.False(File.Exists(SettingsPath + ".tmp"));
+    }
+
+    [Fact]
+    public void SaveToNonWritablePathDoesNotThrow()
+    {
+        // Saving to an invalid path should silently fail, not throw
+        var badPath = Path.Combine("/proc/invalid_path_that_cannot_be_created", "settings.json");
+
+        var settings = new AppSettings();
+        var ex = Record.Exception(() => settings.SaveTo(badPath));
+
+        Assert.Null(ex);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(tempDirectory))
