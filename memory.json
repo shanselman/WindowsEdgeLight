@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-08-09T01:11:04Z",
-  "last_run_id": "31287699890",
+  "last_run": "2026-08-09T13:07:58Z",
+  "last_run_id": "31314969166",
   "comments_made": {
     "24": "2026-07-01T13:51:58Z",
     "126": "2026-08-01T13:11:00Z",
@@ -12,88 +12,63 @@
     "33": "2026-08-08T01:11:00Z"
   },
   "labels_applied": {
-    "24": [
-      "enhancement",
-      "needs investigation"
-    ],
-    "33": [
-      "enhancement"
-    ],
-    "27": [
-      "help wanted"
-    ],
-    "36": [
-      "enhancement"
-    ],
-    "56": [
-      "enhancement"
-    ],
-    "62": [
-      "enhancement"
-    ],
-    "63": [
-      "refactor"
-    ],
-    "64": [
-      "enhancement"
-    ],
-    "65": [
-      "bug"
-    ],
-    "66": [
-      "refactor"
-    ],
-    "67": [
-      "bug"
-    ],
-    "69": [
-      "bug"
-    ]
+    "24": ["enhancement","needs investigation"],
+    "33": ["enhancement"],
+    "27": ["help wanted"],
+    "36": ["enhancement"],
+    "56": ["enhancement"],
+    "62": ["enhancement"],
+    "63": ["refactor"],
+    "64": ["enhancement"],
+    "65": ["bug"],
+    "66": ["refactor"],
+    "67": ["bug"],
+    "69": ["bug"]
   },
   "fix_attempts": {
-    "eng-updatum-v2-2026-08-02": {
-      "branch": "repo-assist/eng-updatum-v2-2026-08-02",
-      "status": "PARTIALLY_MERGED: JsonSerializerOptions caching was merged in batch PR #170; Updatum bump (1.2.1->1.4.0) NOT merged",
-      "desc": "Bump Updatum 1.2.1->1.4.0 + cache JsonSerializerOptions as static fields."
-    },
-    "fix-settings-live-sync-2026-07-26": {
-      "branch": "repo-assist/fix-settings-live-sync-2026-07-26",
-      "status": "fallback_issue_145; likely superseded by batch merge",
-      "desc": "Live-sync sliders via events."
-    },
     "BATCH_MERGED_PR170_2026-08-08": {
       "status": "MERGED",
-      "desc": "Batch merge by maintainer in PR #170 (2026-08-08 05:25 UTC). Included: eng-nuget-cache, eng-pr-ci, improve-appsettings, test-appsettings-v3, fix-settings-monitor-workarea, improve-tray-tooltip, fix-shadow-color-sync, perf-mouse-hook-dedup, fix-allmonitors-button-feedback, feat-start-with-windows, fix-issue-126-monitor-unplug, fix-issue-131-color-temp-init, fix-persist-control-window-visibility, fix-persist-show-all-monitors, perf-cache-hole-geometry. Also merged PR #144 (drag control window by gcampbell). Most RA fix/improve/perf/eng branches cleared."
+      "desc": "Batch merge by maintainer in PR #170 (2026-08-08). Included 15+ RA improvements."
+    },
+    "improve-unused-imports-2026-08-09": {
+      "branch": "repo-assist/improve-unused-imports-2026-08-09-7d3a30e07d187c28",
+      "status": "PENDING",
+      "desc": "Remove unused System.Configuration + System.Data from App.xaml.cs"
+    },
+    "test-appsettings-edge-cases-2026-08-09": {
+      "branch": "repo-assist/test-appsettings-edge-cases-2026-08-09-93bedf08938cf233",
+      "status": "PENDING",
+      "desc": "8 edge-case xUnit tests for AppSettings"
+    },
+    "eng-updatum-bump-2026-08-09": {
+      "branch": "repo-assist/eng-updatum-bump-2026-08-09",
+      "status": "PENDING",
+      "desc": "Bump Updatum 1.2.1 -> 1.4.0 (standalone clean branch)"
+    },
+    "improve-affinity-refactor-2026-08-09": {
+      "branch": "repo-assist/improve-affinity-refactor-2026-08-09",
+      "status": "PENDING",
+      "desc": "Refactor ApplyExcludeFromCapture to use local helper; removes ~28 lines of repetition"
     }
   },
-  "monthly_summary_issue": 157,
+  "monthly_summary_issue": 171,
   "monthly_summary_july_closed": 123,
   "monthly_summary_august_prev_closed": 156,
-  "maintainer_preferences": "Active reviewer. Merged massive batch PR #170 on 2026-08-08 incorporating 15+ RA branches. Closed monthly summary #156 as 'not_planned' (may just be clearing queue). Merged PR #144 (community contributor drag feature). Prefers bug fixes/functional improvements.",
+  "maintainer_preferences": "Active reviewer. Merged batch PR #170 (2026-08-08) with 15+ RA branches. Prefers bug fixes/functional improvements.",
   "backlog_cursor": 24,
   "known_limitations": {
-    "pr_creation": "PR creation via safeoutputs create_pull_request confirmed working.",
-    "branch_push": "Cannot push branches via git - no git credentials. But safeoutputs push_to_pull_request_branch works for existing PRs.",
+    "pr_creation": "GH Actions cannot create PRs in this repo. create_pull_request pushes branch and creates fallback issue instead.",
     "build": "net10.0-windows needs -p:EnableWindowsTargeting=true on both restore and build steps. Test project targets net8.0."
   },
   "outstanding_items": {
-    "updatum_bump": "Updatum still at 1.2.1 (vs 1.4.0). Create new clean branch with only the bump.",
-    "dispatcher_async_pattern": "await Dispatcher.InvokeAsync(async () => {...}) does not await inner Task. Low practical impact since DownloadAndInstallUpdateAsync has full internal error handling.",
-    "pr_33_auth": "PR #33 still open - Agentic Workflows auth upgrade"
+    "hdr_prototype": "Prototype Windows.UI.Composition HDR path for issue #24 - complex, future work"
   },
   "ci_findings": {
     "checked": "2026-08-08",
-    "merged": [
-      "ci.yml added",
-      "build.yml NuGet caching + action-gh-release v2"
-    ],
-    "outstanding": [
-      "azure/trusted-signing-action@v1 - may be outdated"
-    ]
+    "outstanding": ["azure/trusted-signing-action@v1 - may be outdated"]
   },
   "notable_branches": {
-    "copilot/support-hdr-feature": "Full HDR impl: HdrColorManager.cs+HdrOverlayWindow.cs. PR #144 was filtered and turned out to be drag feature (gcampbell). HDR branch by Copilot agent may be stale.",
     "aw-copilot-requests-upgrade": "PR #33: Agentic Workflows auth upgrade. Still open."
   },
-  "notes": "2026-08-09 01:11: Tasks 9+10+11. Task 10: Removed unused System.Configuration and System.Data imports from App.xaml.cs - created PR. Task 9: Added 8 new edge-case tests to AppSettingsTests.cs (empty JSON, partial JSON, null JSON, boundary values theory tests, multiple saves stability, non-writable path) - created PR. Build passes for both. Test runner still needs WindowsDesktop.App runtime."
+  "notes": "2026-08-09 13:07: Tasks 5+10+11. Task 10: Updatum bump 1.2.1->1.4.0 (clean standalone branch, build passed). Task 5: Refactored ApplyExcludeFromCapture to use local ApplyToWindow helper, removes ~28 lines of repetitive P/Invoke code. Build passed. 4 pending branches queued for maintainer review."
 }
