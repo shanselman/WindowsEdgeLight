@@ -814,46 +814,18 @@ Version {version}";
 
     private void ApplyExcludeFromCapture()
     {
-        var hwnd = new WindowInteropHelper(this).Handle;
-        if (hwnd != IntPtr.Zero)
+        var affinity = settings.ExcludeFromCapture ? WDA_EXCLUDEFROMCAPTURE : WDA_NONE;
+
+        void ApplyToWindow(Window w, string name)
         {
-            var result = SetWindowDisplayAffinity(hwnd, settings.ExcludeFromCapture ? WDA_EXCLUDEFROMCAPTURE : WDA_NONE);
-            if (!result)
-            {
-                var error = Marshal.GetLastWin32Error();
-                System.Diagnostics.Debug.WriteLine($"Failed to set display affinity for main window. Error: {error}");
-            }
+            var h = new WindowInteropHelper(w).Handle;
+            if (h != IntPtr.Zero && !SetWindowDisplayAffinity(h, affinity))
+                System.Diagnostics.Debug.WriteLine($"Failed to set display affinity for {name}. Error: {Marshal.GetLastWin32Error()}");
         }
-        
-        // Apply to control window
-        if (controlWindow != null)
-        {
-            var controlHwnd = new WindowInteropHelper(controlWindow).Handle;
-            if (controlHwnd != IntPtr.Zero)
-            {
-                var result = SetWindowDisplayAffinity(controlHwnd, settings.ExcludeFromCapture ? WDA_EXCLUDEFROMCAPTURE : WDA_NONE);
-                if (!result)
-                {
-                    var error = Marshal.GetLastWin32Error();
-                    System.Diagnostics.Debug.WriteLine($"Failed to set display affinity for control window. Error: {error}");
-                }
-            }
-        }
-        
-        // Apply to all additional monitor windows
-        foreach (var ctx in additionalMonitorWindows)
-        {
-            var monitorHwnd = new WindowInteropHelper(ctx.Window).Handle;
-            if (monitorHwnd != IntPtr.Zero)
-            {
-                var result = SetWindowDisplayAffinity(monitorHwnd, settings.ExcludeFromCapture ? WDA_EXCLUDEFROMCAPTURE : WDA_NONE);
-                if (!result)
-                {
-                    var error = Marshal.GetLastWin32Error();
-                    System.Diagnostics.Debug.WriteLine($"Failed to set display affinity for monitor window. Error: {error}");
-                }
-            }
-        }
+
+        ApplyToWindow(this, "main window");
+        if (controlWindow != null) ApplyToWindow(controlWindow, "control window");
+        foreach (var ctx in additionalMonitorWindows) ApplyToWindow(ctx.Window, "monitor window");
     }
 
     public void IncreaseBrightness()
