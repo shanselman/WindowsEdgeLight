@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-08-09T13:07:58Z",
-  "last_run_id": "31314969166",
+  "last_run": "2026-08-10T01:11:24Z",
+  "last_run_id": "31346355948",
   "comments_made": {
     "24": "2026-07-01T13:51:58Z",
     "126": "2026-08-01T13:11:00Z",
@@ -49,6 +49,11 @@
       "branch": "repo-assist/improve-affinity-refactor-2026-08-09",
       "status": "PENDING",
       "desc": "Refactor ApplyExcludeFromCapture to use local helper; removes ~28 lines of repetition"
+    },
+    "fix-null-settings-2026-08-10": {
+      "branch": "repo-assist/fix-null-settings-2026-08-10",
+      "status": "PENDING",
+      "desc": "Fix: handle JSON-null settings file same as corrupt (delete + return defaults). Also adds 3 new tests."
     }
   },
   "monthly_summary_issue": 171,
@@ -58,7 +63,7 @@
   "backlog_cursor": 24,
   "known_limitations": {
     "pr_creation": "GH Actions cannot create PRs in this repo. create_pull_request pushes branch and creates fallback issue instead.",
-    "build": "net10.0-windows needs -p:EnableWindowsTargeting=true on both restore and build steps. Test project targets net8.0."
+    "build": "net10.0-windows needs -p:EnableWindowsTargeting=true on both restore and build steps. Tests require Microsoft.WindowsDesktop.App (Windows runtime) - cannot run on Linux CI."
   },
   "outstanding_items": {
     "hdr_prototype": "Prototype Windows.UI.Composition HDR path for issue #24 - complex, future work"
@@ -70,5 +75,5 @@
   "notable_branches": {
     "aw-copilot-requests-upgrade": "PR #33: Agentic Workflows auth upgrade. Still open."
   },
-  "notes": "2026-08-09 13:07: Tasks 5+10+11. Task 10: Updatum bump 1.2.1->1.4.0 (clean standalone branch, build passed). Task 5: Refactored ApplyExcludeFromCapture to use local ApplyToWindow helper, removes ~28 lines of repetitive P/Invoke code. Build passed. 4 pending branches queued for maintainer review."
+  "notes": "2026-08-10 01:11: Tasks 3+9+11. Fixed bug in AppSettings.LoadFrom: when JSON file contained literal 'null', code returned defaults but did NOT delete the file (unlike corrupt JSON path). Extracted TryDeleteFile helper. Added 3 new xUnit tests. Build passed. 5 pending branches queued for maintainer review."
 }
