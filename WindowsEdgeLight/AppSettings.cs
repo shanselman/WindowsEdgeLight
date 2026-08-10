@@ -81,25 +81,21 @@ public class AppSettings
                 var json = File.ReadAllText(filePath);
                 var settings = JsonSerializer.Deserialize<AppSettings>(json, ReadOptions);
 
-                // Validate deserialized settings
                 if (settings != null)
                 {
                     return settings;
                 }
+
+                // Valid JSON but null result (e.g. file contained the literal "null") —
+                // treat the same as a corrupted file so it gets overwritten on next save.
+                System.Diagnostics.Debug.WriteLine("Settings file deserialised to null; resetting to defaults.");
+                TryDeleteFile(filePath);
             }
         }
         catch (JsonException ex)
         {
             System.Diagnostics.Debug.WriteLine($"Failed to parse settings file: {ex.Message}");
-            // Delete corrupted settings file
-            try
-            {
-                if (File.Exists(filePath))
-                {
-                    File.Delete(filePath);
-                }
-            }
-            catch { /* Ignore deletion errors */ }
+            TryDeleteFile(filePath);
         }
         catch (Exception ex)
         {
@@ -107,6 +103,18 @@ public class AppSettings
         }
 
         return new AppSettings();
+    }
+
+    private static void TryDeleteFile(string filePath)
+    {
+        try
+        {
+            if (File.Exists(filePath))
+            {
+                File.Delete(filePath);
+            }
+        }
+        catch { /* Ignore deletion errors */ }
     }
 
     /// <summary>

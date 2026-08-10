@@ -127,6 +127,48 @@ public sealed class AppSettingsTests : IDisposable
         Assert.NotNull(JsonSerializer.Deserialize<AppSettings>(json));
     }
 
+    [Fact]
+    public void JsonNullLiteralReturnsDefaultsAndDeletesFile()
+    {
+        Directory.CreateDirectory(tempDirectory);
+        File.WriteAllText(SettingsPath, "null");
+
+        var settings = AppSettings.LoadFrom(SettingsPath);
+
+        Assert.Equal(1.0, settings.Brightness);
+        Assert.True(settings.IsLightOn);
+        Assert.False(File.Exists(SettingsPath));
+    }
+
+    [Fact]
+    public void EmptyJsonObjectReturnsDefaults()
+    {
+        Directory.CreateDirectory(tempDirectory);
+        File.WriteAllText(SettingsPath, "{}");
+
+        var settings = AppSettings.LoadFrom(SettingsPath);
+
+        Assert.True(settings.ExcludeFromCapture);
+        Assert.True(settings.IsLightOn);
+        Assert.Equal(1.0, settings.Brightness);
+        Assert.Equal(0.5, settings.ColorTemperature);
+    }
+
+    [Fact]
+    public void PartialJsonRestoresSpecifiedAndDefaultsForOthers()
+    {
+        Directory.CreateDirectory(tempDirectory);
+        File.WriteAllText(SettingsPath, """{"Brightness":0.4,"IsLightOn":false}""");
+
+        var settings = AppSettings.LoadFrom(SettingsPath);
+
+        Assert.Equal(0.4, settings.Brightness);
+        Assert.False(settings.IsLightOn);
+        // Unspecified properties use defaults
+        Assert.True(settings.ExcludeFromCapture);
+        Assert.Equal(0.5, settings.ColorTemperature);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(tempDirectory))
