@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-08-10T13:09:55Z",
-  "last_run_id": "31391366309",
+  "last_run": "2026-08-11T01:11:10Z",
+  "last_run_id": "31448439383",
   "comments_made": {
     "24": "2026-07-01T13:51:58Z",
     "126": "2026-08-01T13:11:00Z",
@@ -12,43 +12,18 @@
     "33": "2026-08-08T01:11:00Z"
   },
   "labels_applied": {
-    "24": [
-      "enhancement",
-      "needs investigation"
-    ],
-    "33": [
-      "enhancement"
-    ],
-    "27": [
-      "help wanted"
-    ],
-    "36": [
-      "enhancement"
-    ],
-    "56": [
-      "enhancement"
-    ],
-    "62": [
-      "enhancement"
-    ],
-    "63": [
-      "refactor"
-    ],
-    "64": [
-      "enhancement"
-    ],
-    "65": [
-      "bug"
-    ],
-    "66": [
-      "refactor"
-    ],
-    "67": [
-      "bug"
-    ],
-    "69": [
-      "bug"
-    ]
+    "24": ["enhancement", "needs investigation"],
+    "33": ["enhancement"],
+    "27": ["help wanted"],
+    "36": ["enhancement"],
+    "56": ["enhancement"],
+    "62": ["enhancement"],
+    "63": ["refactor"],
+    "64": ["enhancement"],
+    "65": ["bug"],
+    "66": ["refactor"],
+    "67": ["bug"],
+    "69": ["bug"]
   },
   "fix_attempts": {
     "BATCH_MERGED_PR170_2026-08-08": {
@@ -66,24 +41,29 @@
       "desc": "8 edge-case xUnit tests for AppSettings"
     },
     "eng-updatum-bump-2026-08-09": {
-      "branch": "repo-assist/eng-updatum-bump-2026-08-09",
+      "branch": "repo-assist/eng-updatum-bump-2026-08-09-55bdcfe6fbe37736",
       "status": "PENDING",
       "desc": "Bump Updatum 1.2.1 -> 1.4.0 (standalone clean branch)"
     },
     "improve-affinity-refactor-2026-08-09": {
-      "branch": "repo-assist/improve-affinity-refactor-2026-08-09",
+      "branch": "repo-assist/improve-affinity-refactor-2026-08-09-363d29c7e68d4b53",
       "status": "PENDING",
       "desc": "Refactor ApplyExcludeFromCapture to use local helper; removes ~28 lines of repetition"
     },
     "fix-null-settings-2026-08-10": {
-      "branch": "repo-assist/fix-null-settings-2026-08-10",
+      "branch": "repo-assist/fix-null-settings-2026-08-10-34838338e6babe25",
       "status": "PENDING",
       "desc": "Fix: handle JSON-null settings file same as corrupt (delete + return defaults). Also adds 3 new tests."
     },
     "eng-dependabot-2026-08-10": {
-      "branch": "repo-assist/eng-dependabot-2026-08-10",
-      "status": "LOCAL_ONLY",
-      "desc": "Add .github/dependabot.yml for NuGet + GitHub Actions weekly updates (branch push blocked this run)"
+      "branch": "repo-assist/eng-dependabot-2026-08-10-a57f2c516d4474b3",
+      "status": "PENDING",
+      "desc": "Add .github/dependabot.yml for NuGet + GitHub Actions weekly updates"
+    },
+    "improve-tray-tooltip-2026-08-11": {
+      "branch": "repo-assist/improve-tray-tooltip-2026-08-11",
+      "status": "PENDING",
+      "desc": "Dynamic tray tooltip showing live light state and brightness (e.g. 'On · 80%')"
     }
   },
   "monthly_summary_issue": 171,
@@ -100,12 +80,10 @@
   },
   "ci_findings": {
     "checked": "2026-08-08",
-    "outstanding": [
-      "azure/trusted-signing-action@v1 - may be outdated"
-    ]
+    "outstanding": ["azure/trusted-signing-action@v1 - may be outdated"]
   },
   "notable_branches": {
     "aw-copilot-requests-upgrade": "PR #33: Agentic Workflows auth upgrade. Still open."
   },
-  "notes": "2026-08-10 13:09: Tasks 3+4+11. Task 3: no new bugs (all fixed in batch #170 or in pending branches). Task 4: prepared Dependabot config but branch push blocked. 5 branches still pending: fix-null-settings, unused-imports, updatum-bump, affinity-refactor, test-appsettings-edge-cases. Monthly summary updated with issue numbers for #172-176."
+  "notes": "2026-08-11 01:11: Tasks 2+3+11. Task 2: no new human activity on issue #24, skipped. Task 3: implemented dynamic tray tooltip (UpdateTrayTooltip helper; builds clean 0 errors). 6 branches still pending: unused-imports, updatum-bump, affinity-refactor, test-appsettings-edge-cases, fix-null-settings, eng-dependabot. Also duplicate issue #177 (same as #176 fix-null-settings)."
 }
