@@ -28,6 +28,12 @@ public partial class MainWindow : Window
     private const double MinColorTemp = 0.0;
     private const double MaxColorTemp = 1.0;
 
+    // Frame geometry constants (shared by main window and per-monitor windows)
+    private const double FrameWindowMargin = 40.0;
+    private const double FrameThickness = 80.0;
+    private const double FrameOuterRadius = 100.0;
+    private const double FrameInnerRadius = 60.0;
+
     // DPI Scale
     private double _dpiScaleX = 1.0;
     private double _dpiScaleY = 1.0;
@@ -599,35 +605,50 @@ Version {version}";
 
     private void CreateFrameGeometry()
     {
-        // Get actual dimensions (accounting for margin)
-        double width = this.ActualWidth - 40;  // 20px margin on each side
-        double height = this.ActualHeight - 40;
-        
-        const double frameThickness = 80;
-        const double outerRadius = 100;  // Extra rounded like macOS
-        const double innerRadius = 60;   // Keep proportional
-        
-        // Outer rounded rectangle
-        var outerRect = new RectangleGeometry(new Rect(0, 0, width, height), outerRadius, outerRadius);
-        
-        // Inner rounded rectangle
-        var innerRect = new RectangleGeometry(
-            new Rect(frameThickness, frameThickness, 
-                    width - (frameThickness * 2), 
-                    height - (frameThickness * 2)), 
-            innerRadius, innerRadius);
-        
-        // Combine: outer minus inner = frame
-        var frameGeometry = new CombinedGeometry(GeometryCombineMode.Exclude, outerRect, innerRect);
-        baseFrameGeometry = frameGeometry; // store original
-        EdgeLightBorder.Data = frameGeometry;
-        pathOffsetX = (ActualWidth - width) / 2.0; // store offsets for local coordinate conversion
-        pathOffsetY = (ActualHeight - height) / 2.0;
-        // Expand outer and contract inner rects for earlier hover detection based on ring hole radius.
         double ringDiameter = hoverCursorRing?.Width ?? 0;
+        var (geometry, offsetX, offsetY, outerHit, innerHit) =
+            BuildFrameGeometry(ActualWidth, ActualHeight, ringDiameter);
+
+        baseFrameGeometry = geometry;
+        EdgeLightBorder.Data = geometry;
+        pathOffsetX = offsetX;
+        pathOffsetY = offsetY;
+        frameOuterRect = outerHit;
+        frameInnerRect = innerHit;
+    }
+
+    /// <summary>
+    /// Computes frame geometry and hit-test rects for a window of the given dimensions.
+    /// </summary>
+    private static (CombinedGeometry Geometry, double PathOffsetX, double PathOffsetY,
+                    Rect HitTestOuterRect, Rect HitTestInnerRect)
+        BuildFrameGeometry(double windowWidth, double windowHeight, double ringDiameter)
+    {
+        double contentWidth = windowWidth - FrameWindowMargin;
+        double contentHeight = windowHeight - FrameWindowMargin;
+        double pathOffsetX = FrameWindowMargin / 2.0;
+        double pathOffsetY = FrameWindowMargin / 2.0;
         double holeRadius = ringDiameter / 2.0;
-        frameOuterRect = new Rect(pathOffsetX - holeRadius, pathOffsetY - holeRadius, width + holeRadius * 2, height + holeRadius * 2);
-        frameInnerRect = new Rect(pathOffsetX + frameThickness + holeRadius, pathOffsetY + frameThickness + holeRadius, width - (frameThickness * 2) - holeRadius * 2, height - (frameThickness * 2) - holeRadius * 2);
+
+        var outerRect = new RectangleGeometry(
+            new Rect(0, 0, contentWidth, contentHeight),
+            FrameOuterRadius, FrameOuterRadius);
+        var innerRect = new RectangleGeometry(
+            new Rect(FrameThickness, FrameThickness,
+                     contentWidth - FrameThickness * 2,
+                     contentHeight - FrameThickness * 2),
+            FrameInnerRadius, FrameInnerRadius);
+        var geometry = new CombinedGeometry(GeometryCombineMode.Exclude, outerRect, innerRect);
+
+        var hitTestOuterRect = new Rect(
+            pathOffsetX - holeRadius, pathOffsetY - holeRadius,
+            contentWidth + holeRadius * 2, contentHeight + holeRadius * 2);
+        var hitTestInnerRect = new Rect(
+            pathOffsetX + FrameThickness + holeRadius, pathOffsetY + FrameThickness + holeRadius,
+            contentWidth - FrameThickness * 2 - holeRadius * 2,
+            contentHeight - FrameThickness * 2 - holeRadius * 2);
+
+        return (geometry, pathOffsetX, pathOffsetY, hitTestOuterRect, hitTestInnerRect);
     }
 
     private IntPtr HwndHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
@@ -1096,35 +1117,14 @@ Version {version}";
         // Main window XAML doesn't show effect on HoverCursorRing.
         // So removing effect to match.
         
-        // Create frame geometry
-        double width = window.Width - 40;
-        double height = window.Height - 40;
-        const double frameThickness = 80;
-        const double outerRadius = 100;
-        const double innerRadius = 60;
-        
-        var outerRect = new RectangleGeometry(new Rect(0, 0, width, height), outerRadius, outerRadius);
-        var innerRect = new RectangleGeometry(
-            new Rect(frameThickness, frameThickness, 
-                    width - (frameThickness * 2), 
-                    height - (frameThickness * 2)), 
-            innerRadius, innerRadius);
-        
-        var frameGeometry = new CombinedGeometry(GeometryCombineMode.Exclude, outerRect, innerRect);
+        // Create frame geometry using shared helper
+        var (frameGeometry, pathOffsetX, pathOffsetY, frameOuterRect, frameInnerRect) =
+            BuildFrameGeometry(window.Width, window.Height, hoverRing.Width);
         path.Data = frameGeometry;
 
         grid.Children.Add(path);
         grid.Children.Add(hoverRing);
         window.Content = grid;
-
-        // Calculate geometry data for hole punch
-        double pathOffsetX = (window.Width - width) / 2.0;
-        double pathOffsetY = (window.Height - height) / 2.0;
-        
-        double ringDiameter = hoverRing.Width;
-        double holeRadius = ringDiameter / 2.0;
-        var frameOuterRect = new Rect(pathOffsetX - holeRadius, pathOffsetY - holeRadius, width + holeRadius * 2, height + holeRadius * 2);
-        var frameInnerRect = new Rect(pathOffsetX + frameThickness + holeRadius, pathOffsetY + frameThickness + holeRadius, width - (frameThickness * 2) - holeRadius * 2, height - (frameThickness * 2) - holeRadius * 2);
 
         var ctx = new MonitorWindowContext
         {
@@ -1199,32 +1199,15 @@ Version {version}";
 
     private void UpdateMonitorGeometry(MonitorWindowContext ctx)
     {
-        double width = ctx.Window.Width - 40;
-        double height = ctx.Window.Height - 40;
-        const double frameThickness = 80;
-        const double outerRadius = 100;
-        const double innerRadius = 60;
-        
-        var outerRect = new RectangleGeometry(new Rect(0, 0, width, height), outerRadius, outerRadius);
-        var innerRect = new RectangleGeometry(
-            new Rect(frameThickness, frameThickness, 
-                    width - (frameThickness * 2), 
-                    height - (frameThickness * 2)), 
-            innerRadius, innerRadius);
-        
-        var frameGeometry = new CombinedGeometry(GeometryCombineMode.Exclude, outerRect, innerRect);
-        
-        ctx.BaseGeometry = frameGeometry;
-        ctx.BorderPath.Data = frameGeometry;
-        
-        ctx.PathOffsetX = (ctx.Window.Width - width) / 2.0;
-        ctx.PathOffsetY = (ctx.Window.Height - height) / 2.0;
-        
-        double ringDiameter = ctx.HoverRing.Width;
-        double holeRadius = ringDiameter / 2.0;
-        
-        ctx.FrameOuterRect = new Rect(ctx.PathOffsetX - holeRadius, ctx.PathOffsetY - holeRadius, width + holeRadius * 2, height + holeRadius * 2);
-        ctx.FrameInnerRect = new Rect(ctx.PathOffsetX + frameThickness + holeRadius, ctx.PathOffsetY + frameThickness + holeRadius, width - (frameThickness * 2) - holeRadius * 2, height - (frameThickness * 2) - holeRadius * 2);
+        var (geometry, offsetX, offsetY, outerHit, innerHit) =
+            BuildFrameGeometry(ctx.Window.Width, ctx.Window.Height, ctx.HoverRing.Width);
+
+        ctx.BaseGeometry = geometry;
+        ctx.BorderPath.Data = geometry;
+        ctx.PathOffsetX = offsetX;
+        ctx.PathOffsetY = offsetY;
+        ctx.FrameOuterRect = outerHit;
+        ctx.FrameInnerRect = innerHit;
     }
 
     public bool IsShowingOnAllMonitors()
