@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-08-11T01:11:10Z",
-  "last_run_id": "31448439383",
+  "last_run": "2026-08-11T13:10:01Z",
+  "last_run_id": "31494628464",
   "comments_made": {
     "24": "2026-07-01T13:51:58Z",
     "126": "2026-08-01T13:11:00Z",
@@ -31,39 +31,57 @@
       "desc": "Batch merge by maintainer in PR #170 (2026-08-08). Included 15+ RA improvements."
     },
     "improve-unused-imports-2026-08-09": {
+      "issue": 172,
       "branch": "repo-assist/improve-unused-imports-2026-08-09-7d3a30e07d187c28",
       "status": "PENDING",
       "desc": "Remove unused System.Configuration + System.Data from App.xaml.cs"
     },
     "test-appsettings-edge-cases-2026-08-09": {
+      "issue": 173,
       "branch": "repo-assist/test-appsettings-edge-cases-2026-08-09-93bedf08938cf233",
       "status": "PENDING",
       "desc": "8 edge-case xUnit tests for AppSettings"
     },
     "eng-updatum-bump-2026-08-09": {
+      "issue": 174,
       "branch": "repo-assist/eng-updatum-bump-2026-08-09-55bdcfe6fbe37736",
       "status": "PENDING",
       "desc": "Bump Updatum 1.2.1 -> 1.4.0 (standalone clean branch)"
     },
     "improve-affinity-refactor-2026-08-09": {
+      "issue": 175,
       "branch": "repo-assist/improve-affinity-refactor-2026-08-09-363d29c7e68d4b53",
       "status": "PENDING",
       "desc": "Refactor ApplyExcludeFromCapture to use local helper; removes ~28 lines of repetition"
     },
     "fix-null-settings-2026-08-10": {
-      "branch": "repo-assist/fix-null-settings-2026-08-10-34838338e6babe25",
+      "issue": 176,
+      "branch": "repo-assist/fix-null-settings-2026-08-10-34838338e6babe25-8a4a18d01b96db32",
       "status": "PENDING",
       "desc": "Fix: handle JSON-null settings file same as corrupt (delete + return defaults). Also adds 3 new tests."
     },
+    "fix-null-settings-duplicate": {
+      "issue": 177,
+      "status": "DUPLICATE",
+      "desc": "Duplicate of fix-null-settings-2026-08-10; should be closed"
+    },
     "eng-dependabot-2026-08-10": {
+      "issue": 178,
       "branch": "repo-assist/eng-dependabot-2026-08-10-a57f2c516d4474b3",
       "status": "PENDING",
       "desc": "Add .github/dependabot.yml for NuGet + GitHub Actions weekly updates"
     },
     "improve-tray-tooltip-2026-08-11": {
-      "branch": "repo-assist/improve-tray-tooltip-2026-08-11",
+      "issue": 179,
+      "branch": "repo-assist/improve-tray-tooltip-2026-08-11-a1c273662d7dd9ff",
       "status": "PENDING",
       "desc": "Dynamic tray tooltip showing live light state and brightness (e.g. 'On · 80%')"
+    },
+    "improve-frame-geometry-constants-2026-08-11": {
+      "issue": 180,
+      "branch": "repo-assist/improve-frame-geometry-constants-2026-08-11",
+      "status": "PENDING",
+      "desc": "Extract FrameThickness/FrameOuterRadius/FrameInnerRadius as class constants + BuildFrameGeometry helper; removes duplication across 3 methods"
     }
   },
   "monthly_summary_issue": 171,
@@ -72,7 +90,7 @@
   "maintainer_preferences": "Active reviewer. Merged batch PR #170 (2026-08-08) with 15+ RA branches. Prefers bug fixes/functional improvements.",
   "backlog_cursor": 24,
   "known_limitations": {
-    "pr_creation": "GH Actions cannot create PRs in this repo. create_pull_request pushes branch and creates fallback issue instead.",
+    "pr_creation": "GH Actions cannot create PRs in this repo (permissions). create_pull_request pushes branch and creates fallback issue instead. Branches DO exist on remote.",
     "build": "net10.0-windows needs -p:EnableWindowsTargeting=true on both restore and build steps. Tests require Microsoft.WindowsDesktop.App (Windows runtime) - cannot run on Linux CI."
   },
   "outstanding_items": {
@@ -85,5 +103,5 @@
   "notable_branches": {
     "aw-copilot-requests-upgrade": "PR #33: Agentic Workflows auth upgrade. Still open."
   },
-  "notes": "2026-08-11 01:11: Tasks 2+3+11. Task 2: no new human activity on issue #24, skipped. Task 3: implemented dynamic tray tooltip (UpdateTrayTooltip helper; builds clean 0 errors). 6 branches still pending: unused-imports, updatum-bump, affinity-refactor, test-appsettings-edge-cases, fix-null-settings, eng-dependabot. Also duplicate issue #177 (same as #176 fix-null-settings)."
+  "notes": "2026-08-11 13:10: Tasks 2+5+11. Task 2: no new human activity on #24, no other user issues. Task 5: extracted frame geometry constants (FrameWindowMargin/FrameThickness/FrameOuterRadius/FrameInnerRadius) + BuildFrameGeometry helper from MainWindow.xaml.cs - removes triple duplication (60 ins/77 del). Branch pushed as issue #180. 10 branches still pending maintainer review (#172-#180). Task 11: updated monthly summary."
 }
