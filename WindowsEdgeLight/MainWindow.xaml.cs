@@ -213,8 +213,8 @@ public partial class MainWindow : Window
             notifyIcon.Icon = System.Drawing.SystemIcons.Application;
         }
         
-        notifyIcon.Text = "Windows Edge Light - Right-click for options";
         notifyIcon.Visible = true;
+        UpdateTrayTooltip();
         
     var contextMenu = new ContextMenuStrip();
     contextMenu.Items.Add("📋 Keyboard Shortcuts", null, (s, e) => ShowHelp());
@@ -249,6 +249,14 @@ public partial class MainWindow : Window
         
         // Set initial menu text based on current state
         UpdateTrayMenuToggleControlsText();
+    }
+
+    private void UpdateTrayTooltip()
+    {
+        if (notifyIcon == null) return;
+        var state = isLightOn ? "On" : "Off";
+        var pct = (int)Math.Round(currentOpacity * 100);
+        notifyIcon.Text = $"Windows Edge Light — {state} · {pct}%";
     }
 
     private void ShowHelp()
@@ -760,6 +768,7 @@ Version {version}";
         
         settings.IsLightOn = isLightOn;
         settings.Save();
+        UpdateTrayTooltip();
     }
 
     public void HandleToggle()
@@ -871,6 +880,7 @@ Version {version}";
         currentOpacity = Math.Max(MinOpacity, Math.Min(MaxOpacity, value));
         EdgeLightBorder.Opacity = currentOpacity;
         UpdateAdditionalMonitorWindows();
+        UpdateTrayTooltip();
         
         if (save)
         {
