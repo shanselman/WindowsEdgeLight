@@ -21,6 +21,8 @@ A lightweight WPF application that adds a customizable glowing edge light effect
   - `Ctrl+Shift+L` - Toggle light on/off
   - `Ctrl+Shift+Up` - Increase brightness
   - `Ctrl+Shift+Down` - Decrease brightness
+  - `Ctrl+Shift+Left` - Warmer color temperature
+  - `Ctrl+Shift+Right` - Cooler color temperature
 - **Gradient Effect**: Beautiful white gradient with subtle blur for a professional look
 
 ## Screenshots
