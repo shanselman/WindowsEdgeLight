@@ -176,6 +176,7 @@ public partial class MainWindow : Window
         isLightOn = settings.IsLightOn;
         currentOpacity = Math.Max(MinOpacity, Math.Min(MaxOpacity, settings.Brightness));
         _colorTemperature = Math.Max(MinColorTemp, Math.Min(MaxColorTemp, settings.ColorTemperature));
+        isControlWindowVisible = settings.ShowControlWindow;
 
         // Save back if values were clamped
         if (currentOpacity != settings.Brightness || _colorTemperature != settings.ColorTemperature)
@@ -785,6 +786,9 @@ Version {version}";
         }
         // Note: If controlWindow doesn't exist yet, isControlWindowVisible state
         // is preserved and will be applied when CreateControlWindow() is called
+        
+        settings.ShowControlWindow = isControlWindowVisible;
+        settings.Save();
         
         UpdateTrayMenuToggleControlsText();
     }

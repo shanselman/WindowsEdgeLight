@@ -24,6 +24,7 @@ public sealed class AppSettingsTests : IDisposable
         Assert.True(settings.ShowBrightnessButtons);
         Assert.True(settings.ShowColorTempButtons);
         Assert.True(settings.ShowMonitorControlButtons);
+        Assert.True(settings.ShowControlWindow);
     }
 
     [Fact]
@@ -47,7 +48,8 @@ public sealed class AppSettingsTests : IDisposable
             ShowToggleButton = false,
             ShowBrightnessButtons = false,
             ShowColorTempButtons = false,
-            ShowMonitorControlButtons = false
+            ShowMonitorControlButtons = false,
+            ShowControlWindow = false
         };
 
         expected.SaveTo(SettingsPath);
@@ -61,6 +63,7 @@ public sealed class AppSettingsTests : IDisposable
         Assert.Equal(expected.ShowBrightnessButtons, actual.ShowBrightnessButtons);
         Assert.Equal(expected.ShowColorTempButtons, actual.ShowColorTempButtons);
         Assert.Equal(expected.ShowMonitorControlButtons, actual.ShowMonitorControlButtons);
+        Assert.Equal(expected.ShowControlWindow, actual.ShowControlWindow);
         Assert.False(File.Exists(SettingsPath + ".tmp"));
     }
 

@@ -68,6 +68,11 @@ public class AppSettings
     public bool ShowMonitorControlButtons { get; set; } = true;
 
     /// <summary>
+    /// Whether the floating control bar (toolbar) is visible. Persisted so hiding it survives restarts.
+    /// </summary>
+    public bool ShowControlWindow { get; set; } = true;
+
+    /// <summary>
     /// Load settings from disk
     /// </summary>
     public static AppSettings Load() => LoadFrom(SettingsFilePath);
