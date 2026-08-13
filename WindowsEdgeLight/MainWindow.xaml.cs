@@ -633,7 +633,8 @@ Version {version}";
     private IntPtr HwndHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
     {
         const int WM_HOTKEY = 0x0312;
-        
+        const int WM_DISPLAYCHANGE = 0x007E;
+
         if (msg == WM_HOTKEY)
         {
             int hotkeyId = wParam.ToInt32();
@@ -654,8 +655,27 @@ Version {version}";
                     break;
             }
         }
+        else if (msg == WM_DISPLAYCHANGE)
+        {
+            OnDisplayChange();
+        }
         
         return IntPtr.Zero;
+    }
+
+    private void OnDisplayChange()
+    {
+        RefreshAvailableMonitors();
+
+        // If showing on all monitors, rebuild windows for new monitor configuration
+        if (showOnAllMonitors)
+        {
+            HideAdditionalMonitorWindows();
+            ShowOnAllMonitors();
+        }
+
+        // Refresh monitor-button enabled state in the control bar
+        controlWindow?.UpdateAllMonitorsButtonState();
     }
 
     protected override void OnDpiChanged(DpiScale oldDpi, DpiScale newDpi)
