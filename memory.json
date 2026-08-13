@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-08-12T13:10:09Z",
-  "last_run_id": "31599894390",
+  "last_run": "2026-08-13T01:11:36Z",
+  "last_run_id": "31656827618",
   "comments_made": {
     "24": "2026-07-01T13:51:58Z",
     "126": "2026-08-01T13:11:00Z",
@@ -88,6 +88,11 @@
       "branch": "repo-assist/improve-persist-control-visibility-2026-08-12",
       "status": "PENDING",
       "desc": "Persist control bar visibility (ShowControlWindow bool in AppSettings). 13 lines across 3 files."
+    },
+    "eng-update-test-sdk-2026-08-13": {
+      "branch": "repo-assist/eng-update-test-sdk-2026-08-13",
+      "status": "PENDING",
+      "desc": "Bump Microsoft.NET.Test.Sdk 17.12.0 -> 17.14.1 (latest stable v17 patch; test discovery + .NET 10 fixes)"
     }
   },
   "monthly_summary_issue": 171,
@@ -103,7 +108,7 @@
     "hdr_prototype": "Prototype Windows.UI.Composition HDR path for issue #24 - complex, future work"
   },
   "ci_findings": {
-    "checked": "2026-08-08",
+    "checked": "2026-08-13",
     "outstanding": []
   },
   "notable_branches": {
@@ -114,5 +119,5 @@
     "183": "Duplicate of 182 (ci-release-test-step)",
     "184": "Duplicate of 181 (color-temp-hotkeys)"
   },
-  "notes": "2026-08-12 13:10: Tasks 3+2+11. Task 3: added ShowControlWindow bool to AppSettings to persist control bar visibility across restarts; loaded in MainWindow constructor, saved in ToggleControlsVisibility. Tests updated. Build fails on Linux CI (pre-existing WPF infra limitation). Task 2: only real user issue is #24 (HDR), already commented on twice, no new human activity. 13 branches now pending maintainer review."
+  "notes": "2026-08-13 01:11: Tasks 2+4+11. Task 2: only real issue is #24 (HDR), commented twice, no new human activity - nothing to add. Task 4: bumped Microsoft.NET.Test.Sdk 17.12.0 -> 17.14.1; 14 branches now pending maintainer review."
 }
