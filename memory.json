@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-08-13T01:11:36Z",
-  "last_run_id": "31656827618",
+  "last_run": "2026-08-13T13:10:04Z",
+  "last_run_id": "31703423151",
   "comments_made": {
     "24": "2026-07-01T13:51:58Z",
     "126": "2026-08-01T13:11:00Z",
@@ -80,19 +80,24 @@
       "desc": "Add dotnet test step to build.yml before publishing; restore via full solution"
     },
     "improve-color-temp-hotkeys-2026-08-12": {
-      "branch": "repo-assist/improve-color-temp-hotkeys-2026-08-12",
+      "branch": "repo-assist/improve-color-temp-hotkeys-2026-08-12-33aa1783679cc400",
       "status": "PENDING",
       "desc": "Add Ctrl+Shift+Left (warmer) and Ctrl+Shift+Right (cooler) global hotkeys for color temperature"
     },
     "improve-persist-control-visibility-2026-08-12": {
-      "branch": "repo-assist/improve-persist-control-visibility-2026-08-12",
+      "branch": "repo-assist/improve-persist-control-visibility-2026-08-12-20c42b36edbb8813",
       "status": "PENDING",
       "desc": "Persist control bar visibility (ShowControlWindow bool in AppSettings). 13 lines across 3 files."
     },
     "eng-update-test-sdk-2026-08-13": {
-      "branch": "repo-assist/eng-update-test-sdk-2026-08-13",
+      "branch": "repo-assist/eng-update-test-sdk-2026-08-13-80973269cb6913ac",
       "status": "PENDING",
       "desc": "Bump Microsoft.NET.Test.Sdk 17.12.0 -> 17.14.1 (latest stable v17 patch; test discovery + .NET 10 fixes)"
+    },
+    "fix-display-change-handler-2026-08-13": {
+      "branch": "repo-assist/fix-display-change-handler-2026-08-13",
+      "status": "PENDING",
+      "desc": "Add WM_DISPLAYCHANGE handler: refreshes monitor list, rebuilds all-monitor windows, updates control bar button state on hotplug/unplug. Build: 0 errors, 0 warnings."
     }
   },
   "monthly_summary_issue": 171,
@@ -119,5 +124,5 @@
     "183": "Duplicate of 182 (ci-release-test-step)",
     "184": "Duplicate of 181 (color-temp-hotkeys)"
   },
-  "notes": "2026-08-13 01:11: Tasks 2+4+11. Task 2: only real issue is #24 (HDR), commented twice, no new human activity - nothing to add. Task 4: bumped Microsoft.NET.Test.Sdk 17.12.0 -> 17.14.1; 14 branches now pending maintainer review."
+  "notes": "2026-08-13 13:10: Tasks 2+3+11. Task 2: #24 commented twice, no new human activity - nothing to add. Task 3: Added WM_DISPLAYCHANGE handler (21 lines, 0 errors, 0 warnings). 15 branches now pending maintainer review. Suggest maintainer enable 'Allow GitHub Actions to create and approve pull requests' in Settings -> Actions -> General."
 }
