@@ -116,7 +116,11 @@ public partial class SettingsWindow : Window
     private void UpdateColorTempLabel()
     {
         if (ColorTempValueText != null)
-            ColorTempValueText.Text = $"{(int)(ColorTempSlider.Value * 100)}%";
+        {
+            // Linear approximation: 0.0 ≈ 6500 K (cool/daylight), 1.0 ≈ 2700 K (warm/incandescent)
+            int kelvin = (int)Math.Round(6500 - 3800 * ColorTempSlider.Value, -2);
+            ColorTempValueText.Text = $"~{kelvin}K";
+        }
     }
 
     private void ShowToggle_Click(object sender, RoutedEventArgs e)

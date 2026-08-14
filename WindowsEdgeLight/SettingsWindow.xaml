@@ -128,10 +128,10 @@
                             Grid.Row="1"
                             Grid.Column="1"
                             Margin="0,8,0,0"
-                            MinWidth="36"
+                            MinWidth="52"
                             TextAlignment="Right"
                             VerticalAlignment="Top"
-                            Text="50%" />
+                            Text="~4600K" />
                     </Grid>
                 </Border>
 
