@@ -24,6 +24,7 @@ public sealed class AppSettingsTests : IDisposable
         Assert.True(settings.ShowBrightnessButtons);
         Assert.True(settings.ShowColorTempButtons);
         Assert.True(settings.ShowMonitorControlButtons);
+        Assert.False(settings.ShowAllMonitors);
     }
 
     [Fact]
@@ -47,7 +48,8 @@ public sealed class AppSettingsTests : IDisposable
             ShowToggleButton = false,
             ShowBrightnessButtons = false,
             ShowColorTempButtons = false,
-            ShowMonitorControlButtons = false
+            ShowMonitorControlButtons = false,
+            ShowAllMonitors = true
         };
 
         expected.SaveTo(SettingsPath);
@@ -61,7 +63,28 @@ public sealed class AppSettingsTests : IDisposable
         Assert.Equal(expected.ShowBrightnessButtons, actual.ShowBrightnessButtons);
         Assert.Equal(expected.ShowColorTempButtons, actual.ShowColorTempButtons);
         Assert.Equal(expected.ShowMonitorControlButtons, actual.ShowMonitorControlButtons);
+        Assert.Equal(expected.ShowAllMonitors, actual.ShowAllMonitors);
         Assert.False(File.Exists(SettingsPath + ".tmp"));
+    }
+
+    [Fact]
+    public void ShowAllMonitorsDefaultsToFalse()
+    {
+        // Existing settings files without ShowAllMonitors should default to false (single-monitor)
+        Directory.CreateDirectory(tempDirectory);
+        File.WriteAllText(SettingsPath, """{"Brightness":0.8,"IsLightOn":true}""");
+
+        var settings = AppSettings.LoadFrom(SettingsPath);
+
+        Assert.False(settings.ShowAllMonitors);
+    }
+
+    [Fact]
+    public void ShowAllMonitorsRoundTrips()
+    {
+        new AppSettings { ShowAllMonitors = true }.SaveTo(SettingsPath);
+
+        Assert.True(AppSettings.LoadFrom(SettingsPath).ShowAllMonitors);
     }
 
     [Fact]

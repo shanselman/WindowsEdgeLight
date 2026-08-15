@@ -176,6 +176,7 @@ public partial class MainWindow : Window
         isLightOn = settings.IsLightOn;
         currentOpacity = Math.Max(MinOpacity, Math.Min(MaxOpacity, settings.Brightness));
         _colorTemperature = Math.Max(MinColorTemp, Math.Min(MaxColorTemp, settings.ColorTemperature));
+        showOnAllMonitors = settings.ShowAllMonitors;
 
         // Save back if values were clamped
         if (currentOpacity != settings.Brightness || _colorTemperature != settings.ColorTemperature)
@@ -352,6 +353,13 @@ Version {version}";
         }
 
         InstallMouseHook();
+
+        // Restore all-monitors state persisted from previous session
+        if (showOnAllMonitors)
+        {
+            ShowOnAllMonitors();
+            controlWindow?.UpdateAllMonitorsButtonState();
+        }
     }
 
     private void RegisterGlobalHotKeys(IntPtr hwnd)
@@ -983,7 +991,9 @@ Version {version}";
     public void ToggleAllMonitors()
     {
         showOnAllMonitors = !showOnAllMonitors;
-        
+        settings.ShowAllMonitors = showOnAllMonitors;
+        settings.Save();
+
         if (showOnAllMonitors)
         {
             ShowOnAllMonitors();
