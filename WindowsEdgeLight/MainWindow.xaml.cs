@@ -155,8 +155,8 @@ public partial class MainWindow : Window
     private double pathOffsetY;
     private readonly HoleCache primaryHoleCache = new();
 
-    private static readonly MediaColor CoolColor = MediaColor.FromRgb(220, 235, 255);
-    private static readonly MediaColor WarmColor = MediaColor.FromRgb(255, 220, 180);
+    internal static readonly MediaColor CoolColor = MediaColor.FromRgb(220, 235, 255);
+    internal static readonly MediaColor WarmColor = MediaColor.FromRgb(255, 220, 180);
 
     private const uint MOD_CONTROL = 0x0002;
     private const uint MOD_SHIFT = 0x0004;
@@ -1384,7 +1384,7 @@ Version {version}";
         return availableMonitors[currentMonitorIndex];
     }
 
-    private static MediaColor GetColorForTemperature(double temperature)
+    internal static MediaColor GetColorForTemperature(double temperature)
     {
         byte Lerp(byte cool, byte warm) => (byte)(cool + ((warm - cool) * temperature));
         return MediaColor.FromRgb(
