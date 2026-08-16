@@ -174,8 +174,8 @@ public partial class MainWindow : Window
         
         // Restore persisted state
         isLightOn = settings.IsLightOn;
-        currentOpacity = Math.Max(MinOpacity, Math.Min(MaxOpacity, settings.Brightness));
-        _colorTemperature = Math.Max(MinColorTemp, Math.Min(MaxColorTemp, settings.ColorTemperature));
+        currentOpacity = Math.Clamp(settings.Brightness, MinOpacity, MaxOpacity);
+        _colorTemperature = Math.Clamp(settings.ColorTemperature, MinColorTemp, MaxColorTemp);
 
         // Save back if values were clamped
         if (currentOpacity != settings.Brightness || _colorTemperature != settings.ColorTemperature)
@@ -868,7 +868,7 @@ Version {version}";
 
     public void SetBrightness(double value, bool save = true)
     {
-        currentOpacity = Math.Max(MinOpacity, Math.Min(MaxOpacity, value));
+        currentOpacity = Math.Clamp(value, MinOpacity, MaxOpacity);
         EdgeLightBorder.Opacity = currentOpacity;
         UpdateAdditionalMonitorWindows();
         
@@ -902,7 +902,7 @@ Version {version}";
 
     public void SetColorTemperature(double value, bool save = true)
     {
-        _colorTemperature = Math.Max(MinColorTemp, Math.Min(MaxColorTemp, value));
+        _colorTemperature = Math.Clamp(value, MinColorTemp, MaxColorTemp);
         ApplyColorTemperature(EdgeLightBorder);
         
         // Update all additional monitor windows
