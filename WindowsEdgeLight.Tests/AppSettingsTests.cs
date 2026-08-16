@@ -127,6 +127,83 @@ public sealed class AppSettingsTests : IDisposable
         Assert.NotNull(JsonSerializer.Deserialize<AppSettings>(json));
     }
 
+    [Fact]
+    public void UnknownPropertiesInJsonAreIgnoredOnLoad()
+    {
+        Directory.CreateDirectory(tempDirectory);
+        File.WriteAllText(SettingsPath, """
+            {
+              "Brightness": 0.4,
+              "FutureProperty": "some value",
+              "AnotherUnknownField": 42
+            }
+            """);
+
+        var settings = AppSettings.LoadFrom(SettingsPath);
+
+        Assert.Equal(0.4, settings.Brightness);
+        Assert.True(settings.IsLightOn); // default preserved for unset property
+    }
+
+    [Fact]
+    public void EmptyJsonObjectReturnsAllDefaults()
+    {
+        Directory.CreateDirectory(tempDirectory);
+        File.WriteAllText(SettingsPath, "{}");
+
+        var settings = AppSettings.LoadFrom(SettingsPath);
+
+        Assert.True(settings.ExcludeFromCapture);
+        Assert.True(settings.IsLightOn);
+        Assert.Equal(1.0, settings.Brightness);
+        Assert.Equal(0.5, settings.ColorTemperature);
+        Assert.True(settings.ShowToggleButton);
+        Assert.True(settings.ShowBrightnessButtons);
+        Assert.True(settings.ShowColorTempButtons);
+        Assert.True(settings.ShowMonitorControlButtons);
+    }
+
+    [Fact]
+    public void PartialJsonRestoresSpecifiedPropertiesAndDefaultsRemainder()
+    {
+        Directory.CreateDirectory(tempDirectory);
+        File.WriteAllText(SettingsPath, """{"IsLightOn": false, "Brightness": 0.3}""");
+
+        var settings = AppSettings.LoadFrom(SettingsPath);
+
+        Assert.False(settings.IsLightOn);
+        Assert.Equal(0.3, settings.Brightness);
+        Assert.Equal(0.5, settings.ColorTemperature); // default
+        Assert.True(settings.ExcludeFromCapture);     // default
+    }
+
+    [Fact]
+    public void OutOfRangeNumericValueIsPreservedOnLoad()
+    {
+        // AppSettings does not validate/clamp on load; clamping is the caller's responsibility.
+        Directory.CreateDirectory(tempDirectory);
+        File.WriteAllText(SettingsPath, """{"Brightness": 2.5, "ColorTemperature": -0.1}""");
+
+        var settings = AppSettings.LoadFrom(SettingsPath);
+
+        Assert.Equal(2.5, settings.Brightness);
+        Assert.Equal(-0.1, settings.ColorTemperature);
+    }
+
+    [Fact]
+    public void SaveFailureHandledGracefully()
+    {
+        // Saving to a path that is itself a directory should not throw.
+        var directoryAsFilePath = Path.Combine(tempDirectory, "some-dir");
+        Directory.CreateDirectory(directoryAsFilePath);
+
+        var settings = new AppSettings { Brightness = 0.6 };
+
+        // Should not throw even when the target path cannot be written.
+        var exception = Record.Exception(() => settings.SaveTo(directoryAsFilePath));
+        Assert.Null(exception);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(tempDirectory))
