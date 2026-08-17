@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-08-16T13:02:08Z",
-  "last_run_id": "31948612369",
+  "last_run": "2026-08-17T01:10:21Z",
+  "last_run_id": "31984082824",
   "comments_made": {
     "24": "2026-07-01T13:51:58Z",
     "126": "2026-08-01T13:11:00Z",
@@ -158,6 +158,16 @@
       "branch": "repo-assist/improve-math-clamp-2026-08-16",
       "status": "PENDING",
       "desc": "Task 5: Replace Math.Max(min, Math.Min(max, val)) with Math.Clamp in 4 places in MainWindow.xaml.cs. Build: 0 errors, 0 warnings."
+    },
+    "test-appsettings-contract-2026-08-17": {
+      "branch": "repo-assist/test-appsettings-contract-2026-08-17",
+      "status": "PENDING",
+      "desc": "Task 9: 4 contract tests for AppSettings (JSON property names, case sensitivity, IO error handling, field count tripwire). AppSettingsContractTests.cs"
+    },
+    "eng-ci-test-artifacts-2026-08-17": {
+      "branch": "repo-assist/eng-ci-test-artifacts-2026-08-17",
+      "status": "PENDING",
+      "desc": "Task 4: Add --logger trx + upload-artifact step to ci.yml so test results are available as downloadable artifact after each CI run."
     }
   },
   "monthly_summary_issue": 171,
@@ -185,5 +195,5 @@
     "184": "Duplicate of 181 (color-temp-hotkeys)",
     "189": "Duplicate of 190 (kelvin-color-temp - both from same run 2026-08-14)"
   },
-  "notes": "2026-08-16 13:02: Tasks 5+2+11. Task 5: Created branch improve-math-clamp-2026-08-16 (replace manual Min/Max clamping with Math.Clamp in 4 places; 0 errors, 0 warnings). Task 2: Issue #24 - no new human activity since 2026-07-01 - nothing to add. 22 branches now pending maintainer review."
+  "notes": "2026-08-17 01:10: Tasks 9+4+11. Task 9: Created branch test-appsettings-contract-2026-08-17 (4 contract tests: JSON property names, case sensitivity, IO error, field count). Task 4: Created branch eng-ci-test-artifacts-2026-08-17 (CI TRX result upload). 24 branches now pending maintainer review."
 }
