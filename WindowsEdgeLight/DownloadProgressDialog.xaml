@@ -1,18 +1,18 @@
 <Window x:Class="WindowsEdgeLight.DownloadProgressDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Downloading Update" 
-        Height="200" 
+        Title="Downloading Update"
+        Height="200"
         Width="500"
         WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize"
-        Background="#F5F5F5"
+        Background="Transparent"
         WindowStyle="None"
         AllowsTransparency="True">
-    <Border BorderBrush="#2196F3" 
-            BorderThickness="2" 
+    <Border BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+            BorderThickness="2"
             CornerRadius="10"
-            Background="#F5F5F5">
+            Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
         <Grid Margin="30">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -21,14 +21,13 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <TextBlock Grid.Row="0" 
-                       Text="⬇️ Downloading Update..." 
-                       FontSize="18" 
+            <TextBlock Grid.Row="0"
+                       Text="⬇️ Downloading Update..."
+                       FontSize="18"
                        FontWeight="Bold"
-                       Foreground="#2196F3"
                        Margin="0,0,0,20"/>
 
-            <ProgressBar Grid.Row="1" 
+            <ProgressBar Grid.Row="1"
                          x:Name="ProgressBar"
                          Height="25"
                          Minimum="0"
@@ -36,18 +35,18 @@
                          Value="0"
                          Margin="0,0,0,10"/>
 
-            <TextBlock Grid.Row="2" 
+            <TextBlock Grid.Row="2"
                        x:Name="ProgressText"
                        Text="0 MB / 0 MB (0%)"
                        FontSize="13"
-                       Foreground="#666"
+                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                        HorizontalAlignment="Center"
                        Margin="0,0,0,15"/>
 
-            <TextBlock Grid.Row="3" 
+            <TextBlock Grid.Row="3"
                        Text="Please wait while the update is being downloaded..."
                        FontSize="12"
-                       Foreground="#999"
+                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                        HorizontalAlignment="Center"
                        TextWrapping="Wrap"/>
         </Grid>
