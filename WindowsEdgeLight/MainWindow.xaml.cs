@@ -5,8 +5,10 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
+using System.Windows.Media.Effects;
 using System.Windows.Shapes;
 using System.Windows.Threading;
+using MediaColor = System.Windows.Media.Color;
 
 namespace WindowsEdgeLight;
 
@@ -36,12 +38,21 @@ public partial class MainWindow : Window
     private ControlWindow? controlWindow;
     // Tracks whether the control window should be visible (controls initial visibility and toggle state)
     private bool isControlWindowVisible = true;
+    // Session-only: once the user drags the control toolbar, stop auto-repositioning it.
+    private bool controlWindowManuallyMoved = false;
     private ToolStripMenuItem? toggleControlsMenuItem;
     private ToolStripMenuItem? excludeFromCaptureMenuItem;
     private ToolStripMenuItem? toggleLightMenuItem;
     
     // Application settings
     private AppSettings settings = new AppSettings();
+
+    private sealed class HoleCache
+    {
+        public Geometry? BaseGeometry { get; set; }
+        public EllipseGeometry? Hole { get; set; }
+        public CombinedGeometry? Combined { get; set; }
+    }
 
     private class MonitorWindowContext
     {
@@ -56,6 +67,7 @@ public partial class MainWindow : Window
         public double PathOffsetY { get; set; }
         public double DpiScaleX { get; set; } = 1.0;
         public double DpiScaleY { get; set; } = 1.0;
+        public HoleCache HoleCache { get; } = new();
     }
 
     // Monitor management
@@ -142,6 +154,10 @@ public partial class MainWindow : Window
     private Geometry? baseFrameGeometry; // original frame geometry (outer minus inner)
     private double pathOffsetX; // offset of geometry within window
     private double pathOffsetY;
+    private readonly HoleCache primaryHoleCache = new();
+
+    private static readonly MediaColor CoolColor = MediaColor.FromRgb(220, 235, 255);
+    private static readonly MediaColor WarmColor = MediaColor.FromRgb(255, 220, 180);
 
     private const uint MOD_CONTROL = 0x0002;
     private const uint MOD_SHIFT = 0x0004;
@@ -159,7 +175,7 @@ public partial class MainWindow : Window
         isLightOn = settings.IsLightOn;
         currentOpacity = settings.Brightness;
         _colorTemperature = settings.ColorTemperature;
-        
+
         SetupNotifyIcon();
     }
 
@@ -209,6 +225,7 @@ public partial class MainWindow : Window
         // Add toggle controls menu item - text will be set by UpdateTrayMenuToggleControlsText
         toggleControlsMenuItem = new ToolStripMenuItem("🎛️ Hide Controls", null, (s, e) => ToggleControlsVisibility());
         contextMenu.Items.Add(toggleControlsMenuItem);
+        contextMenu.Items.Add("📍 Reset Control Bar Position", null, (s, e) => ResetControlWindowPosition());
         
         // Add exclude from capture menu item with checkmark
         excludeFromCaptureMenuItem = new ToolStripMenuItem("🎥 Exclude from Screen Capture", null, (s, e) => ToggleExcludeFromCapture());
@@ -286,7 +303,7 @@ Version {version}";
         // Initialize available monitors on first setup
         if (availableMonitors.Length == 0)
         {
-            availableMonitors = Screen.AllScreens;
+            RefreshAvailableMonitors();
             
             // Find the primary monitor index
             for (int i = 0; i < availableMonitors.Length; i++)
@@ -299,7 +316,7 @@ Version {version}";
             }
         }
 
-        var targetScreen = availableMonitors.Length > 0 ? availableMonitors[currentMonitorIndex] : Screen.PrimaryScreen;
+        var targetScreen = GetCurrentScreen();
         if (targetScreen == null) return;
 
         SetupWindowForScreen(targetScreen);
@@ -331,10 +348,7 @@ Version {version}";
         int extendedStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
         SetWindowLong(hwnd, GWL_EXSTYLE, extendedStyle | WS_EX_TRANSPARENT | WS_EX_LAYERED);
         
-        // Register global hotkeys
-        RegisterHotKey(hwnd, HOTKEY_TOGGLE, MOD_CONTROL | MOD_SHIFT, VK_L);
-        RegisterHotKey(hwnd, HOTKEY_BRIGHTNESS_UP, MOD_CONTROL | MOD_SHIFT, VK_UP);
-        RegisterHotKey(hwnd, HOTKEY_BRIGHTNESS_DOWN, MOD_CONTROL | MOD_SHIFT, VK_DOWN);
+        RegisterGlobalHotKeys(hwnd);
         
         // Hook into Windows message processing
         HwndSource source = HwndSource.FromHwnd(hwnd);
@@ -348,7 +362,7 @@ Version {version}";
         ApplyExcludeFromCapture();
 
         EdgeLightBorder.Opacity = currentOpacity;
-        SetColorTemperature(_colorTemperature, saveSettings: false);
+        SetColorTemperature(_colorTemperature, save: false);
 
         if (!isLightOn)
         {
@@ -356,6 +370,37 @@ Version {version}";
         }
 
         InstallMouseHook();
+    }
+
+    private void RegisterGlobalHotKeys(IntPtr hwnd)
+    {
+        var failedHotKeys = new List<string>();
+
+        if (!RegisterHotKey(hwnd, HOTKEY_TOGGLE, MOD_CONTROL | MOD_SHIFT, VK_L))
+        {
+            failedHotKeys.Add("Toggle Light (Ctrl+Shift+L)");
+        }
+
+        if (!RegisterHotKey(hwnd, HOTKEY_BRIGHTNESS_UP, MOD_CONTROL | MOD_SHIFT, VK_UP))
+        {
+            failedHotKeys.Add("Brightness Up (Ctrl+Shift+Up)");
+        }
+
+        if (!RegisterHotKey(hwnd, HOTKEY_BRIGHTNESS_DOWN, MOD_CONTROL | MOD_SHIFT, VK_DOWN))
+        {
+            failedHotKeys.Add("Brightness Down (Ctrl+Shift+Down)");
+        }
+
+        if (failedHotKeys.Count > 0)
+        {
+            notifyIcon?.ShowBalloonTip(
+                5000,
+                "Windows Edge Light hotkey conflict",
+                "Some keyboard shortcuts could not be registered because another app is using them:\n\n" +
+                string.Join("\n", failedHotKeys) +
+                "\n\nUse the tray menu controls instead.",
+                ToolTipIcon.Warning);
+        }
     }
 
     private void InstallMouseHook()
@@ -454,7 +499,7 @@ Version {version}";
         // --- Main Window Logic ---
         if (frameOuterRect != null && frameInnerRect != null && hoverCursorRing != null && baseFrameGeometry != null)
         {
-            var screen = availableMonitors.Length > 0 ? availableMonitors[currentMonitorIndex] : Screen.PrimaryScreen;
+            var screen = GetCurrentScreen();
             if (screen != null)
             {
                 ApplyHolePunchEffect(
@@ -466,7 +511,8 @@ Version {version}";
                     EdgeLightBorder,
                     baseFrameGeometry,
                     pathOffsetX, pathOffsetY,
-                    (ring, x, y) => { Canvas.SetLeft(ring, x); Canvas.SetTop(ring, y); }
+                    (ring, x, y) => { Canvas.SetLeft(ring, x); Canvas.SetTop(ring, y); },
+                    primaryHoleCache
                 );
             }
         }
@@ -485,7 +531,8 @@ Version {version}";
                     ctx.BorderPath,
                     ctx.BaseGeometry,
                     ctx.PathOffsetX, ctx.PathOffsetY,
-                    (ring, x, y) => { ring.Margin = new Thickness(x, y, 0, 0); }
+                    (ring, x, y) => { ring.Margin = new Thickness(x, y, 0, 0); },
+                    ctx.HoleCache
                 );
             }
             catch (InvalidOperationException)
@@ -504,7 +551,8 @@ Version {version}";
         System.Windows.Shapes.Path borderPath,
         Geometry baseGeometry,
         double pathOffsetX, double pathOffsetY,
-        Action<Ellipse, double, double> positionRing)
+        Action<Ellipse, double, double> positionRing,
+        HoleCache holeCache)
     {
         // Manual coordinate calculation to avoid PointFromScreen issues across monitors/DPIs
         // We positioned the window using dpiScaleX/Y relative to the screen WorkingArea.
@@ -541,8 +589,21 @@ Version {version}";
             // Punch a transparent hole under the ring by excluding a circle geometry from the frame
             // Convert window coordinates to geometry local coordinates by subtracting stored offsets
             var localCenter = new System.Windows.Point(windowPt.X - pathOffsetX, windowPt.Y - pathOffsetY);
-            var hole = new EllipseGeometry(localCenter, holeRadius, holeRadius);
-            borderPath.Data = new CombinedGeometry(GeometryCombineMode.Exclude, baseGeometry, hole);
+            if (holeCache.BaseGeometry != baseGeometry ||
+                holeCache.Hole == null ||
+                holeCache.Hole.RadiusX != holeRadius ||
+                holeCache.Combined == null)
+            {
+                holeCache.BaseGeometry = baseGeometry;
+                holeCache.Hole = new EllipseGeometry(localCenter, holeRadius, holeRadius);
+                holeCache.Combined = new CombinedGeometry(GeometryCombineMode.Exclude, baseGeometry, holeCache.Hole);
+            }
+            else
+            {
+                holeCache.Hole.Center = localCenter;
+            }
+
+            borderPath.Data = holeCache.Combined;
         }
         else
         {
@@ -735,7 +796,6 @@ Version {version}";
         
         // Update all additional monitor windows
         UpdateAdditionalMonitorWindows();
-
         settings.IsLightOn = isLightOn;
         settings.Save();
         UpdateTrayLightStateText();
@@ -845,14 +905,17 @@ Version {version}";
         SetBrightness(currentOpacity - OpacityStep);
     }
 
-    private void SetBrightness(double value)
+    public void SetBrightness(double value, bool save = true)
     {
         currentOpacity = ClampFinite(value, MinOpacity, MaxOpacity, MaxOpacity);
         EdgeLightBorder.Opacity = currentOpacity;
         UpdateAdditionalMonitorWindows();
 
-        settings.Brightness = currentOpacity;
-        settings.Save();
+        if (save)
+        {
+            settings.Brightness = currentOpacity;
+            settings.Save();
+        }
     }
 
     private void UpdateAdditionalMonitorWindows()
@@ -862,23 +925,7 @@ Version {version}";
             var path = ctx.BorderPath;
             path.Opacity = currentOpacity;
             path.Visibility = isLightOn ? Visibility.Visible : Visibility.Collapsed;
-            
-            // Update color temperature
-            if (path.Fill is LinearGradientBrush brush && brush.GradientStops.Count >= 3)
-            {
-                var cool = System.Windows.Media.Color.FromRgb(220, 235, 255);
-                var warm = System.Windows.Media.Color.FromRgb(255, 220, 180);
-                
-                var midColor = LerpColor(cool, warm, _colorTemperature);
-                
-                foreach (var stop in brush.GradientStops)
-                {
-                    if (stop.Offset is > 0.2 and < 0.8)
-                    {
-                        stop.Color = midColor;
-                    }
-                }
-            }
+            ApplyColorTemperature(path);
         }
     }
 
@@ -892,35 +939,15 @@ Version {version}";
         SetColorTemperature(_colorTemperature - ColorTempStep);
     }
 
-    public void SetColorTemperature(double value, bool saveSettings = true)
+    public void SetColorTemperature(double value, bool save = true)
     {
         _colorTemperature = ClampFinite(value, MinColorTemp, MaxColorTemp, 0.5);
+        ApplyColorTemperature(EdgeLightBorder);
 
-        // Map 0-1 slider to a simple cool-to-warm gradient.
-        // We'll bias the inner gradient stops from blueish-white (cool) to amber (warm).
-        // NOTE: This assumes the brush defined in XAML is still a LinearGradientBrush.
-        if (EdgeLightBorder.Fill is LinearGradientBrush brush && brush.GradientStops.Count >= 3)
-        {
-            var cool = System.Windows.Media.Color.FromRgb(220, 235, 255);
-            var warm = System.Windows.Media.Color.FromRgb(255, 220, 180);
-
-            var midColor = LerpColor(cool, warm, _colorTemperature);
-
-            // Update a couple of inner stops to shift perceived temperature
-            // Keep outer rim relatively neutral for consistent edge.
-            foreach (var stop in brush.GradientStops)
-            {
-                if (stop.Offset is > 0.2 and < 0.8)
-                {
-                    stop.Color = midColor;
-                }
-            }
-        }
-        
         // Update all additional monitor windows
         UpdateAdditionalMonitorWindows();
 
-        if (saveSettings)
+        if (save)
         {
             settings.ColorTemperature = _colorTemperature;
             settings.Save();
@@ -933,11 +960,10 @@ Version {version}";
         if (showOnAllMonitors) return;
         
         // Refresh monitor list in case of hot-plug/unplug
-        availableMonitors = Screen.AllScreens;
+        RefreshAvailableMonitors();
 
         if (availableMonitors.Length <= 1)
         {
-            // Only one monitor, nothing to do
             return;
         }
 
@@ -957,7 +983,7 @@ Version {version}";
                 targetScreen.WorkingArea.X, targetScreen.WorkingArea.Y, 
                 targetScreen.WorkingArea.Width, targetScreen.WorkingArea.Height, 
                 SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
-            
+
             // Force a size update if DPI didn't change (SetWindowPos might not trigger OnDpiChanged)
             // If DPI changed, OnDpiChanged will handle it.
             // But we can't easily know if OnDpiChanged fired yet.
@@ -967,7 +993,7 @@ Version {version}";
             
             // If we are on the same thread, OnDpiChanged (via WM_DPICHANGED) should have fired synchronously during SetWindowPos.
             // So _dpiScaleX/Y should be up to date.
-            
+
             double newLeft = targetScreen.WorkingArea.X / _dpiScaleX;
             double newTop = targetScreen.WorkingArea.Y / _dpiScaleY;
             double newWidth = targetScreen.WorkingArea.Width / _dpiScaleX;
@@ -983,8 +1009,8 @@ Version {version}";
             _isManualMonitorSwitch = false;
         }
         
-        // Reposition control window to follow
-        RepositionControlWindow();
+        // An explicit monitor switch should bring the controls to the selected monitor.
+        ResetControlWindowPosition();
     }
 
     [DllImport("user32.dll", SetLastError = true)]
@@ -1011,8 +1037,7 @@ Version {version}";
 
     private void ShowOnAllMonitors()
     {
-        // Refresh monitor list
-        availableMonitors = Screen.AllScreens;
+        RefreshAvailableMonitors();
 
         // Close any existing additional windows
         HideAdditionalMonitorWindows();
@@ -1076,26 +1101,26 @@ Version {version}";
             Visibility = isLightOn ? Visibility.Visible : Visibility.Collapsed
         };
 
-        // Create gradient brush
+        var temperatureColor = GetColorForTemperature(_colorTemperature);
         var gradient = new LinearGradientBrush
         {
             StartPoint = new System.Windows.Point(0, 0),
             EndPoint = new System.Windows.Point(1, 1)
         };
         gradient.GradientStops.Add(new GradientStop(System.Windows.Media.Color.FromRgb(255, 255, 255), 0.0));
-        gradient.GradientStops.Add(new GradientStop(System.Windows.Media.Color.FromRgb(240, 240, 240), 0.3));
-        gradient.GradientStops.Add(new GradientStop(System.Windows.Media.Color.FromRgb(255, 255, 255), 0.5));
-        gradient.GradientStops.Add(new GradientStop(System.Windows.Media.Color.FromRgb(240, 240, 240), 0.7));
+        gradient.GradientStops.Add(new GradientStop(temperatureColor, 0.3));
+        gradient.GradientStops.Add(new GradientStop(temperatureColor, 0.5));
+        gradient.GradientStops.Add(new GradientStop(temperatureColor, 0.7));
         gradient.GradientStops.Add(new GradientStop(System.Windows.Media.Color.FromRgb(255, 255, 255), 1.0));
         path.Fill = gradient;
 
         // Add drop shadow effect
-        path.Effect = new System.Windows.Media.Effects.DropShadowEffect
+        path.Effect = new DropShadowEffect
         {
             BlurRadius = 76,
             Opacity = 1,
             ShadowDepth = 0,
-            Color = System.Windows.Media.Color.FromRgb(255, 255, 255)
+            Color = temperatureColor
         };
 
         // Create hover ring (Ellipse)
@@ -1252,21 +1277,78 @@ Version {version}";
     {
         if (controlWindow == null) return;
 
+        // Respect a user-dragged position for the current session.
+        if (controlWindowManuallyMoved) return;
+
         // Position at bottom center of main window
         controlWindow.Left = this.Left + (this.Width - controlWindow.Width) / 2;
         controlWindow.Top = this.Top + this.Height - controlWindow.Height - 124;
     }
 
+    public void NotifyControlWindowManuallyMoved()
+    {
+        controlWindowManuallyMoved = true;
+    }
+
+    public void ResetControlWindowPosition()
+    {
+        controlWindowManuallyMoved = false;
+        RepositionControlWindow();
+    }
+
     public bool HasMultipleMonitors()
     {
         // Refresh monitor count to handle hot-plug scenarios
-        availableMonitors = Screen.AllScreens;
+        RefreshAvailableMonitors();
         return availableMonitors.Length > 1;
     }
 
     public bool IsExcludeFromCaptureEnabled()
     {
         return settings.ExcludeFromCapture;
+    }
+
+    public double GetBrightness() => currentOpacity;
+
+    public double GetColorTemperature() => _colorTemperature;
+
+    public void SaveAppearanceSettings()
+    {
+        settings.Brightness = currentOpacity;
+        settings.ColorTemperature = _colorTemperature;
+        settings.Save();
+    }
+
+    public bool GetIsToggleButtonVisible() => settings.ShowToggleButton;
+
+    public bool GetIsBrightnessButtonsVisible() => settings.ShowBrightnessButtons;
+
+    public bool GetIsColorTempButtonsVisible() => settings.ShowColorTempButtons;
+
+    public bool GetIsControlMonitorsButtonVisible() => settings.ShowMonitorControlButtons;
+
+    public void SetIsToggleVisible(bool isVisible)
+    {
+        settings.ShowToggleButton = isVisible;
+        settings.Save();
+    }
+
+    public void SetIsBrightnessButtonsVisible(bool isVisible)
+    {
+        settings.ShowBrightnessButtons = isVisible;
+        settings.Save();
+    }
+
+    public void SetIsColorTempButtonsVisible(bool isVisible)
+    {
+        settings.ShowColorTempButtons = isVisible;
+        settings.Save();
+    }
+
+    public void SetIsControlMonitorsButtonVisible(bool isVisible)
+    {
+        settings.ShowMonitorControlButtons = isVisible;
+        settings.Save();
     }
 
     private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -1298,8 +1380,7 @@ Version {version}";
         // If we are manually switching, trust the index we set explicitly
         if (_isManualMonitorSwitch) return;
 
-        // Refresh monitor list
-        availableMonitors = Screen.AllScreens;
+        RefreshAvailableMonitors();
         
         if (availableMonitors.Length == 0) return;
 
@@ -1322,6 +1403,55 @@ Version {version}";
         catch (InvalidOperationException)
         {
             // Window might not be loaded or visible yet
+        }
+    }
+
+    private void RefreshAvailableMonitors()
+    {
+        availableMonitors = Screen.AllScreens;
+        currentMonitorIndex = availableMonitors.Length == 0
+            ? 0
+            : Math.Clamp(currentMonitorIndex, 0, availableMonitors.Length - 1);
+    }
+
+    private Screen? GetCurrentScreen()
+    {
+        if (availableMonitors.Length == 0)
+        {
+            return Screen.PrimaryScreen;
+        }
+
+        currentMonitorIndex = Math.Clamp(currentMonitorIndex, 0, availableMonitors.Length - 1);
+        return availableMonitors[currentMonitorIndex];
+    }
+
+    private static MediaColor GetColorForTemperature(double temperature)
+    {
+        byte Lerp(byte cool, byte warm) => (byte)(cool + ((warm - cool) * temperature));
+        return MediaColor.FromRgb(
+            Lerp(CoolColor.R, WarmColor.R),
+            Lerp(CoolColor.G, WarmColor.G),
+            Lerp(CoolColor.B, WarmColor.B));
+    }
+
+    private void ApplyColorTemperature(System.Windows.Shapes.Path path)
+    {
+        var temperatureColor = GetColorForTemperature(_colorTemperature);
+
+        if (path.Fill is LinearGradientBrush brush)
+        {
+            foreach (var stop in brush.GradientStops)
+            {
+                if (stop.Offset is > 0.2 and < 0.8)
+                {
+                    stop.Color = temperatureColor;
+                }
+            }
+        }
+
+        if (path.Effect is DropShadowEffect shadow)
+        {
+            shadow.Color = temperatureColor;
         }
     }
     

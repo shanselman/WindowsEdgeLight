@@ -9,21 +9,21 @@ namespace WindowsEdgeLight;
 /// </summary>
 public class AppSettings
 {
-    private static readonly JsonSerializerOptions LoadOptions = new()
+    private static readonly string SettingsFilePath = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+        "WindowsEdgeLight",
+        "settings.json");
+
+    private static readonly JsonSerializerOptions ReadOptions = new()
     {
         AllowTrailingCommas = true,
         ReadCommentHandling = JsonCommentHandling.Skip
     };
 
-    private static readonly JsonSerializerOptions SaveOptions = new()
+    private static readonly JsonSerializerOptions WriteOptions = new()
     {
         WriteIndented = true
     };
-
-    private static readonly string SettingsFilePath = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-        "WindowsEdgeLight",
-        "settings.json");
 
     /// <summary>
     /// When enabled, excludes the edge light from screen capture (Teams, screenshots, etc.)
@@ -48,17 +48,39 @@ public class AppSettings
     public double ColorTemperature { get; set; } = 0.5;
 
     /// <summary>
+    /// Whether to show toggle button in the control window
+    /// </summary>
+    public bool ShowToggleButton { get; set; } = true;
+
+    /// <summary>
+    /// Whether to show brightness buttons in the control window
+    /// </summary>
+    public bool ShowBrightnessButtons { get; set; } = true;
+
+    /// <summary>
+    /// Whether to show color temperature buttons in the control window
+    /// </summary>
+    public bool ShowColorTempButtons { get; set; } = true;
+
+    /// <summary>
+    /// Whether to show window control buttons (toggle, switch monitor, all monitors) in the control window
+    /// </summary>
+    public bool ShowMonitorControlButtons { get; set; } = true;
+
+    /// <summary>
     /// Load settings from disk
     /// </summary>
-    public static AppSettings Load()
+    public static AppSettings Load() => LoadFrom(SettingsFilePath);
+
+    internal static AppSettings LoadFrom(string filePath)
     {
         try
         {
-            if (File.Exists(SettingsFilePath))
+            if (File.Exists(filePath))
             {
-                var json = File.ReadAllText(SettingsFilePath);
-                var settings = JsonSerializer.Deserialize<AppSettings>(json, LoadOptions);
-                
+                var json = File.ReadAllText(filePath);
+                var settings = JsonSerializer.Deserialize<AppSettings>(json, ReadOptions);
+
                 // Validate deserialized settings
                 if (settings != null)
                 {
@@ -73,9 +95,9 @@ public class AppSettings
             // Delete corrupted settings file
             try
             {
-                if (File.Exists(SettingsFilePath))
+                if (File.Exists(filePath))
                 {
-                    File.Delete(SettingsFilePath);
+                    File.Delete(filePath);
                 }
             }
             catch { /* Ignore deletion errors */ }
@@ -97,26 +119,28 @@ public class AppSettings
     /// <summary>
     /// Save settings to disk
     /// </summary>
-    public void Save()
+    public void Save() => SaveTo(SettingsFilePath);
+
+    internal void SaveTo(string filePath)
     {
         try
         {
-            var directory = Path.GetDirectoryName(SettingsFilePath);
+            var directory = Path.GetDirectoryName(filePath);
             if (directory != null && !Directory.Exists(directory))
             {
                 Directory.CreateDirectory(directory);
             }
 
             Normalize();
-            var json = JsonSerializer.Serialize(this, SaveOptions);
+            var json = JsonSerializer.Serialize(this, WriteOptions);
             var tempFilePath = Path.Combine(
                 directory ?? Path.GetTempPath(),
-                $"{Path.GetFileName(SettingsFilePath)}.{Guid.NewGuid():N}.tmp");
+                $"{Path.GetFileName(filePath)}.{Guid.NewGuid():N}.tmp");
 
             try
             {
                 File.WriteAllText(tempFilePath, json);
-                File.Move(tempFilePath, SettingsFilePath, overwrite: true);
+                File.Move(tempFilePath, filePath, overwrite: true);
             }
             finally
             {
