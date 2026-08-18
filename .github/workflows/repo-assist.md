@@ -31,7 +31,6 @@ permissions:
   deployments: read
   discussions: read
   issues: read
-  metadata: read
   models: read
   packages: read
   pages: read
@@ -42,7 +41,7 @@ permissions:
   vulnerability-alerts: read
 
 checkout:
-  fetch: ["*"]
+  fetch: ["*", "refs/pulls/open/*"]
   fetch-depth: 0
 
 network:
