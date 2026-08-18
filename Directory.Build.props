@@ -1,0 +1,13 @@
+<Project>
+  <!--
+    NuGet Security Audit Configuration
+    Extends the default .NET 8+ audit to cover transitive dependencies as well.
+    See: https://learn.microsoft.com/en-us/nuget/concepts/auditing-packages
+  -->
+  <PropertyGroup>
+    <!-- Audit direct AND transitive packages (default is "direct" in .NET 8+) -->
+    <NuGetAuditMode>all</NuGetAuditMode>
+    <!-- Fail/warn on moderate-or-higher severity advisories -->
+    <NuGetAuditLevel>moderate</NuGetAuditLevel>
+  </PropertyGroup>
+</Project>
