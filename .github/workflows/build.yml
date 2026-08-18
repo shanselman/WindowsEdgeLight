@@ -33,7 +33,10 @@ jobs:
           ${{ runner.os }}-nuget-
 
     - name: Restore dependencies
-      run: dotnet restore WindowsEdgeLight/WindowsEdgeLight.csproj
+      run: dotnet restore WindowsEdgeLight.sln
+
+    - name: Test
+      run: dotnet test WindowsEdgeLight.sln --configuration Release --no-restore
 
     - name: Install GitVersion
       uses: gittools/actions/gitversion/setup@v4

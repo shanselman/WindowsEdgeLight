@@ -1,6 +1,4 @@
-﻿using System.Configuration;
-using System.Data;
-using System.Windows;
+﻿using System.Windows;
 using Updatum;
 using MessageBox = System.Windows.MessageBox;
 
@@ -70,13 +68,13 @@ public partial class App : System.Windows.Application
                 var changelog = AppUpdater.GetChangelog(true) ?? "No release notes available.";
 
                 var dialog = new UpdateDialog(release.TagName, changelog);
-                var result = dialog.ShowDialog();
+                dialog.ShowDialog();
 
                 if (dialog.Result == UpdateDialog.UpdateDialogResult.Download)
                 {
                     await DownloadAndInstallUpdateAsync();
                 }
-            });
+            }).Task.Unwrap();
         }
         catch (Exception ex)
         {
@@ -149,4 +147,3 @@ public partial class App : System.Windows.Application
         }
     }
 }
-
