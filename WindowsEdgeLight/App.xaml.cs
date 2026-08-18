@@ -64,13 +64,13 @@ public partial class App : System.Windows.Application
             if (!updateFound) return;
 
             // Show update dialog on UI thread
-            await Dispatcher.InvokeAsync(async () =>
+            await await Dispatcher.InvokeAsync(async () =>
             {
                 var release = AppUpdater.LatestRelease!;
                 var changelog = AppUpdater.GetChangelog(true) ?? "No release notes available.";
 
                 var dialog = new UpdateDialog(release.TagName, changelog);
-                var result = dialog.ShowDialog();
+                dialog.ShowDialog();
 
                 if (dialog.Result == UpdateDialog.UpdateDialogResult.Download)
                 {
