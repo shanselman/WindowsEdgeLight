@@ -26,6 +26,8 @@ updates:
       - dependency-name: "*"
         update-types:
           - version-update:semver-major
+      - dependency-name: github/gh-aw-actions/setup
+      - dependency-name: github/gh-aw-actions/setup-cli
     groups:
       minor-and-patch:
         update-types:
