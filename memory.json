@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-08-18T13:05:12Z",
-  "last_run_id": "32140207695",
+  "last_run": "2026-08-21T05:39:24Z",
+  "last_run_id": "32451240419",
   "comments_made": {
     "24": "2026-07-01T13:51:58Z",
     "126": "2026-08-01T13:11:00Z",
@@ -12,18 +12,43 @@
     "33": "2026-08-08T01:11:00Z"
   },
   "labels_applied": {
-    "24": ["enhancement", "needs investigation"],
-    "33": ["enhancement"],
-    "27": ["help wanted"],
-    "36": ["enhancement"],
-    "56": ["enhancement"],
-    "62": ["enhancement"],
-    "63": ["refactor"],
-    "64": ["enhancement"],
-    "65": ["bug"],
-    "66": ["refactor"],
-    "67": ["bug"],
-    "69": ["bug"]
+    "24": [
+      "enhancement",
+      "needs investigation"
+    ],
+    "33": [
+      "enhancement"
+    ],
+    "27": [
+      "help wanted"
+    ],
+    "36": [
+      "enhancement"
+    ],
+    "56": [
+      "enhancement"
+    ],
+    "62": [
+      "enhancement"
+    ],
+    "63": [
+      "refactor"
+    ],
+    "64": [
+      "enhancement"
+    ],
+    "65": [
+      "bug"
+    ],
+    "66": [
+      "refactor"
+    ],
+    "67": [
+      "bug"
+    ],
+    "69": [
+      "bug"
+    ]
   },
   "fix_attempts": {
     "BATCH_MERGED_PR170_2026-08-08": {
@@ -67,7 +92,7 @@
     "improve-tray-tooltip-2026-08-11": {
       "branch": "repo-assist/improve-tray-tooltip-2026-08-11-a1c273662d7dd9ff",
       "status": "PENDING",
-      "desc": "Dynamic tray tooltip showing live light state and brightness (e.g. 'On · 80%')"
+      "desc": "Dynamic tray tooltip showing live light state and brightness (e.g. 'On \u00b7 80%')"
     },
     "improve-frame-geometry-constants-2026-08-11": {
       "branch": "repo-assist/improve-frame-geometry-constants-2026-08-11",
@@ -185,5 +210,8 @@
     "184": "Duplicate of 181 (color-temp-hotkeys)",
     "189": "Duplicate of 190 (kelvin-color-temp - both from same run 2026-08-14)"
   },
-  "notes": "2026-08-18 13:05: Tasks 2+4+11. Task 2: No new human activity on any user-reported issue (only #24 which has 2 RA comments, no human responses since 2026-07-01). Task 4: Created Directory.Build.props to enable transitive NuGet security auditing (NuGetAuditMode=all, NuGetAuditLevel=moderate). Now 26+ pending branches."
+  "notes": "2026-08-21: Task 4 selected. Reviewed ci.yml/build.yml/dependabot.yml/csproj - no new uncontested engineering improvement found; a trx-artifact branch (eng-ci-test-artifacts-2026-08-17) and nuget-audit branch (2026-08-18) already cover the obvious wins and remain unmerged. With 149 repo-assist branches accumulated and only 1 (#170) ever merged, took no action this run to avoid adding to an already-unreviewed backlog. Flagging to maintainer: large branch backlog needs review/cleanup.",
+  "backlog_health": {
+    "large_unmerged_branch_count": 149
+  }
 }
