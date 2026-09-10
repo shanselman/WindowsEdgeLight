@@ -6,15 +6,12 @@
     xmlns:local="clr-namespace:WindowsEdgeLight"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Title="Windows Edge Light"
-    Width="800"
-    Height="450"
-    AllowsTransparency="True"
-    Background="Transparent"
+    Width="1"
+    Height="1"
     KeyDown="Window_KeyDown"
     Loaded="Window_Loaded"
     ResizeMode="NoResize"
     ShowInTaskbar="True"
-    Topmost="True"
     WindowStyle="None"
     mc:Ignorable="d">
 
@@ -22,41 +19,20 @@
         <TaskbarItemInfo Description="Windows Edge Light - Right-click for options" />
     </Window.TaskbarItemInfo>
 
-    <Grid x:Name="MainGrid" IsHitTestVisible="False">
-        <!--  Edge Light Frame with Rounded Inner and Outer Edges using Path  -->
-        <Path
-            x:Name="EdgeLightBorder"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            Stretch="None">
-            <Path.Fill>
-                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                    <GradientStop Offset="0.0" Color="#FFFFFF" />
-                    <GradientStop Offset="0.3" Color="#F0F0F0" />
-                    <GradientStop Offset="0.5" Color="#FFFFFF" />
-                    <GradientStop Offset="0.7" Color="#F0F0F0" />
-                    <GradientStop Offset="1.0" Color="#FFFFFF" />
-                </LinearGradientBrush>
-            </Path.Fill>
-            <Path.Effect>
-                <DropShadowEffect
-                    BlurRadius="8"
-                    Opacity="1"
-                    ShadowDepth="0"
-                    Color="#FFFFFF" />
-            </Path.Effect>
-            <Path.CacheMode>
-                <BitmapCache />
-            </Path.CacheMode>
-        </Path>
+    <!--
+        Intentionally empty and pinned to 1x1px. This window no longer renders the glow
+        itself - it exists only to host the hwnd used for global hotkeys, the mouse hook,
+        and DPI/monitor tracking. The actual glow is drawn by a NativeLayeredWindow (see
+        MainWindow.xaml.cs and NativeLayeredWindow.cs), a raw Win32 layered window managed
+        entirely outside WPF.
 
-        <!-- Overlay canvas for cursor ring -->
-        <Canvas x:Name="CursorOverlay" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsHitTestVisible="False">
-            <Ellipse x:Name="HoverCursorRing"
-                     Width="140" Height="140"
-                     Fill="Transparent"
-                     Visibility="Collapsed">
-            </Ellipse>
-        </Canvas>
-    </Grid>
+        Deliberately NOT AllowsTransparency/Topmost/monitor-sized anymore: a WPF window
+        that covers a whole monitor receives (and fully processes through WPF's own
+        input/hit-testing pipeline) every single mouse-move message on that monitor, even
+        with empty content and IsHitTestVisible="False" on its children - that pipeline
+        cost is real even when nothing is drawn, and was making cursor movement sluggish
+        on whichever monitor this window covered. Kept to 1x1px so it never intercepts
+        real screen area; see PositionMainWindowShell in MainWindow.xaml.cs.
+    -->
+    <Grid x:Name="MainGrid" IsHitTestVisible="False" />
 </Window>

@@ -45,31 +45,26 @@ public partial class ControlWindow : Window
 
     private void BrightnessDown_Click(object sender, RoutedEventArgs e)
     {
-        PerfLog.Log("ControlWindow: BrightnessDown_Click received");
         mainWindow.DecreaseBrightness();
     }
 
     private void BrightnessUp_Click(object sender, RoutedEventArgs e)
     {
-        PerfLog.Log("ControlWindow: BrightnessUp_Click received");
         mainWindow.IncreaseBrightness();
     }
 
     private void ColorCooler_Click(object sender, RoutedEventArgs e)
     {
-        PerfLog.Log("ControlWindow: ColorCooler_Click received");
         mainWindow.DecreaseColorTemperature();
     }
 
     private void ColorWarmer_Click(object sender, RoutedEventArgs e)
     {
-        PerfLog.Log("ControlWindow: ColorWarmer_Click received");
         mainWindow.IncreaseColorTemperature();
     }
 
     private void Toggle_Click(object sender, RoutedEventArgs e)
     {
-        PerfLog.Log("ControlWindow: Toggle_Click received");
         mainWindow.HandleToggle();
     }
 
