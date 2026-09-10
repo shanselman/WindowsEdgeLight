@@ -40,11 +40,14 @@
             </Path.Fill>
             <Path.Effect>
                 <DropShadowEffect
-                    BlurRadius="76"
+                    BlurRadius="8"
                     Opacity="1"
                     ShadowDepth="0"
                     Color="#FFFFFF" />
             </Path.Effect>
+            <Path.CacheMode>
+                <BitmapCache />
+            </Path.CacheMode>
         </Path>
 
         <!-- Overlay canvas for cursor ring -->

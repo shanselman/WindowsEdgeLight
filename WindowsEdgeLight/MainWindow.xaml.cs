@@ -94,7 +94,7 @@ public partial class MainWindow : Window
 
     [DllImport("user32.dll", SetLastError = true)]
     private static extern bool SetWindowDisplayAffinity(IntPtr hWnd, uint dwAffinity);
-    
+
     private const uint WDA_NONE = 0x00000000;
     private const uint WDA_EXCLUDEFROMCAPTURE = 0x00000011;
 
@@ -146,6 +146,14 @@ public partial class MainWindow : Window
     // Mouse hook management
     private IntPtr mouseHookHandle = IntPtr.Zero;
     private LowLevelMouseProc? mouseHookCallback;
+
+    // Mouse-move coalescing: only the latest position is kept, and only one
+    // Dispatcher callback is ever outstanding at a time, regardless of how
+    // many raw WM_MOUSEMOVE hook events arrive while it's pending.
+    private bool _mouseUpdateQueued = false;
+    private bool _wasNearFrame = false;
+    private int _pendingMouseX;
+    private int _pendingMouseY;
 
     private Rect? frameOuterRect;
     private Rect? frameInnerRect;
@@ -210,13 +218,13 @@ public partial class MainWindow : Window
         var contextMenu = new ContextMenuStrip();
         contextMenu.Items.Add("📋 Keyboard Shortcuts", null, (s, e) => ShowHelp());
         contextMenu.Items.Add(new ToolStripSeparator());
-        toggleLightMenuItem = new ToolStripMenuItem(GetToggleLightMenuText(), null, (s, e) => ToggleLight());
+        toggleLightMenuItem = new ToolStripMenuItem(GetToggleLightMenuText(), null, (s, e) => { PerfLog.Log("Tray: Toggle Light clicked"); ToggleLight(); });
         contextMenu.Items.Add(toggleLightMenuItem);
-        contextMenu.Items.Add("🔆 Brightness Up (Ctrl+Shift+↑)", null, (s, e) => IncreaseBrightness());
-        contextMenu.Items.Add("🔅 Brightness Down (Ctrl+Shift+↓)", null, (s, e) => DecreaseBrightness());
+        contextMenu.Items.Add("🔆 Brightness Up (Ctrl+Shift+↑)", null, (s, e) => { PerfLog.Log("Tray: Brightness Up clicked"); IncreaseBrightness(); });
+        contextMenu.Items.Add("🔅 Brightness Down (Ctrl+Shift+↓)", null, (s, e) => { PerfLog.Log("Tray: Brightness Down clicked"); DecreaseBrightness(); });
         contextMenu.Items.Add(new ToolStripSeparator());
-        contextMenu.Items.Add("🔥 K- Warmer Light", null, (s, e) => IncreaseColorTemperature());
-        contextMenu.Items.Add("❄️ K+ Cooler Light", null, (s, e) => DecreaseColorTemperature());
+        contextMenu.Items.Add("🔥 K- Warmer Light", null, (s, e) => { PerfLog.Log("Tray: Warmer clicked"); IncreaseColorTemperature(); });
+        contextMenu.Items.Add("❄️ K+ Cooler Light", null, (s, e) => { PerfLog.Log("Tray: Cooler clicked"); DecreaseColorTemperature(); });
         contextMenu.Items.Add(new ToolStripSeparator());
         contextMenu.Items.Add("🖥️ Switch Monitor", null, (s, e) => MoveToNextMonitor());
         contextMenu.Items.Add("🖥️🖥️ Toggle All Monitors", null, (s, e) => ToggleAllMonitors());
@@ -431,15 +439,101 @@ Version {version}";
         if (nCode >= 0 && wParam == (IntPtr)WM_MOUSEMOVE)
         {
             var hookStruct = Marshal.PtrToStructure<MSLLHOOKSTRUCT>(lParam);
-            
-            // Dispatch to UI thread for WPF operations
-            Dispatcher.BeginInvoke(new Action(() => 
+            int x = hookStruct.pt.x;
+            int y = hookStruct.pt.y;
+
+            // Cheap arithmetic-only check (no WPF object access) so we never touch the
+            // dispatcher for the vast majority of system-wide mouse moves that have nothing
+            // to do with our overlay. We still need one more pass through when the cursor
+            // *leaves* the frame band, so a hover ring / hole-punch left behind gets cleared.
+            bool isNearFrame = IsPointRelevant(x, y);
+
+            if (isNearFrame || _wasNearFrame)
             {
-                HandleMouseMove(hookStruct.pt.x, hookStruct.pt.y);
-            }), System.Windows.Threading.DispatcherPriority.Input);
+                _wasNearFrame = isNearFrame;
+                _pendingMouseX = x;
+                _pendingMouseY = y;
+
+                // Coalesce: if a callback is already queued, just update the pending
+                // position and let that callback pick up the latest value when it runs -
+                // don't pile up a redundant BeginInvoke per raw hook event.
+                if (!_mouseUpdateQueued)
+                {
+                    _mouseUpdateQueued = true;
+                    Dispatcher.BeginInvoke(new Action(ProcessPendingMouseMove), System.Windows.Threading.DispatcherPriority.Input);
+                }
+            }
         }
 
         return CallNextHookEx(mouseHookHandle, nCode, wParam, lParam);
+    }
+
+    private void ProcessPendingMouseMove()
+    {
+        _mouseUpdateQueued = false;
+        HandleMouseMove(_pendingMouseX, _pendingMouseY);
+    }
+
+    // True if (screenX, screenY) is within the hover-detectable frame band of the main
+    // window or any additional monitor window. Pure arithmetic on cached Rects/doubles -
+    // no WPF object mutation - so it's safe to call directly from the mouse hook callback.
+    private bool IsPointRelevant(int screenX, int screenY)
+    {
+        if (!isLightOn)
+        {
+            return false;
+        }
+
+        if (frameOuterRect is Rect outer && frameInnerRect is Rect inner && hoverCursorRing != null)
+        {
+            var screen = GetCurrentScreen();
+            if (screen != null)
+            {
+                var pt = ToWindowPoint(screenX, screenY, screen, _dpiScaleX, _dpiScaleY);
+                if (IsOverFrame(pt, outer, inner, hoverCursorRing.Width / 2))
+                {
+                    return true;
+                }
+            }
+        }
+
+        foreach (var ctx in additionalMonitorWindows)
+        {
+            var pt = ToWindowPoint(screenX, screenY, ctx.Screen, ctx.DpiScaleX, ctx.DpiScaleY);
+            if (IsOverFrame(pt, ctx.FrameOuterRect, ctx.FrameInnerRect, ctx.HoverRing.Width / 2))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static System.Windows.Point ToWindowPoint(int screenX, int screenY, Screen screen, double dpiScaleX, double dpiScaleY)
+    {
+        // Manual coordinate calculation to avoid PointFromScreen issues across monitors/DPIs.
+        // We positioned windows using dpiScaleX/Y relative to the screen WorkingArea.
+        double relX = (screenX - screen.WorkingArea.X) / dpiScaleX;
+        double relY = (screenY - screen.WorkingArea.Y) / dpiScaleY;
+        return new System.Windows.Point(relX, relY);
+    }
+
+    private static bool IsOverFrame(System.Windows.Point windowPt, Rect frameOuterRect, Rect frameInnerRect, double holeRadius)
+    {
+        // Existing frame band detection (outer minus inner)
+        bool inFrameBand = frameOuterRect.Contains(windowPt) && !frameInnerRect.Contains(windowPt);
+
+        // Early detection zone just inside the inner edge: a band with thickness = hole radius (cursor ring radius)
+        var innerProximityRect = new Rect(
+            frameInnerRect.X + holeRadius,
+            frameInnerRect.Y + holeRadius,
+            frameInnerRect.Width - (holeRadius * 2),
+            frameInnerRect.Height - (holeRadius * 2));
+
+        // Near from inside means inside innerRect but within holeRadius of its edge (i.e., not deep inside innerProximityRect)
+        bool nearFromInside = frameInnerRect.Contains(windowPt) && !innerProximityRect.Contains(windowPt);
+
+        return inFrameBand || nearFromInside;
     }
 
     private static System.Windows.Media.Color LerpColor(System.Windows.Media.Color a, System.Windows.Media.Color b, double t)
@@ -554,28 +648,11 @@ Version {version}";
         Action<Ellipse, double, double> positionRing,
         HoleCache holeCache)
     {
-        // Manual coordinate calculation to avoid PointFromScreen issues across monitors/DPIs
-        // We positioned the window using dpiScaleX/Y relative to the screen WorkingArea.
-        double relX = (screenX - screen.WorkingArea.X) / dpiScaleX;
-        double relY = (screenY - screen.WorkingArea.Y) / dpiScaleY;
-        var windowPt = new System.Windows.Point(relX, relY);
-
-        // Existing frame band detection (outer minus inner)
-        bool inFrameBand = frameOuterRect.Contains(windowPt) && !frameInnerRect.Contains(windowPt);
-
-        // Early detection zone just inside the inner edge: a band with thickness = hole radius (cursor ring radius)
+        var windowPt = ToWindowPoint(screenX, screenY, screen, dpiScaleX, dpiScaleY);
         double ringDiameter = hoverRing.Width;
         double holeRadius = ringDiameter / 2; // match ring size
-        var innerProximityRect = new Rect(
-            frameInnerRect.X + holeRadius,
-            frameInnerRect.Y + holeRadius,
-            frameInnerRect.Width - (holeRadius * 2),
-            frameInnerRect.Height - (holeRadius * 2));
 
-        // Near from inside means inside innerRect but within holeRadius of its edge (i.e., not deep inside innerProximityRect)
-        bool nearFromInside = frameInnerRect.Contains(windowPt) && !innerProximityRect.Contains(windowPt);
-
-        bool overFrame = inFrameBand || nearFromInside;
+        bool overFrame = IsOverFrame(windowPt, frameOuterRect, frameInnerRect, holeRadius);
 
         if (overFrame)
         {
@@ -676,7 +753,8 @@ Version {version}";
         if (msg == WM_HOTKEY)
         {
             int hotkeyId = wParam.ToInt32();
-            
+            PerfLog.Log($"HwndHook: WM_HOTKEY received, id={hotkeyId}");
+
             switch (hotkeyId)
             {
                 case HOTKEY_TOGGLE:
@@ -736,7 +814,7 @@ Version {version}";
     protected override void OnClosed(EventArgs e)
     {
         UninstallMouseHook();
-        
+
         var hwnd = new WindowInteropHelper(this).Handle;
         UnregisterHotKey(hwnd, HOTKEY_TOGGLE);
         UnregisterHotKey(hwnd, HOTKEY_BRIGHTNESS_UP);
@@ -775,6 +853,7 @@ Version {version}";
 
     private void ToggleLight()
     {
+        PerfLog.Log("ToggleLight: enter");
         isLightOn = !isLightOn;
         if (isLightOn)
         {
@@ -784,6 +863,14 @@ Version {version}";
             {
                 EdgeLightBorder.Data = baseFrameGeometry;
             }
+
+            foreach (var ctx in additionalMonitorWindows)
+            {
+                if (ctx.BorderPath.Data != ctx.BaseGeometry)
+                {
+                    ctx.BorderPath.Data = ctx.BaseGeometry;
+                }
+            }
         }
         else
         {
@@ -792,13 +879,30 @@ Version {version}";
             {
                 hoverCursorRing.Visibility = Visibility.Collapsed;
             }
+
+            // Mouse-move hover tracking is skipped entirely while the light is off (see
+            // IsPointRelevant), so any hover ring left over from before the toggle needs
+            // to be cleared explicitly here instead of relying on the next mouse move.
+            foreach (var ctx in additionalMonitorWindows)
+            {
+                if (ctx.HoverRing.Visibility != Visibility.Collapsed)
+                {
+                    ctx.HoverRing.Visibility = Visibility.Collapsed;
+                }
+            }
         }
-        
+
+        PerfLog.Log("ToggleLight: after visual updates");
+
         // Update all additional monitor windows
         UpdateAdditionalMonitorWindows();
+        PerfLog.Log("ToggleLight: after UpdateAdditionalMonitorWindows");
         settings.IsLightOn = isLightOn;
         settings.Save();
+        PerfLog.Log("ToggleLight: after settings.Save");
         UpdateTrayLightStateText();
+        PerfLog.Log("ToggleLight: exit");
+        Dispatcher.BeginInvoke(new Action(() => PerfLog.Log("ToggleLight: render pass reached")), System.Windows.Threading.DispatcherPriority.Render);
     }
 
     public void HandleToggle()
@@ -907,15 +1011,21 @@ Version {version}";
 
     public void SetBrightness(double value, bool save = true)
     {
+        PerfLog.Log("SetBrightness: enter");
         currentOpacity = ClampFinite(value, MinOpacity, MaxOpacity, MaxOpacity);
         EdgeLightBorder.Opacity = currentOpacity;
+        PerfLog.Log("SetBrightness: after Opacity set");
         UpdateAdditionalMonitorWindows();
+        PerfLog.Log("SetBrightness: after UpdateAdditionalMonitorWindows");
 
         if (save)
         {
             settings.Brightness = currentOpacity;
             settings.Save();
+            PerfLog.Log("SetBrightness: after settings.Save");
         }
+        PerfLog.Log("SetBrightness: exit");
+        Dispatcher.BeginInvoke(new Action(() => PerfLog.Log("SetBrightness: render pass reached")), System.Windows.Threading.DispatcherPriority.Render);
     }
 
     private void UpdateAdditionalMonitorWindows()
@@ -941,17 +1051,23 @@ Version {version}";
 
     public void SetColorTemperature(double value, bool save = true)
     {
+        PerfLog.Log("SetColorTemperature: enter");
         _colorTemperature = ClampFinite(value, MinColorTemp, MaxColorTemp, 0.5);
         ApplyColorTemperature(EdgeLightBorder);
+        PerfLog.Log("SetColorTemperature: after ApplyColorTemperature");
 
         // Update all additional monitor windows
         UpdateAdditionalMonitorWindows();
+        PerfLog.Log("SetColorTemperature: after UpdateAdditionalMonitorWindows");
 
         if (save)
         {
             settings.ColorTemperature = _colorTemperature;
             settings.Save();
+            PerfLog.Log("SetColorTemperature: after settings.Save");
         }
+        PerfLog.Log("SetColorTemperature: exit");
+        Dispatcher.BeginInvoke(new Action(() => PerfLog.Log("SetColorTemperature: render pass reached")), System.Windows.Threading.DispatcherPriority.Render);
     }
 
     public void MoveToNextMonitor()
@@ -1117,11 +1233,15 @@ Version {version}";
         // Add drop shadow effect
         path.Effect = new DropShadowEffect
         {
-            BlurRadius = 76,
+            BlurRadius = 8,
             Opacity = 1,
             ShadowDepth = 0,
             Color = temperatureColor
         };
+        // Cache the post-blur bitmap so frequent Opacity changes (brightness) composite
+        // cheaply instead of re-running the blur every time - see EdgeLightBorder in
+        // MainWindow.xaml for the same fix and why it matters (layered-window rendering).
+        path.CacheMode = new BitmapCache();
 
         // Create hover ring (Ellipse)
         var hoverRing = new Ellipse

@@ -39,6 +39,9 @@ public partial class App : System.Windows.Application
         
         base.OnStartup(e);
 
+        int tier = System.Windows.Media.RenderCapability.Tier >> 16;
+        PerfLog.Log($"RenderCapability.Tier = {tier} (0 = no hardware acceleration / software rendering, 1 = partial, 2 = full)");
+
         // Check for updates asynchronously
         _ = CheckForUpdatesAsync();
     }
