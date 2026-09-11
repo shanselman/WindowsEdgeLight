@@ -24,15 +24,24 @@ public partial class MainWindow : Window
     private const double MinColorTemp = 0.0;
     private const double MaxColorTemp = 1.0;
 
-    // Kept low deliberately: hover and color-temp changes still trigger a real off-screen
-    // render (unlike brightness, which is a pure native alpha blend - see SetBrightness).
-    // A bigger radius costs more CPU per render; raise this once the current approach is
-    // confirmed stable if more glow is wanted.
-    private const double BlurRadius = 8;
+    // Widened from the original 76: on lower-DPI monitors this DIP value maps to fewer
+    // physical pixels (confirmed via alpha-channel sampling: ~30px transition at 1.5x DPI
+    // vs ~20px at 1.0x DPI - both are the same size in DIPs, DPI scaling is working
+    // correctly, but 20 raw pixels is little enough for some display paths - certain
+    // adapters/monitors reducing bit depth or applying chroma subsampling, or a monitor's
+    // own sharpening - to crush into a hard edge instead of a gradient. A wider transition
+    // survives that kind of degradation better everywhere, not just on affected monitors.
+    // This only costs anything on genuine content changes - color temperature,
+    // resize/monitor-switch, toggle - via RenderGlow's WPF off-screen pipeline. Brightness
+    // never touches it (SetBrightness is a pure native alpha blend) and hover no longer
+    // does either (FlushHoverRender punches the hole into a cached bitmap instead of
+    // re-rendering), so a larger radius no longer costs anything on the two interactions
+    // that were actually causing the CPU spikes.
+    private const double BlurRadius = 140;
 
-    // Total inset (20px each side) the glow frame is drawn within, matching the original
-    // XAML's implicit margin via HorizontalAlignment/VerticalAlignment="Center".
-    private const double MarginInset = 40;
+    // Widened alongside BlurRadius so the larger blur has room to bleed inward without
+    // being clipped at the window edge (35px each side, was 20px).
+    private const double MarginInset = 70;
 
     // DPI Scale
     private double _dpiScaleX = 1.0;
@@ -81,9 +90,6 @@ public partial class MainWindow : Window
         public System.Windows.Point? PendingHoleCenter { get; set; }
         public bool HasPendingHoverRender { get; set; }
 
-        // Diagnostic only - identifies which monitor a log line is about.
-        public string Label { get; set; } = "";
-
         // The frame rendered WITHOUT a hole, cached as raw premultiplied-BGRA32 pixel
         // bytes. Hover updates punch a hole directly into a copy of this (see
         // PushCurrentState/PunchHoleInPixels) instead of re-running WPF's off-screen
@@ -95,10 +101,22 @@ public partial class MainWindow : Window
         public int BaseFrameWidth { get; set; }
         public int BaseFrameHeight { get; set; }
         public int BaseFrameStride { get; set; }
+
+        // Incremented on every RenderGlow call for this context. RenderGlowAsync captures
+        // the value at request time and checks it again before applying its result, so a
+        // slow render superseded by a newer one (e.g. during a fast color-temp drag) gets
+        // discarded instead of flickering the frame back to a stale color.
+        public int RenderRequestId { get; set; }
+
+        // Set to the RenderRequestId that was actually applied. RenderRequestId != this
+        // means a requested render hasn't landed yet - used to drive the "Applying..."
+        // indicator in the Settings window.
+        public int AppliedRequestId { get; set; }
     }
 
     private GlowWindowContext? _primaryGlow;
     private readonly List<GlowWindowContext> _additionalGlows = new();
+    private readonly GlowRenderWorker _renderWorker = new();
 
     // Monitor management
     private int currentMonitorIndex = 0;
@@ -387,10 +405,39 @@ Version {version}";
         this.SizeChanged += Window_SizeChanged;
         this.LocationChanged += Window_LocationChanged;
 
+        // Listen for OS-level display configuration changes (monitor connected/
+        // disconnected, resolution/DPI changed) - see OnDisplaySettingsChanged for why
+        // this is needed independently of SizeChanged/LocationChanged/OnDpiChanged, which
+        // only fire when THIS window's own position/size/DPI changes, not when some OTHER
+        // monitor's configuration changes while this window stays put.
+        Microsoft.Win32.SystemEvents.DisplaySettingsChanged += OnDisplaySettingsChanged;
+
         // Apply exclude from capture setting
         ApplyExcludeFromCapture();
 
         InstallMouseHook();
+    }
+
+    // SystemEvents fires on its own internal thread, not necessarily this window's UI
+    // thread, so marshal onto the Dispatcher before touching anything WPF-affiliated.
+    private void OnDisplaySettingsChanged(object? sender, EventArgs e)
+    {
+        Dispatcher.BeginInvoke(new Action(() =>
+        {
+            RefreshAvailableMonitors();
+            UpdateCurrentMonitorIndex();
+            UpdatePrimaryGlowLayout();
+            RepositionControlWindow();
+
+            // Monitors may have been added, removed, or resized - the safest way to keep
+            // every additional-monitor glow window correct is to recreate them all against
+            // the current monitor list, same as ShowOnAllMonitors already does when first
+            // turning this mode on.
+            if (showOnAllMonitors)
+            {
+                ShowOnAllMonitors();
+            }
+        }));
     }
 
     private void RegisterGlobalHotKeys(IntPtr hwnd)
@@ -632,7 +679,7 @@ Version {version}";
 
     private void EnsurePrimaryGlowWindow()
     {
-        _primaryGlow ??= new GlowWindowContext { NativeWindow = new NativeLayeredWindow(), Label = "Primary" };
+        _primaryGlow ??= new GlowWindowContext { NativeWindow = new NativeLayeredWindow() };
     }
 
     private void UpdatePrimaryGlowLayout()
@@ -681,34 +728,83 @@ Version {version}";
             insetHeight - GlowBitmapRenderer.FrameThickness * 2 - holeRadius * 2);
     }
 
-    // Re-renders the context's BASE frame - always WITHOUT a hole, regardless of whether
-    // one is currently active - via WPF's off-screen pipeline (the expensive part: layout
-    // + the blur Effect, measured at 100-300ms depending on monitor DPI/resolution) and
-    // caches it as raw pixel bytes. Call this for genuine content changes only: color
-    // temperature, geometry (resize/monitor switch), initial setup. NOT for hover (see
-    // RequestHoverRender/FlushHoverRender, which reuse this cache) and NOT for brightness
-    // (see SetBrightness, which uses NativeLayeredWindow.SetAlpha() and never touches
-    // pixels at all).
+    // Kicks off a re-render of the context's BASE frame - always WITHOUT a hole,
+    // regardless of whether one is currently active - on the background render worker
+    // (see GlowRenderWorker for why: this is the expensive part, layout + the blur
+    // Effect, measured at 100-300ms depending on monitor DPI/resolution, and running it
+    // on the main thread was stalling the global mouse hook installed on that same
+    // thread). Fire-and-forget: returns immediately, applies the result asynchronously
+    // once it's ready (see RenderGlowAsync). Call this for genuine content changes only:
+    // color temperature, geometry (resize/monitor switch), initial setup. NOT for hover
+    // (see RequestHoverRender/FlushHoverRender, which reuse the cache this produces) and
+    // NOT for brightness (see SetBrightness, which uses NativeLayeredWindow.SetAlpha()
+    // and never touches pixels at all).
     private void RenderGlow(GlowWindowContext ctx)
     {
         double insetWidth = ctx.DipWidth - MarginInset;
         double insetHeight = ctx.DipHeight - MarginInset;
-        var geometry = GlowBitmapRenderer.BuildFrameGeometry(insetWidth, insetHeight, holeCenter: null);
         var temperatureColor = GetColorForTemperature(_colorTemperature);
-        var bitmap = GlowBitmapRenderer.Render(ctx.DipWidth, ctx.DipHeight, geometry, temperatureColor, BlurRadius, ctx.DpiScaleX, ctx.DpiScaleY);
+        int requestId = ++ctx.RenderRequestId;
+        NotifyGlowRenderBusyChanged();
 
-        int width = bitmap.PixelWidth;
-        int height = bitmap.PixelHeight;
-        int stride = width * 4;
-        var pixels = new byte[stride * height];
-        bitmap.CopyPixels(System.Windows.Int32Rect.Empty, pixels, stride, 0);
+        _ = RenderGlowAsync(ctx, insetWidth, insetHeight, temperatureColor, requestId);
+    }
 
-        ctx.BaseFramePixels = pixels;
-        ctx.BaseFrameWidth = width;
-        ctx.BaseFrameHeight = height;
-        ctx.BaseFrameStride = stride;
+    private async Task RenderGlowAsync(GlowWindowContext ctx, double insetWidth, double insetHeight, MediaColor color, int requestId)
+    {
+        RenderedFrame? frame;
+        try
+        {
+            frame = await _renderWorker.RenderAsync(
+                ctx.DipWidth, ctx.DipHeight, insetWidth, insetHeight,
+                color, BlurRadius, ctx.DpiScaleX, ctx.DpiScaleY,
+                () => ctx.RenderRequestId == requestId);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"RenderGlowAsync failed: {ex}");
+            ctx.AppliedRequestId = requestId;
+            NotifyGlowRenderBusyChanged();
+            return;
+        }
+
+        // Null means the worker skipped the render because a newer request had already
+        // superseded this one; a requestId mismatch means a newer one landed while this
+        // one was in flight. Either way, applying it now would flicker the frame back to
+        // stale content - but this request is still settled either way, so still notify.
+        if (frame == null || ctx.RenderRequestId != requestId)
+        {
+            NotifyGlowRenderBusyChanged();
+            return;
+        }
+
+        ctx.BaseFramePixels = frame.Value.Pixels;
+        ctx.BaseFrameWidth = frame.Value.Width;
+        ctx.BaseFrameHeight = frame.Value.Height;
+        ctx.BaseFrameStride = frame.Value.Stride;
+        ctx.AppliedRequestId = requestId;
 
         PushCurrentState(ctx);
+        NotifyGlowRenderBusyChanged();
+    }
+
+    // Fires when IsGlowRenderBusy actually flips, so the Settings window can show/hide an
+    // "Applying..." indicator next to the color-temperature slider while a change is
+    // still rendering in the background (see GlowRenderWorker) instead of appearing to
+    // just ignore the input for a few hundred milliseconds.
+    public event EventHandler? GlowRenderBusyChanged;
+    private bool _lastReportedGlowRenderBusy;
+
+    public bool IsGlowRenderBusy =>
+        (_primaryGlow != null && _primaryGlow.RenderRequestId != _primaryGlow.AppliedRequestId) ||
+        _additionalGlows.Any(ctx => ctx.RenderRequestId != ctx.AppliedRequestId);
+
+    private void NotifyGlowRenderBusyChanged()
+    {
+        bool current = IsGlowRenderBusy;
+        if (current == _lastReportedGlowRenderBusy) return;
+        _lastReportedGlowRenderBusy = current;
+        GlowRenderBusyChanged?.Invoke(this, EventArgs.Empty);
     }
 
     // Pushes the context's current state (base frame, or base + hole punched in if
@@ -735,8 +831,9 @@ Version {version}";
             double centerXPx = (center.X + ctx.PathOffsetX) * ctx.DpiScaleX;
             double centerYPx = (center.Y + ctx.PathOffsetY) * ctx.DpiScaleY;
             double radiusPx = GlowBitmapRenderer.HoleRadius * ctx.DpiScaleX;
+            double featherPx = HoleFeatherDip * ctx.DpiScaleX;
 
-            PunchHoleInPixels(ctx.ScratchPixels, ctx.BaseFrameWidth, ctx.BaseFrameHeight, ctx.BaseFrameStride, centerXPx, centerYPx, radiusPx);
+            PunchHoleInPixels(ctx.ScratchPixels, ctx.BaseFrameWidth, ctx.BaseFrameHeight, ctx.BaseFrameStride, centerXPx, centerYPx, radiusPx, featherPx);
             ctx.NativeWindow.RenderPixels(ctx.ScratchPixels, ctx.BaseFrameWidth, ctx.BaseFrameHeight, alpha);
         }
         else
@@ -745,16 +842,26 @@ Version {version}";
         }
     }
 
-    // Zeroes out (fully transparent, premultiplied) every pixel within radiusPx of the
-    // given center, restricted to its bounding box - not the whole image, so this stays
-    // cheap (a few hundred pixels) regardless of the frame's overall resolution.
-    private static void PunchHoleInPixels(byte[] pixels, int width, int height, int stride, double centerXPx, double centerYPx, double radiusPx)
+    // Width of the soft transition around the hole's edge, in DIPs before DPI scaling.
+    // The base frame is blurred (see BlurRadius), so its own edges are soft; without this,
+    // the hole - cut directly into already-rendered pixels rather than into geometry
+    // before blurring, as the original implementation did - would show a harshly crisp
+    // circular edge against that softness. A feather roughly this wide reads as consistent
+    // with the surrounding blur without needing to re-run it.
+    private const double HoleFeatherDip = 14;
+
+    // Fades every pixel within radiusPx + featherPx of the given center toward fully
+    // transparent (premultiplied zero) - a hard cut inside radiusPx, a linear falloff
+    // across the feather band outside it - restricted to that bounding box, not the whole
+    // image, so this stays cheap (a few hundred pixels) regardless of the frame's overall
+    // resolution.
+    private static void PunchHoleInPixels(byte[] pixels, int width, int height, int stride, double centerXPx, double centerYPx, double radiusPx, double featherPx)
     {
-        int minX = Math.Max(0, (int)Math.Floor(centerXPx - radiusPx));
-        int maxX = Math.Min(width - 1, (int)Math.Ceiling(centerXPx + radiusPx));
-        int minY = Math.Max(0, (int)Math.Floor(centerYPx - radiusPx));
-        int maxY = Math.Min(height - 1, (int)Math.Ceiling(centerYPx + radiusPx));
-        double radiusSq = radiusPx * radiusPx;
+        double outerRadius = radiusPx + featherPx;
+        int minX = Math.Max(0, (int)Math.Floor(centerXPx - outerRadius));
+        int maxX = Math.Min(width - 1, (int)Math.Ceiling(centerXPx + outerRadius));
+        int minY = Math.Max(0, (int)Math.Floor(centerYPx - outerRadius));
+        int maxY = Math.Min(height - 1, (int)Math.Ceiling(centerYPx + outerRadius));
 
         for (int y = minY; y <= maxY; y++)
         {
@@ -763,13 +870,28 @@ Version {version}";
             for (int x = minX; x <= maxX; x++)
             {
                 double dx = x + 0.5 - centerXPx;
-                if (dx * dx + dy * dy > radiusSq) continue;
+                double dist = Math.Sqrt(dx * dx + dy * dy);
+                if (dist >= outerRadius) continue; // untouched
 
                 int offset = rowOffset + x * 4;
-                pixels[offset] = 0;     // B
-                pixels[offset + 1] = 0; // G
-                pixels[offset + 2] = 0; // R
-                pixels[offset + 3] = 0; // A
+                if (dist <= radiusPx || featherPx <= 0)
+                {
+                    pixels[offset] = 0;
+                    pixels[offset + 1] = 0;
+                    pixels[offset + 2] = 0;
+                    pixels[offset + 3] = 0;
+                }
+                else
+                {
+                    // 0 at the hard edge (fully punched) rising to 1 at the outer edge
+                    // (untouched) - scaling all four premultiplied channels by the same
+                    // factor keeps premultiplication valid.
+                    double keep = (dist - radiusPx) / featherPx;
+                    pixels[offset] = (byte)(pixels[offset] * keep);
+                    pixels[offset + 1] = (byte)(pixels[offset + 1] * keep);
+                    pixels[offset + 2] = (byte)(pixels[offset + 2] * keep);
+                    pixels[offset + 3] = (byte)(pixels[offset + 3] * keep);
+                }
             }
         }
     }
@@ -841,6 +963,10 @@ Version {version}";
 
     protected override void OnClosed(EventArgs e)
     {
+        // SystemEvents subscriptions are static/global and outlive this window unless
+        // explicitly removed - unlike normal instance events, they won't just get GC'd.
+        Microsoft.Win32.SystemEvents.DisplaySettingsChanged -= OnDisplaySettingsChanged;
+
         UninstallMouseHook();
 
         var hwnd = new WindowInteropHelper(this).Handle;
@@ -857,6 +983,7 @@ Version {version}";
         HideAdditionalMonitorWindows();
         _primaryGlow?.HoverFlushTimer?.Stop();
         _primaryGlow?.NativeWindow.Dispose();
+        _renderWorker.Dispose();
         controlWindow?.Close();
 
         base.OnClosed(e);
@@ -1150,7 +1277,6 @@ Version {version}";
         var ctx = new GlowWindowContext
         {
             NativeWindow = new NativeLayeredWindow(),
-            Label = $"Additional({screen.DeviceName})",
             Screen = screen,
             DpiScaleX = screenDpiX,
             DpiScaleY = screenDpiY,

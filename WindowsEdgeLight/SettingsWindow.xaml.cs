@@ -84,7 +84,23 @@ public partial class SettingsWindow : Window
         UpdateBrightnessLabel();
         UpdateColorTempLabel();
 
+        // Color-temp changes render on a background thread (see GlowRenderWorker) and can
+        // take a few hundred ms, so show an "Applying..." indicator for as long as a
+        // requested change hasn't landed yet, instead of the slider just appearing to lag.
+        mainWindow.GlowRenderBusyChanged += MainWindow_GlowRenderBusyChanged;
+        UpdateColorTempApplyingVisibility();
+
         isInitializing = false;
+    }
+
+    private void MainWindow_GlowRenderBusyChanged(object? sender, EventArgs e)
+    {
+        UpdateColorTempApplyingVisibility();
+    }
+
+    private void UpdateColorTempApplyingVisibility()
+    {
+        ColorTempApplyingText.Visibility = mainWindow.IsGlowRenderBusy ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private void BrightnessSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -154,6 +170,7 @@ public partial class SettingsWindow : Window
 
     private void SettingsWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
     {
+        mainWindow.GlowRenderBusyChanged -= MainWindow_GlowRenderBusyChanged;
         mainWindow.SaveAppearanceSettings();
     }
 
