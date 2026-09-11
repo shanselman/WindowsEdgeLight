@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interop;
 using System.Windows.Media;
+using System.Windows.Threading;
 
 namespace WindowsEdgeLight;
 
@@ -10,10 +11,67 @@ public partial class SettingsWindow : Window
     private readonly MainWindow mainWindow;
     private bool isInitializing = true;
 
+    // Coalesces rapid slider-drag ValueChanged events (which can fire dozens of times per
+    // second) down to a fixed max rate, always applying the latest value once the interval
+    // has passed - same "latest value wins" pattern used for the mouse-hover hook in
+    // MainWindow. Each drag still triggers an expensive full-window repaint per applied
+    // value, so this bounds how often that happens instead of doing it on every tick.
+    private sealed class UpdateThrottle
+    {
+        private readonly Action<double> _apply;
+        private readonly DispatcherTimer _timer;
+        private double _pendingValue;
+        private bool _hasPending;
+        private DateTime _lastAppliedAt = DateTime.MinValue;
+
+        public UpdateThrottle(Action<double> apply, TimeSpan interval)
+        {
+            _apply = apply;
+            _timer = new DispatcherTimer(DispatcherPriority.Background) { Interval = interval };
+            _timer.Tick += (_, _) => Flush();
+        }
+
+        public void Request(double value)
+        {
+            _pendingValue = value;
+            _hasPending = true;
+
+            if (DateTime.UtcNow - _lastAppliedAt >= _timer.Interval)
+            {
+                Flush();
+            }
+            else if (!_timer.IsEnabled)
+            {
+                _timer.Start();
+            }
+        }
+
+        public void Cancel()
+        {
+            _timer.Stop();
+            _hasPending = false;
+        }
+
+        private void Flush()
+        {
+            _timer.Stop();
+            if (!_hasPending) return;
+            _hasPending = false;
+            _lastAppliedAt = DateTime.UtcNow;
+            _apply(_pendingValue);
+        }
+    }
+
+    private readonly UpdateThrottle _brightnessThrottle;
+    private readonly UpdateThrottle _colorTempThrottle;
+
     public SettingsWindow(MainWindow main)
     {
         InitializeComponent();
         mainWindow = main;
+
+        _brightnessThrottle = new UpdateThrottle(v => mainWindow.SetBrightness(v, save: false), TimeSpan.FromMilliseconds(33));
+        _colorTempThrottle = new UpdateThrottle(v => mainWindow.SetColorTemperature(v, save: false), TimeSpan.FromMilliseconds(33));
 
         BrightnessSlider.Value = mainWindow.GetBrightness();
         ColorTempSlider.Value = mainWindow.GetColorTemperature();
@@ -26,30 +84,48 @@ public partial class SettingsWindow : Window
         UpdateBrightnessLabel();
         UpdateColorTempLabel();
 
+        // Color-temp changes render on a background thread (see GlowRenderWorker) and can
+        // take a few hundred ms, so show an "Applying..." indicator for as long as a
+        // requested change hasn't landed yet, instead of the slider just appearing to lag.
+        mainWindow.GlowRenderBusyChanged += MainWindow_GlowRenderBusyChanged;
+        UpdateColorTempApplyingVisibility();
+
         isInitializing = false;
+    }
+
+    private void MainWindow_GlowRenderBusyChanged(object? sender, EventArgs e)
+    {
+        UpdateColorTempApplyingVisibility();
+    }
+
+    private void UpdateColorTempApplyingVisibility()
+    {
+        ColorTempApplyingText.Visibility = mainWindow.IsGlowRenderBusy ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private void BrightnessSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
     {
         if (isInitializing) return;
-        mainWindow.SetBrightness(e.NewValue, save: false);
         UpdateBrightnessLabel();
+        _brightnessThrottle.Request(e.NewValue);
     }
 
     private void BrightnessSlider_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
     {
+        _brightnessThrottle.Cancel();
         mainWindow.SetBrightness(BrightnessSlider.Value, save: true);
     }
 
     private void ColorTempSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
     {
         if (isInitializing) return;
-        mainWindow.SetColorTemperature(e.NewValue, save: false);
         UpdateColorTempLabel();
+        _colorTempThrottle.Request(e.NewValue);
     }
 
     private void ColorTempSlider_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
     {
+        _colorTempThrottle.Cancel();
         mainWindow.SetColorTemperature(ColorTempSlider.Value, save: true);
     }
 
@@ -94,6 +170,7 @@ public partial class SettingsWindow : Window
 
     private void SettingsWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
     {
+        mainWindow.GlowRenderBusyChanged -= MainWindow_GlowRenderBusyChanged;
         mainWindow.SaveAppearanceSettings();
     }
 
