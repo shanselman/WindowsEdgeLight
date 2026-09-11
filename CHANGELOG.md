@@ -4,6 +4,19 @@ All notable changes to Windows Edge Light are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and the project uses [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+
+- Eliminated system-wide mouse/input lag caused by the edge-light overlay, most noticeably during color-temperature changes and while hovering the cursor near the glow.
+- The overlay now adapts automatically to monitor configuration changes (resolution changes, displays connected or disconnected) instead of requiring a restart to look right again.
+- Restored and widened the soft blurred edge so it displays reliably across monitors with different DPI scaling and display characteristics.
+
+### Changed
+
+- Replaced the overlay's rendering pipeline with a natively managed layered window per monitor, rendered off the main UI thread, substantially reducing CPU usage and improving responsiveness.
+- Added an "Applying..." indicator in Settings while a color-temperature change is still rendering.
+
 ## [v1.13.0] - 2026-08-08
 
 ### Added
