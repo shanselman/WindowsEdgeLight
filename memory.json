@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-09-18T05:33:00Z",
-  "last_run_id": "35311101882",
+  "last_run": "2026-09-25T05:34:00Z",
+  "last_run_id": "36098979627",
   "comments_made": {
     "24": "2026-07-01T13:51:58Z",
     "126": "2026-08-01T13:11:00Z",
@@ -221,7 +221,7 @@
     "184": "Duplicate of 181 (color-temp-hotkeys)",
     "189": "Duplicate of 190 (kelvin-color-temp - both from same run 2026-08-14)"
   },
-  "notes": "2026-09-18: Task 2 (Issue Investigation and Comment) selected. Reviewed open issues oldest-first (24, 201 \u2014 issues #21/#212/#213 filtered by integrity policy). Issue #24 (HDR) already has 2 substantive RA comments from prior runs, no new human activity \u2014 skipped to avoid noise. Investigated #201 (manual validation backlog tracking issue for 8 candidates): verified each item's state on master. Found the 'Live tray tooltip' (#179) item is STALE \u2014 that feature already landed on master via commit 054cecb ('Persist light settings and add CI check'), so the standalone improve-tray-tooltip-2026-08-11 branch is now redundant/mergeable-cleanup. The other 7 items (Updatum 1.4.0, color-temp hotkeys, persist control-bar visibility, WM_DISPLAYCHANGE, Kelvin label, persist all-monitors, theme-aware download dialog) are confirmed NOT yet on master and their repo-assist/* branches still apply cleanly (small diffs, 1-40 lines). Posted a comment on #201 correcting the stale checklist item and confirming outstanding work. Did not open any new PRs this run since these require manual Windows validation per the issue's acceptance bar.",
+  "notes": "2026-09-25: Task 3 (Issue Investigation and Fix) selected. Only 2 issues visible/readable (#201, #24); issues #21/#212/#213 filtered by integrity policy (not accessible). Neither visible issue is labelled bug/help wanted/good first issue: #201 is the manual-validation backlog tracker (all items explicitly require real Windows UI/hardware validation before becoming PRs per its own acceptance bar), #24 (HDR) is a complex future-work item already noted. Re-verified App.xaml.cs CheckForUpdatesAsync: the await Dispatcher.InvokeAsync(async () => {...}).Task.Unwrap() pattern on master is correct (DispatcherOperation awaited, then Task.Unwrap flattens/awaits the inner async lambda Task). The old fix-async-dispatcher-invoke-2026-08-18 branch (await await Dispatcher.InvokeAsync(...) without .Task.Unwrap()) is NOT a valid fix -- it predates commit 31d8de9 which already fixed this exact issue correctly; that branch should be considered stale/superseded and not reused. No confident (>=90%) fixable bug found this run -- took no action per quality gate.",
   "backlog_health": {
     "large_unmerged_branch_count": 148
   }
