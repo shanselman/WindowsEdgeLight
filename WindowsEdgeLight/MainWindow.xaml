@@ -22,7 +22,13 @@
         <TaskbarItemInfo Description="Windows Edge Light - Right-click for options" />
     </Window.TaskbarItemInfo>
 
+    <!--  GlowHost carries brightness (Opacity) and the hover hole (Clip) so they never invalidate the cached blur below  -->
     <Grid x:Name="MainGrid" IsHitTestVisible="False">
+        <Grid x:Name="GlowHost">
+            <Grid>
+                <Grid.CacheMode>
+                    <BitmapCache />
+                </Grid.CacheMode>
         <!--  Edge Light Frame with Rounded Inner and Outer Edges using Path  -->
         <Path
             x:Name="EdgeLightBorder"
@@ -46,14 +52,7 @@
                     Color="#FFFFFF" />
             </Path.Effect>
         </Path>
-
-        <!-- Overlay canvas for cursor ring -->
-        <Canvas x:Name="CursorOverlay" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsHitTestVisible="False">
-            <Ellipse x:Name="HoverCursorRing"
-                     Width="140" Height="140"
-                     Fill="Transparent"
-                     Visibility="Collapsed">
-            </Ellipse>
-        </Canvas>
+            </Grid>
+        </Grid>
     </Grid>
 </Window>

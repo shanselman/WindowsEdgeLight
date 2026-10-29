@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
@@ -47,19 +47,12 @@ public partial class MainWindow : Window
     // Application settings
     private AppSettings settings = new AppSettings();
 
-    private sealed class HoleCache
-    {
-        public Geometry? BaseGeometry { get; set; }
-        public EllipseGeometry? Hole { get; set; }
-        public CombinedGeometry? Combined { get; set; }
-    }
-
     private class MonitorWindowContext
     {
         public Window Window { get; set; } = null!;
         public Screen Screen { get; set; } = null!;
         public System.Windows.Shapes.Path BorderPath { get; set; } = null!;
-        public Ellipse HoverRing { get; set; } = null!;
+        public System.Windows.Controls.Grid GlowHost { get; set; } = null!;
         public Geometry BaseGeometry { get; set; } = null!;
         public Rect FrameOuterRect { get; set; }
         public Rect FrameInnerRect { get; set; }
@@ -67,7 +60,6 @@ public partial class MainWindow : Window
         public double PathOffsetY { get; set; }
         public double DpiScaleX { get; set; } = 1.0;
         public double DpiScaleY { get; set; } = 1.0;
-        public HoleCache HoleCache { get; } = new();
     }
 
     // Monitor management
@@ -114,47 +106,21 @@ public partial class MainWindow : Window
         public int y;
     }
 
-    // Mouse hook P/Invoke declarations
-    [DllImport("user32.dll", SetLastError = true)]
-    private static extern IntPtr SetWindowsHookEx(int idHook, LowLevelMouseProc lpfn, IntPtr hMod, uint dwThreadId);
-
-    [DllImport("user32.dll", SetLastError = true)]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool UnhookWindowsHookEx(IntPtr hhk);
-
     [DllImport("user32.dll")]
-    private static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, IntPtr lParam);
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool GetCursorPos(out POINT lpPoint);
 
-    [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-    private static extern IntPtr GetModuleHandle(string lpModuleName);
+    // Polling the cursor (instead of a WH_MOUSE_LL hook) keeps our UI thread out of
+    // the system-wide mouse input path, so rendering here can never lag other apps.
+    private readonly DispatcherTimer cursorPollTimer = new() { Interval = TimeSpan.FromMilliseconds(33) };
+    private POINT lastCursorPos = new() { x = int.MinValue, y = int.MinValue };
 
-    private const int WH_MOUSE_LL = 14;
-    private const int WM_MOUSEMOVE = 0x0200;
-
-    [StructLayout(LayoutKind.Sequential)]
-    private struct MSLLHOOKSTRUCT
-    {
-        public POINT pt;
-        public uint mouseData;
-        public uint flags;
-        public uint time;
-        public IntPtr dwExtraInfo;
-    }
-
-    private delegate IntPtr LowLevelMouseProc(int nCode, IntPtr wParam, IntPtr lParam);
-
-    // Mouse hook management
-    private IntPtr mouseHookHandle = IntPtr.Zero;
-    private LowLevelMouseProc? mouseHookCallback;
+    private const double HoleDiameter = 140;
 
     private Rect? frameOuterRect;
     private Rect? frameInnerRect;
-    private readonly Ellipse? hoverCursorRing;
-    // Added fields for hole effect
-    private Geometry? baseFrameGeometry; // original frame geometry (outer minus inner)
     private double pathOffsetX; // offset of geometry within window
     private double pathOffsetY;
-    private readonly HoleCache primaryHoleCache = new();
 
     private static readonly MediaColor CoolColor = MediaColor.FromRgb(220, 235, 255);
     private static readonly MediaColor WarmColor = MediaColor.FromRgb(255, 220, 180);
@@ -168,7 +134,7 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-        hoverCursorRing = FindName("HoverCursorRing") as Ellipse;
+        cursorPollTimer.Tick += CursorPollTimer_Tick;
         
         // Load settings
         settings = AppSettings.Load();
@@ -208,33 +174,33 @@ public partial class MainWindow : Window
         notifyIcon.Visible = true;
         
         var contextMenu = new ContextMenuStrip();
-        contextMenu.Items.Add("📋 Keyboard Shortcuts", null, (s, e) => ShowHelp());
+        contextMenu.Items.Add("ðŸ“‹ Keyboard Shortcuts", null, (s, e) => ShowHelp());
         contextMenu.Items.Add(new ToolStripSeparator());
         toggleLightMenuItem = new ToolStripMenuItem(GetToggleLightMenuText(), null, (s, e) => ToggleLight());
         contextMenu.Items.Add(toggleLightMenuItem);
-        contextMenu.Items.Add("🔆 Brightness Up (Ctrl+Shift+↑)", null, (s, e) => IncreaseBrightness());
-        contextMenu.Items.Add("🔅 Brightness Down (Ctrl+Shift+↓)", null, (s, e) => DecreaseBrightness());
+        contextMenu.Items.Add("ðŸ”† Brightness Up (Ctrl+Shift+â†‘)", null, (s, e) => IncreaseBrightness());
+        contextMenu.Items.Add("ðŸ”… Brightness Down (Ctrl+Shift+â†“)", null, (s, e) => DecreaseBrightness());
         contextMenu.Items.Add(new ToolStripSeparator());
-        contextMenu.Items.Add("🔥 K- Warmer Light", null, (s, e) => IncreaseColorTemperature());
-        contextMenu.Items.Add("❄️ K+ Cooler Light", null, (s, e) => DecreaseColorTemperature());
+        contextMenu.Items.Add("ðŸ”¥ K- Warmer Light", null, (s, e) => IncreaseColorTemperature());
+        contextMenu.Items.Add("â„ï¸ K+ Cooler Light", null, (s, e) => DecreaseColorTemperature());
         contextMenu.Items.Add(new ToolStripSeparator());
-        contextMenu.Items.Add("🖥️ Switch Monitor", null, (s, e) => MoveToNextMonitor());
-        contextMenu.Items.Add("🖥️🖥️ Toggle All Monitors", null, (s, e) => ToggleAllMonitors());
+        contextMenu.Items.Add("ðŸ–¥ï¸ Switch Monitor", null, (s, e) => MoveToNextMonitor());
+        contextMenu.Items.Add("ðŸ–¥ï¸ðŸ–¥ï¸ Toggle All Monitors", null, (s, e) => ToggleAllMonitors());
         contextMenu.Items.Add(new ToolStripSeparator());
         
         // Add toggle controls menu item - text will be set by UpdateTrayMenuToggleControlsText
-        toggleControlsMenuItem = new ToolStripMenuItem("🎛️ Hide Controls", null, (s, e) => ToggleControlsVisibility());
+        toggleControlsMenuItem = new ToolStripMenuItem("ðŸŽ›ï¸ Hide Controls", null, (s, e) => ToggleControlsVisibility());
         contextMenu.Items.Add(toggleControlsMenuItem);
-        contextMenu.Items.Add("📍 Reset Control Bar Position", null, (s, e) => ResetControlWindowPosition());
+        contextMenu.Items.Add("ðŸ“ Reset Control Bar Position", null, (s, e) => ResetControlWindowPosition());
         
         // Add exclude from capture menu item with checkmark
-        excludeFromCaptureMenuItem = new ToolStripMenuItem("🎥 Exclude from Screen Capture", null, (s, e) => ToggleExcludeFromCapture());
+        excludeFromCaptureMenuItem = new ToolStripMenuItem("ðŸŽ¥ Exclude from Screen Capture", null, (s, e) => ToggleExcludeFromCapture());
         excludeFromCaptureMenuItem.CheckOnClick = true;
         excludeFromCaptureMenuItem.Checked = settings.ExcludeFromCapture;
         contextMenu.Items.Add(excludeFromCaptureMenuItem);
         
         contextMenu.Items.Add(new ToolStripSeparator());
-        contextMenu.Items.Add("✖ Exit", null, (s, e) => System.Windows.Application.Current.Shutdown());
+        contextMenu.Items.Add("âœ– Exit", null, (s, e) => System.Windows.Application.Current.Shutdown());
         
         notifyIcon.ContextMenuStrip = contextMenu;
         notifyIcon.DoubleClick += (s, e) => ShowHelp();
@@ -254,8 +220,8 @@ public partial class MainWindow : Window
     private string GetToggleLightMenuText()
     {
         return isLightOn
-            ? "💡 Turn Light Off (Ctrl+Shift+L)"
-            : "💡 Turn Light On (Ctrl+Shift+L)";
+            ? "ðŸ’¡ Turn Light Off (Ctrl+Shift+L)"
+            : "ðŸ’¡ Turn Light On (Ctrl+Shift+L)";
     }
 
     private void UpdateTrayLightStateText()
@@ -278,18 +244,18 @@ public partial class MainWindow : Window
         
         var helpMessage = $@"Windows Edge Light - Keyboard Shortcuts
 
-💡 Toggle Light:  Ctrl + Shift + L
-🔆 Brightness Up:  Ctrl + Shift + ↑
-🔅 Brightness Down:  Ctrl + Shift + ↓
+ðŸ’¡ Toggle Light:  Ctrl + Shift + L
+ðŸ”† Brightness Up:  Ctrl + Shift + â†‘
+ðŸ”… Brightness Down:  Ctrl + Shift + â†“
 
-💡 Features:
-• Click-through overlay - won't interfere with your work
-• Global hotkeys work from any application
-• Right-click taskbar icon for full menu
-• Control toolbar with brightness, color temp, and monitor options
-• Color temperature controls (🔥 warmer, ❄️ cooler)
-• Switch between monitors or show on all monitors
-• Exclude from screen capture (🎥) - invisible in Teams/Zoom sharing
+ðŸ’¡ Features:
+â€¢ Click-through overlay - won't interfere with your work
+â€¢ Global hotkeys work from any application
+â€¢ Right-click taskbar icon for full menu
+â€¢ Control toolbar with brightness, color temp, and monitor options
+â€¢ Color temperature controls (ðŸ”¥ warmer, â„ï¸ cooler)
+â€¢ Switch between monitors or show on all monitors
+â€¢ Exclude from screen capture (ðŸŽ¥) - invisible in Teams/Zoom sharing
 
 Created by Scott Hanselman
 Version {version}";
@@ -361,7 +327,7 @@ Version {version}";
         // Apply exclude from capture setting
         ApplyExcludeFromCapture();
 
-        EdgeLightBorder.Opacity = currentOpacity;
+        GlowHost.Opacity = currentOpacity;
         SetColorTemperature(_colorTemperature, save: false);
 
         if (!isLightOn)
@@ -369,7 +335,7 @@ Version {version}";
             EdgeLightBorder.Visibility = Visibility.Collapsed;
         }
 
-        InstallMouseHook();
+        UpdateCursorPolling();
     }
 
     private void RegisterGlobalHotKeys(IntPtr hwnd)
@@ -403,43 +369,38 @@ Version {version}";
         }
     }
 
-    private void InstallMouseHook()
+    private void UpdateCursorPolling()
     {
-        // Store callback to prevent garbage collection
-        mouseHookCallback = MouseHookProc;
-        
-        using var curProcess = System.Diagnostics.Process.GetCurrentProcess();
-        using var curModule = curProcess.MainModule;
-        if (curModule != null)
+        if (isLightOn)
         {
-            mouseHookHandle = SetWindowsHookEx(WH_MOUSE_LL, mouseHookCallback, 
-                GetModuleHandle(curModule.ModuleName), 0);
+            lastCursorPos = new POINT { x = int.MinValue, y = int.MinValue };
+            cursorPollTimer.Start();
+        }
+        else
+        {
+            cursorPollTimer.Stop();
+            ClearHoverHoles();
         }
     }
 
-    private void UninstallMouseHook()
+    private void CursorPollTimer_Tick(object? sender, EventArgs e)
     {
-        if (mouseHookHandle != IntPtr.Zero)
+        if (!GetCursorPos(out var pos) || (pos.x == lastCursorPos.x && pos.y == lastCursorPos.y))
         {
-            UnhookWindowsHookEx(mouseHookHandle);
-            mouseHookHandle = IntPtr.Zero;
+            return;
         }
+
+        lastCursorPos = pos;
+        HandleMouseMove(pos.x, pos.y);
     }
 
-    private IntPtr MouseHookProc(int nCode, IntPtr wParam, IntPtr lParam)
+    private void ClearHoverHoles()
     {
-        if (nCode >= 0 && wParam == (IntPtr)WM_MOUSEMOVE)
+        GlowHost.Clip = null;
+        foreach (var ctx in additionalMonitorWindows)
         {
-            var hookStruct = Marshal.PtrToStructure<MSLLHOOKSTRUCT>(lParam);
-            
-            // Dispatch to UI thread for WPF operations
-            Dispatcher.BeginInvoke(new Action(() => 
-            {
-                HandleMouseMove(hookStruct.pt.x, hookStruct.pt.y);
-            }), System.Windows.Threading.DispatcherPriority.Input);
+            ctx.GlowHost.Clip = null;
         }
-
-        return CallNextHookEx(mouseHookHandle, nCode, wParam, lParam);
     }
 
     private static System.Windows.Media.Color LerpColor(System.Windows.Media.Color a, System.Windows.Media.Color b, double t)
@@ -467,73 +428,33 @@ Version {version}";
     {
         if (!isLightOn)
         {
-            if (EdgeLightBorder.Visibility != Visibility.Collapsed)
-            {
-                EdgeLightBorder.Visibility = Visibility.Collapsed;
-            }
-
-            if (hoverCursorRing != null && hoverCursorRing.Visibility != Visibility.Collapsed)
-            {
-                hoverCursorRing.Visibility = Visibility.Collapsed;
-            }
-            // Restore original geometry if previously punched
-            if (baseFrameGeometry != null && EdgeLightBorder.Data != baseFrameGeometry)
-            {
-                EdgeLightBorder.Data = baseFrameGeometry;
-            }
-
-            // Also handle additional windows
-            foreach (var ctx in additionalMonitorWindows)
-            {
-                if (ctx.BorderPath.Visibility != Visibility.Collapsed)
-                    ctx.BorderPath.Visibility = Visibility.Collapsed;
-                if (ctx.HoverRing.Visibility != Visibility.Collapsed)
-                    ctx.HoverRing.Visibility = Visibility.Collapsed;
-                if (ctx.BorderPath.Data != ctx.BaseGeometry)
-                    ctx.BorderPath.Data = ctx.BaseGeometry;
-            }
-
             return;
         }
 
-        // --- Main Window Logic ---
-        if (frameOuterRect != null && frameInnerRect != null && hoverCursorRing != null && baseFrameGeometry != null)
+        if (frameOuterRect != null && frameInnerRect != null)
         {
             var screen = GetCurrentScreen();
             if (screen != null)
             {
-                ApplyHolePunchEffect(
+                ApplyHoverHole(
                     screenX, screenY,
                     screen,
                     _dpiScaleX, _dpiScaleY,
                     frameOuterRect.Value, frameInnerRect.Value,
-                    hoverCursorRing,
-                    EdgeLightBorder,
-                    baseFrameGeometry,
-                    pathOffsetX, pathOffsetY,
-                    (ring, x, y) => { Canvas.SetLeft(ring, x); Canvas.SetTop(ring, y); },
-                    primaryHoleCache
-                );
+                    GlowHost);
             }
         }
 
-        // --- Additional Windows Logic ---
         foreach (var ctx in additionalMonitorWindows)
         {
             try
             {
-                ApplyHolePunchEffect(
+                ApplyHoverHole(
                     screenX, screenY,
                     ctx.Screen,
                     ctx.DpiScaleX, ctx.DpiScaleY,
                     ctx.FrameOuterRect, ctx.FrameInnerRect,
-                    ctx.HoverRing,
-                    ctx.BorderPath,
-                    ctx.BaseGeometry,
-                    ctx.PathOffsetX, ctx.PathOffsetY,
-                    (ring, x, y) => { ring.Margin = new Thickness(x, y, 0, 0); },
-                    ctx.HoleCache
-                );
+                    ctx.GlowHost);
             }
             catch (InvalidOperationException)
             {
@@ -542,17 +463,14 @@ Version {version}";
         }
     }
 
-    private void ApplyHolePunchEffect(
+    // The hole is a Clip on the glow host, outside the cached (blurred) glow,
+    // so moving it only recomposites the cached bitmap instead of re-running the blur.
+    private static void ApplyHoverHole(
         int screenX, int screenY,
         Screen screen,
         double dpiScaleX, double dpiScaleY,
         Rect frameOuterRect, Rect frameInnerRect,
-        Ellipse hoverRing,
-        System.Windows.Shapes.Path borderPath,
-        Geometry baseGeometry,
-        double pathOffsetX, double pathOffsetY,
-        Action<Ellipse, double, double> positionRing,
-        HoleCache holeCache)
+        UIElement glowHost)
     {
         // Manual coordinate calculation to avoid PointFromScreen issues across monitors/DPIs
         // We positioned the window using dpiScaleX/Y relative to the screen WorkingArea.
@@ -563,67 +481,36 @@ Version {version}";
         // Existing frame band detection (outer minus inner)
         bool inFrameBand = frameOuterRect.Contains(windowPt) && !frameInnerRect.Contains(windowPt);
 
-        // Early detection zone just inside the inner edge: a band with thickness = hole radius (cursor ring radius)
-        double ringDiameter = hoverRing.Width;
-        double holeRadius = ringDiameter / 2; // match ring size
+        // Early detection zone just inside the inner edge, with thickness = hole radius
+        double holeRadius = HoleDiameter / 2;
         var innerProximityRect = new Rect(
             frameInnerRect.X + holeRadius,
             frameInnerRect.Y + holeRadius,
             frameInnerRect.Width - (holeRadius * 2),
             frameInnerRect.Height - (holeRadius * 2));
 
-        // Near from inside means inside innerRect but within holeRadius of its edge (i.e., not deep inside innerProximityRect)
         bool nearFromInside = frameInnerRect.Contains(windowPt) && !innerProximityRect.Contains(windowPt);
 
-        bool overFrame = inFrameBand || nearFromInside;
-
-        if (overFrame)
+        if (!(inFrameBand || nearFromInside))
         {
-            positionRing(hoverRing, windowPt.X - ringDiameter / 2, windowPt.Y - ringDiameter / 2);
-            
-            if (hoverRing.Visibility != Visibility.Visible)
+            if (glowHost.Clip != null)
             {
-                hoverRing.Visibility = Visibility.Visible;
+                glowHost.Clip = null;
             }
-
-            // Punch a transparent hole under the ring by excluding a circle geometry from the frame
-            // Convert window coordinates to geometry local coordinates by subtracting stored offsets
-            var localCenter = new System.Windows.Point(windowPt.X - pathOffsetX, windowPt.Y - pathOffsetY);
-            if (holeCache.BaseGeometry != baseGeometry ||
-                holeCache.Hole == null ||
-                holeCache.Hole.RadiusX != holeRadius ||
-                holeCache.Combined == null)
-            {
-                holeCache.BaseGeometry = baseGeometry;
-                holeCache.Hole = new EllipseGeometry(localCenter, holeRadius, holeRadius);
-                holeCache.Combined = new CombinedGeometry(GeometryCombineMode.Exclude, baseGeometry, holeCache.Hole);
-            }
-            else
-            {
-                holeCache.Hole.Center = localCenter;
-            }
-
-            borderPath.Data = holeCache.Combined;
+            return;
         }
-        else
+
+        if (glowHost.Clip is CombinedGeometry clip && clip.Geometry2 is EllipseGeometry hole)
         {
-            if (hoverRing.Visibility != Visibility.Collapsed)
-            {
-                hoverRing.Visibility = Visibility.Collapsed;
-            }
-
-            if (borderPath.Visibility != Visibility.Visible)
-            {
-                borderPath.Visibility = Visibility.Visible;
-            }
-            // Restore original geometry (remove hole)
-            if (baseGeometry != null && borderPath.Data != baseGeometry)
-            {
-                borderPath.Data = baseGeometry;
-            }
+            hole.Center = windowPt;
+            return;
         }
+
+        glowHost.Clip = new CombinedGeometry(
+            GeometryCombineMode.Exclude,
+            new RectangleGeometry(new Rect(-10000, -10000, 40000, 40000)),
+            new EllipseGeometry(windowPt, holeRadius, holeRadius));
     }
-
     private void CreateControlWindow()
     {
         controlWindow = new ControlWindow(this);
@@ -658,13 +545,11 @@ Version {version}";
         
         // Combine: outer minus inner = frame
         var frameGeometry = new CombinedGeometry(GeometryCombineMode.Exclude, outerRect, innerRect);
-        baseFrameGeometry = frameGeometry; // store original
         EdgeLightBorder.Data = frameGeometry;
         pathOffsetX = (ActualWidth - width) / 2.0; // store offsets for local coordinate conversion
         pathOffsetY = (ActualHeight - height) / 2.0;
         // Expand outer and contract inner rects for earlier hover detection based on ring hole radius.
-        double ringDiameter = hoverCursorRing?.Width ?? 0;
-        double holeRadius = ringDiameter / 2.0;
+        double holeRadius = HoleDiameter / 2.0;
         frameOuterRect = new Rect(pathOffsetX - holeRadius, pathOffsetY - holeRadius, width + holeRadius * 2, height + holeRadius * 2);
         frameInnerRect = new Rect(pathOffsetX + frameThickness + holeRadius, pathOffsetY + frameThickness + holeRadius, width - (frameThickness * 2) - holeRadius * 2, height - (frameThickness * 2) - holeRadius * 2);
     }
@@ -735,7 +620,7 @@ Version {version}";
 
     protected override void OnClosed(EventArgs e)
     {
-        UninstallMouseHook();
+        cursorPollTimer.Stop();
         
         var hwnd = new WindowInteropHelper(this).Handle;
         UnregisterHotKey(hwnd, HOTKEY_TOGGLE);
@@ -776,23 +661,8 @@ Version {version}";
     private void ToggleLight()
     {
         isLightOn = !isLightOn;
-        if (isLightOn)
-        {
-            EdgeLightBorder.Visibility = Visibility.Visible;
-            // Restore base geometry on toggle if needed
-            if (baseFrameGeometry != null)
-            {
-                EdgeLightBorder.Data = baseFrameGeometry;
-            }
-        }
-        else
-        {
-            EdgeLightBorder.Visibility = Visibility.Collapsed;
-            if (hoverCursorRing != null)
-            {
-                hoverCursorRing.Visibility = Visibility.Collapsed;
-            }
-        }
+        EdgeLightBorder.Visibility = isLightOn ? Visibility.Visible : Visibility.Collapsed;
+        UpdateCursorPolling();
         
         // Update all additional monitor windows
         UpdateAdditionalMonitorWindows();
@@ -832,7 +702,7 @@ Version {version}";
     {
         if (toggleControlsMenuItem != null)
         {
-            toggleControlsMenuItem.Text = isControlWindowVisible ? "🎛️ Hide Controls" : "🎛️ Show Controls";
+            toggleControlsMenuItem.Text = isControlWindowVisible ? "ðŸŽ›ï¸ Hide Controls" : "ðŸŽ›ï¸ Show Controls";
         }
     }
 
@@ -908,7 +778,7 @@ Version {version}";
     public void SetBrightness(double value, bool save = true)
     {
         currentOpacity = ClampFinite(value, MinOpacity, MaxOpacity, MaxOpacity);
-        EdgeLightBorder.Opacity = currentOpacity;
+        GlowHost.Opacity = currentOpacity;
         UpdateAdditionalMonitorWindows();
 
         if (save)
@@ -923,7 +793,7 @@ Version {version}";
         foreach (var ctx in additionalMonitorWindows)
         {
             var path = ctx.BorderPath;
-            path.Opacity = currentOpacity;
+            ctx.GlowHost.Opacity = currentOpacity;
             path.Visibility = isLightOn ? Visibility.Visible : Visibility.Collapsed;
             ApplyColorTemperature(path);
         }
@@ -1097,7 +967,6 @@ Version {version}";
             HorizontalAlignment = System.Windows.HorizontalAlignment.Center,
             VerticalAlignment = System.Windows.VerticalAlignment.Center,
             Stretch = System.Windows.Media.Stretch.None,
-            Opacity = currentOpacity,
             Visibility = isLightOn ? Visibility.Visible : Visibility.Collapsed
         };
 
@@ -1123,20 +992,6 @@ Version {version}";
             Color = temperatureColor
         };
 
-        // Create hover ring (Ellipse)
-        var hoverRing = new Ellipse
-        {
-            Width = 140,
-            Height = 140,
-            Fill = System.Windows.Media.Brushes.Transparent,
-            Visibility = Visibility.Collapsed,
-            HorizontalAlignment = System.Windows.HorizontalAlignment.Left,
-            VerticalAlignment = System.Windows.VerticalAlignment.Top
-        };
-        // Add drop shadow to ring - actually main window doesn't seem to have this on the ring itself?
-        // Main window XAML doesn't show effect on HoverCursorRing.
-        // So removing effect to match.
-        
         // Create frame geometry
         double width = window.Width - 40;
         double height = window.Height - 40;
@@ -1154,16 +1009,19 @@ Version {version}";
         var frameGeometry = new CombinedGeometry(GeometryCombineMode.Exclude, outerRect, innerRect);
         path.Data = frameGeometry;
 
-        grid.Children.Add(path);
-        grid.Children.Add(hoverRing);
+        // Same layering as MainWindow.xaml: the outer grid takes brightness and the hover
+        // mask, the inner grid caches the blurred glow so those changes don't re-blur it.
+        var cachedGlow = new System.Windows.Controls.Grid { CacheMode = new BitmapCache() };
+        cachedGlow.Children.Add(path);
+        grid.Children.Add(cachedGlow);
+        grid.Opacity = currentOpacity;
         window.Content = grid;
 
         // Calculate geometry data for hole punch
         double pathOffsetX = (window.Width - width) / 2.0;
         double pathOffsetY = (window.Height - height) / 2.0;
         
-        double ringDiameter = hoverRing.Width;
-        double holeRadius = ringDiameter / 2.0;
+        double holeRadius = HoleDiameter / 2.0;
         var frameOuterRect = new Rect(pathOffsetX - holeRadius, pathOffsetY - holeRadius, width + holeRadius * 2, height + holeRadius * 2);
         var frameInnerRect = new Rect(pathOffsetX + frameThickness + holeRadius, pathOffsetY + frameThickness + holeRadius, width - (frameThickness * 2) - holeRadius * 2, height - (frameThickness * 2) - holeRadius * 2);
 
@@ -1172,7 +1030,7 @@ Version {version}";
             Window = window,
             Screen = screen,
             BorderPath = path,
-            HoverRing = hoverRing,
+            GlowHost = grid,
             BaseGeometry = frameGeometry,
             FrameOuterRect = frameOuterRect,
             FrameInnerRect = frameInnerRect,
@@ -1261,8 +1119,7 @@ Version {version}";
         ctx.PathOffsetX = (ctx.Window.Width - width) / 2.0;
         ctx.PathOffsetY = (ctx.Window.Height - height) / 2.0;
         
-        double ringDiameter = ctx.HoverRing.Width;
-        double holeRadius = ringDiameter / 2.0;
+        double holeRadius = HoleDiameter / 2.0;
         
         ctx.FrameOuterRect = new Rect(ctx.PathOffsetX - holeRadius, ctx.PathOffsetY - holeRadius, width + holeRadius * 2, height + holeRadius * 2);
         ctx.FrameInnerRect = new Rect(ctx.PathOffsetX + frameThickness + holeRadius, ctx.PathOffsetY + frameThickness + holeRadius, width - (frameThickness * 2) - holeRadius * 2, height - (frameThickness * 2) - holeRadius * 2);
