@@ -1,0 +1,16 @@
+diff --git a/WindowsEdgeLight/MainWindow.xaml.cs b/WindowsEdgeLight/MainWindow.xaml.cs
+index 113249a..fbf8e7e 100644
+--- a/WindowsEdgeLight/MainWindow.xaml.cs
++++ b/WindowsEdgeLight/MainWindow.xaml.cs
+@@ -502,7 +502,10 @@ Version {version}";
+ 
+         if (glowHost.Clip is CombinedGeometry clip && clip.Geometry2 is EllipseGeometry hole)
+         {
+-            hole.Center = windowPt;
++            if ((hole.Center - windowPt).LengthSquared >= 4)
++            {
++                hole.Center = windowPt;
++            }
+             return;
+         }
+ 

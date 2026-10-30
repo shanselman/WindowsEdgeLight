@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <ApplicationManifest>..\..\WindowsEdgeLight\app.manifest</ApplicationManifest>
+    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+    <NoWarn>$(NoWarn);WFO0003</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="WindowsEdgeLight">
+      <HintPath>$(RendererDirectory)\WindowsEdgeLight.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+  </ItemGroup>
+  <Target Name="RequireRenderer" BeforeTargets="ResolveReferences">
+    <Error Condition="!Exists('$(RendererDirectory)\WindowsEdgeLight.dll')" Text="Pass -p:RendererDirectory=absolute-path-to-a-fresh-build" />
+  </Target>
+</Project>
